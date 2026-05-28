@@ -1,0 +1,583 @@
+<div class="settings-page animate-fade-in">
+    <!-- Toast -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1050">
+        <div class="toast align-items-center text-white bg-success border-0" [class.show]="showToast" role="alert">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center gap-2">
+                    <span class="ion-md-checkmark-circle fs-5"></span>
+                    <span class="fw-bold">{{ toastMessage }}</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" (click)="showToast = false"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="row g-4 align-items-center mb-4">
+        <div class="col-lg-6">
+            <h2 class="fw-bold text-dark mb-1">Paramètres de la flotte</h2>
+            <p class="text-muted mb-0">Configurez les règles de réservation et de gestion de vos véhicules.</p>
+        </div>
+        <div class="col-lg-6 text-lg-end">
+            <div class="d-flex gap-2 justify-content-lg-end">
+                <button class="btn btn-outline-secondary rounded-pill px-4" (click)="resetSettings()">
+                    <span class="ion-md-refresh me-1"></span> Réinitialiser
+                </button>
+                <button class="btn btn-primary rounded-pill px-4 shadow-sm" [disabled]="!hasChanges" (click)="saveSettings()">
+                    <span class="ion-md-checkmark me-1"></span> Enregistrer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Nav -->
+    <div class="section-nav mb-5">
+        <div class="d-flex gap-2 flex-wrap">
+            <button class="section-pill" [class.active]="activeSection === 'reservations'" (click)="activeSection = 'reservations'">
+                <span class="ion-md-calendar me-1"></span> Réservations
+            </button>
+            <button class="section-pill" [class.active]="activeSection === 'schedule'" (click)="activeSection = 'schedule'">
+                <span class="ion-md-time me-1"></span> Horaires & Disponibilité
+            </button>
+            <button class="section-pill" [class.active]="activeSection === 'return'" (click)="activeSection = 'return'">
+                <span class="ion-md-car me-1"></span> Règles de retour
+            </button>
+            <button class="section-pill" [class.active]="activeSection === 'vehicles'" (click)="activeSection = 'vehicles'">
+                <span class="ion-md-settings me-1"></span> Gestion des véhicules
+            </button>
+        </div>
+    </div>
+
+    <!-- ======= SECTION 1: RESERVATIONS ======= -->
+    <div class="settings-section animate-fade-in" *ngIf="activeSection === 'reservations'">
+        <div class="row g-4">
+
+            <!-- 1. Réservation automatique -->
+            <div class="col-lg-6">
+                <div class="setting-card premium-card p-4 border-0 shadow-sm bg-white h-100">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="setting-icon bg-primary bg-opacity-10 text-primary">
+                                <span class="ion-md-checkmark-circle"></span>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1">Réservation automatique</h6>
+                                <p class="text-muted small mb-0">Les demandes sont acceptées automatiquement sans votre intervention.</p>
+                            </div>
+                        </div>
+                        <label class="custom-switch">
+                            <input type="checkbox" [(ngModel)]="reservation.autoBooking" (change)="onSettingChange()">
+                            <span class="switch-slider"></span>
+                        </label>
+                    </div>
+                    <div class="status-indicator mt-3 pt-3 border-top">
+                        <span class="d-flex align-items-center gap-2 small fw-bold" [ngClass]="reservation.autoBooking ? 'text-success' : 'text-secondary'">
+                            <span class="status-dot" [ngClass]="reservation.autoBooking ? 'bg-success' : 'bg-secondary'"></span>
+                            {{ reservation.autoBooking ? 'Activée – Acceptation instantanée' : 'Désactivée – Validation manuelle requise' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Délai maximum avant confirmation -->
+            <div class="col-lg-6">
+                <div class="setting-card premium-card p-4 border-0 shadow-sm bg-white h-100">
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div class="setting-icon bg-warning bg-opacity-10 text-warning">
+                            <span class="ion-md-hourglass"></span>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-dark mb-1">Délai maximum avant confirmation</h6>
+                            <p class="text-muted small mb-0">Temps accordé pour confirmer une demande de réservation.</p>
+                        </div>
+                    </div>
+                    <select class="form-select-premium w-100" [(ngModel)]="reservation.confirmationDelay" (change)="onSettingChange()">
+                        <option *ngFor="let opt of confirmationDelayOptions" [ngValue]="opt.value">{{ opt.label }}</option>
+                    </select>
+                    <div class="info-banner mt-3">
+                        <span class="ion-md-information-circle me-1"></span>
+                        La réservation sera annulée si vous ne confirmez pas dans ce délai.
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Durée minimale de location -->
+            <div class="col-lg-6">
+                <div class="setting-card premium-card p-4 border-0 shadow-sm bg-white h-100">
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div class="setting-icon bg-success bg-opacity-10 text-success">
+                            <span class="ion-md-remove-circle"></span>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-dark mb-1">Durée minimale de location</h6>
+                            <p class="text-muted small mb-0">Le client doit réserver pour au moins cette durée.</p>
+                        </div>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-7">
+                            <input type="number" class="form-control premium-input" [(ngModel)]="reservation.minDuration" (input)="onSettingChange()" min="1" max="365">
+                        </div>
+                        <div class="col-5">
+                            <select class="form-select-premium w-100" [(ngModel)]="reservation.minDurationUnit" (change)="onSettingChange()">
+                                <option *ngFor="let u of durationUnits" [value]="u">{{ u }}(s)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Durée maximale de location -->
+            <div class="col-lg-6">
+                <div class="setting-card premium-card p-4 border-0 shadow-sm bg-white h-100">
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div class="setting-icon bg-info bg-opacity-10 text-info">
+                            <span class="ion-md-add-circle"></span>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-dark mb-1">Durée maximale de location</h6>
+                            <p class="text-muted small mb-0">La durée de location ne peut pas dépasser cette limite.</p>
+                        </div>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-7">
+                            <input type="number" class="form-control premium-input" [(ngModel)]="reservation.maxDuration" (input)="onSettingChange()" min="1" max="365">
+                        </div>
+                        <div class="col-5">
+                            <select class="form-select-premium w-100" [(ngModel)]="reservation.maxDurationUnit" (change)="onSettingChange()">
+                                <option *ngFor="let u of durationUnits" [value]="u">{{ u }}(s)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Autoriser annulation client -->
+            <div class="col-lg-6">
+                <div class="setting-card premium-card p-4 border-0 shadow-sm bg-white h-100">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="setting-icon bg-danger bg-opacity-10 text-danger">
+                                <span class="ion-md-close-circle"></span>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1">Autoriser annulation client</h6>
+                                <p class="text-muted small mb-0">Le client peut annuler sa réservation après confirmation.</p>
+                            </div>
+                        </div>
+                        <label class="custom-switch">
+                            <input type="checkbox" [(ngModel)]="reservation.allowClientCancellation" (change)="onSettingChange()">
+                            <span class="switch-slider"></span>
+                        </label>
+                    </div>
+                    <div class="status-indicator mt-3 pt-3 border-top">
+                        <span class="d-flex align-items-center gap-2 small fw-bold" [ngClass]="reservation.allowClientCancellation ? 'text-success' : 'text-danger'">
+                            <span class="status-dot" [ngClass]="reservation.allowClientCancellation ? 'bg-success' : 'bg-danger'"></span>
+                            {{ reservation.allowClientCancellation ? 'Annulation autorisée' : 'Annulation interdite – Le client ne peut pas annuler' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. Délai limite d'annulation gratuite -->
+            <div class="col-lg-6">
+                <div class="setting-card premium-card p-4 border-0 shadow-sm bg-white h-100" [ngClass]="{'opacity-50': !reservation.allowClientCancellation}">
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div class="setting-icon bg-orange bg-opacity-10 text-warning">
+                            <span class="ion-md-timer"></span>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-dark mb-1">Délai limite d'annulation gratuite</h6>
+                            <p class="text-muted small mb-0">Le client peut annuler sans frais avant ce délai.</p>
+                        </div>
+                    </div>
+                    <select class="form-select-premium w-100" [(ngModel)]="reservation.freeCancellationDelay" (change)="onSettingChange()" [disabled]="!reservation.allowClientCancellation">
+                        <option *ngFor="let opt of freeCancellationOptions" [ngValue]="opt.value">{{ opt.label }}</option>
+                    </select>
+                    <div class="info-banner mt-3" *ngIf="reservation.allowClientCancellation">
+                        <span class="ion-md-information-circle me-1"></span>
+                        Annulation gratuite jusqu'à <strong>{{ reservation.freeCancellationDelay }}h</strong> avant le départ.
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7. Message automatique après réservation -->
+            <div class="col-12">
+                <div class="setting-card premium-card p-4 border-0 shadow-sm bg-white">
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div class="setting-icon bg-primary bg-opacity-10 text-primary">
+                            <span class="ion-md-chatbubbles"></span>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-dark mb-1">Message automatique après réservation</h6>
+                            <p class="text-muted small mb-0">Ce message sera envoyé automatiquement au client après chaque réservation confirmée.</p>
+                        </div>
+                    </div>
+                    <textarea class="form-control premium-textarea" rows="4" placeholder="Rédigez votre message de bienvenue..." [(ngModel)]="reservation.autoMessage" (input)="onSettingChange()" maxlength="500"></textarea>
+                    <div class="d-flex justify-content-between align-items-center mt-2">
+                        <small class="text-muted" [class.text-danger]="autoMessageLength >= 500">{{ autoMessageLength }} / 500 caractères</small>
+                        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2 small" *ngIf="reservation.autoMessage">
+                            <span class="ion-md-eye me-1"></span> Aperçu actif
+                        </span>
+                    </div>
+                    <div class="message-preview mt-3 p-3 rounded-4 bg-light border-start border-4 border-primary" *ngIf="reservation.autoMessage">
+                        <p class="small fw-bold text-primary mb-1"><span class="ion-md-person"></span> Vous (propriétaire) :</p>
+                        <p class="text-secondary small mb-0 fst-italic">"{{ reservation.autoMessage }}"</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======= SECTION 2: SCHEDULE ======= -->
+    <div class="settings-section animate-fade-in" *ngIf="activeSection === 'schedule'">
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="setting-card premium-card p-4 border-0 shadow-sm bg-white h-100">
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div class="setting-icon bg-primary bg-opacity-10 text-primary"><span class="ion-md-time"></span></div>
+                        <div>
+                            <h6 class="fw-bold text-dark mb-1">Horaires autorisés</h6>
+                            <p class="text-muted small mb-0">Heures de prise en charge et de restitution.</p>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-bold text-dark">Début</label>
+                            <input type="time" class="form-control premium-input" [(ngModel)]="schedule.allowedStartHour" (change)="onSettingChange()">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-bold text-dark">Fin</label>
+                            <input type="time" class="form-control premium-input" [(ngModel)]="schedule.allowedEndHour" (change)="onSettingChange()">
+                        </div>
+                    </div>
+                    <div class="mt-4 p-3 rounded-4 bg-light text-center">
+                        <p class="text-muted small mb-1">Plage horaire active</p>
+                        <p class="fw-bold text-dark mb-0 fs-5"><span class="ion-md-sunny text-warning me-1"></span> {{ schedule.allowedStartHour }} — {{ schedule.allowedEndHour }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="setting-card premium-card p-4 border-0 shadow-sm bg-white h-100">
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div class="setting-icon bg-success bg-opacity-10 text-success"><span class="ion-md-calendar"></span></div>
+                        <div>
+                            <h6 class="fw-bold text-dark mb-1">Jours disponibles</h6>
+                            <p class="text-muted small mb-0">Sélectionnez les jours où vos véhicules sont louables.</p>
+                        </div>
+                    </div>
+                    <div class="days-grid">
+                        <button class="day-toggle" *ngFor="let day of daysOfWeek" [class.active]="schedule.availableDays[day]" (click)="toggleDay(day)">
+                            {{ day.substring(0, 3) }}
+                        </button>
+                    </div>
+                    <div class="mt-4 p-3 rounded-4 bg-light d-flex justify-content-between align-items-center">
+                        <span class="text-muted small">Jours actifs</span>
+                        <span class="fw-bold text-dark">{{ activeDaysCount }} / 7 jours</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="setting-card premium-card p-4 border-0 shadow-sm bg-white">
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div class="setting-icon bg-warning bg-opacity-10 text-warning"><span class="ion-md-analytics"></span></div>
+                        <div>
+                            <h6 class="fw-bold text-dark mb-1">Aperçu du planning</h6>
+                            <p class="text-muted small mb-0">Vue d'ensemble de votre disponibilité hebdomadaire.</p>
+                        </div>
+                    </div>
+                    <div class="schedule-row d-flex align-items-center gap-3 mb-2 p-2 rounded-3" *ngFor="let day of daysOfWeek"
+                         [ngClass]="schedule.availableDays[day] ? 'bg-success bg-opacity-10' : 'bg-light'">
+                        <div class="fw-bold small" style="width: 100px;" [ngClass]="schedule.availableDays[day] ? 'text-dark' : 'text-muted'">{{ day }}</div>
+                        <div class="flex-grow-1 rounded-pill" style="height: 8px;" [ngClass]="schedule.availableDays[day] ? 'bg-success' : 'bg-secondary bg-opacity-25'"></div>
+                        <span class="small fw-bold" style="width: 120px; text-align: right;" [ngClass]="schedule.availableDays[day] ? 'text-success' : 'text-muted'">
+                            {{ schedule.availableDays[day] ? schedule.allowedStartHour + ' - ' + schedule.allowedEndHour : 'Indisponible' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======= SECTION 3: RETURN RULES ======= -->
+    <div class="settings-section animate-fade-in" *ngIf="activeSection === 'return'">
+        <div class="row g-4">
+            <div class="col-lg-4" *ngFor="let rule of [
+                {prop: 'requireCleanVehicle', icon: 'ion-md-water', color: 'primary', title: 'Véhicule propre', desc: 'Exiger que le véhicule soit rendu propre.'},
+                {prop: 'requireFullTank', icon: 'ion-md-speedometer', color: 'success', title: 'Plein de carburant', desc: 'Exiger le réservoir plein à la restitution.'},
+                {prop: 'requirePhotosOnReturn', icon: 'ion-md-camera', color: 'warning', title: 'Photos de restitution', desc: 'Demander des photos du véhicule au retour.'}
+            ]">
+                <div class="setting-card premium-card p-4 border-0 shadow-sm bg-white h-100 text-center">
+                    <div class="setting-icon-lg mx-auto mb-3" [ngClass]="'bg-' + rule.color + ' bg-opacity-10 text-' + rule.color">
+                        <span [class]="rule.icon"></span>
+                    </div>
+                    <h6 class="fw-bold text-dark mb-2">{{ rule.title }}</h6>
+                    <p class="text-muted small mb-3">{{ rule.desc }}</p>
+                    <label class="custom-switch">
+                        <input type="checkbox" [(ngModel)]="returnRules[rule.prop]" (change)="onSettingChange()">
+                        <span class="switch-slider"></span>
+                    </label>
+                    <div class="mt-3">
+                        <span class="badge rounded-pill px-3 py-2" [ngClass]="returnRules[rule.prop] ? 'bg-' + rule.color + ' bg-opacity-10 text-' + rule.color : 'bg-light text-muted'">
+                            {{ returnRules[rule.prop] ? 'Obligatoire' : 'Optionnel' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="setting-card premium-card p-4 border-0 shadow-sm bg-white h-100">
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div class="setting-icon bg-danger bg-opacity-10 text-danger"><span class="ion-md-alert"></span></div>
+                        <div>
+                            <h6 class="fw-bold text-dark mb-1">Pénalité de retard</h6>
+                            <p class="text-muted small mb-0">Montant facturé par heure de retard.</p>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-bold text-dark">Montant/heure</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control premium-input" [(ngModel)]="returnRules.lateReturnPenalty" (input)="onSettingChange()" min="0" max="100" step="5">
+                                <span class="input-group-text bg-light fw-bold text-muted border-0">DT/h</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-bold text-dark">Retard max</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control premium-input" [(ngModel)]="returnRules.maxLateHours" (input)="onSettingChange()" min="1" max="48">
+                                <span class="input-group-text bg-light fw-bold text-muted border-0">h</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 p-3 rounded-4 bg-danger bg-opacity-10">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-danger small fw-bold">Pénalité maximale</span>
+                            <span class="text-danger fw-bold fs-5">{{ returnRules.lateReturnPenalty * returnRules.maxLateHours }} DT</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="setting-card premium-card p-4 border-0 shadow-sm bg-white h-100">
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div class="setting-icon bg-info bg-opacity-10 text-info"><span class="ion-md-list-box"></span></div>
+                        <div>
+                            <h6 class="fw-bold text-dark mb-1">Résumé des règles</h6>
+                            <p class="text-muted small mb-0">Récapitulatif des conditions de retour.</p>
+                        </div>
+                    </div>
+                    <div class="rule-item d-flex align-items-center gap-3 p-3 rounded-3 mb-2" *ngFor="let r of [
+                        {active: returnRules.requireCleanVehicle, label: 'Véhicule propre au retour'},
+                        {active: returnRules.requireFullTank, label: 'Plein de carburant obligatoire'},
+                        {active: returnRules.requirePhotosOnReturn, label: 'Photos de restitution requises'}
+                    ]" [ngClass]="r.active ? 'bg-success bg-opacity-10' : 'bg-light'">
+                        <span [ngClass]="r.active ? 'text-success' : 'text-muted'" style="font-size: 20px;">
+                            <span [class]="r.active ? 'ion-md-checkmark-circle' : 'ion-md-close-circle'"></span>
+                        </span>
+                        <span class="small" [ngClass]="r.active ? 'fw-bold text-dark' : 'text-muted'">{{ r.label }}</span>
+                    </div>
+                    <div class="rule-item d-flex align-items-center gap-3 p-3 rounded-3 mb-2 bg-danger bg-opacity-10">
+                        <span class="text-danger" style="font-size: 20px;"><span class="ion-md-alert"></span></span>
+                        <span class="small fw-bold text-dark">Retard : {{ returnRules.lateReturnPenalty }} DT/h (max {{ returnRules.maxLateHours }}h)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======= SECTION 4: VEHICLE MANAGEMENT ======= -->
+    <div class="settings-section animate-fade-in" *ngIf="activeSection === 'vehicles'">
+        <div class="row g-4">
+            <!-- 1. Disponibilité automatique -->
+            <div class="col-lg-6">
+                <div class="setting-card premium-card p-4 border-0 shadow-sm bg-white h-100">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="setting-icon bg-success bg-opacity-10 text-success"><span class="ion-md-flash"></span></div>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1">Disponibilité automatique</h6>
+                                <p class="text-muted small mb-0">Remettre le véhicule disponible après une réservation terminée.</p>
+                            </div>
+                        </div>
+                        <label class="custom-switch"><input type="checkbox" [(ngModel)]="vehicleMgmt.autoAvailability" (change)="onSettingChange()"><span class="switch-slider"></span></label>
+                    </div>
+                    <div class="status-indicator mt-3 pt-3 border-top">
+                        <span class="d-flex align-items-center gap-2 small fw-bold" [ngClass]="vehicleMgmt.autoAvailability ? 'text-success' : 'text-secondary'">
+                            <span class="status-dot" [ngClass]="vehicleMgmt.autoAvailability ? 'bg-success' : 'bg-secondary'"></span>
+                            {{ vehicleMgmt.autoAvailability ? 'Remise en ligne instantanée' : 'Remise en ligne manuelle' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <!-- 2. Validation des documents -->
+            <div class="col-lg-6">
+                <div class="setting-card premium-card p-4 border-0 shadow-sm bg-white h-100">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="setting-icon bg-primary bg-opacity-10 text-primary"><span class="ion-md-document"></span></div>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1">Validation des documents</h6>
+                                <p class="text-muted small mb-0">Vérifier assurance et visite technique avant publication.</p>
+                            </div>
+                        </div>
+                        <label class="custom-switch"><input type="checkbox" [(ngModel)]="vehicleMgmt.validateDocuments" (change)="onSettingChange()"><span class="switch-slider"></span></label>
+                    </div>
+                    <div class="status-indicator mt-3 pt-3 border-top">
+                        <span class="d-flex align-items-center gap-2 small fw-bold" [ngClass]="vehicleMgmt.validateDocuments ? 'text-primary' : 'text-secondary'">
+                            <span class="status-dot" [ngClass]="vehicleMgmt.validateDocuments ? 'bg-primary' : 'bg-secondary'"></span>
+                            {{ vehicleMgmt.validateDocuments ? 'Vérification activée' : 'Publication sans vérification' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <!-- 3. Kilométrage max -->
+            <div class="col-lg-6">
+                <div class="setting-card premium-card p-4 border-0 shadow-sm bg-white h-100">
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div class="setting-icon bg-warning bg-opacity-10 text-warning"><span class="ion-md-speedometer"></span></div>
+                        <div>
+                            <h6 class="fw-bold text-dark mb-1">Kilométrage maximum par location</h6>
+                            <p class="text-muted small mb-0">Limite de km inclus dans chaque location.</p>
+                        </div>
+                    </div>
+                    <div class="input-group"><input type="number" class="form-control premium-input" [(ngModel)]="vehicleMgmt.maxKmPerRental" (input)="onSettingChange()" min="50" max="5000" step="50"><span class="input-group-text bg-light fw-bold text-muted border-0">km</span></div>
+                    <div class="info-banner mt-3"><span class="ion-md-information-circle me-1"></span> Le client dispose de <strong>{{ vehicleMgmt.maxKmPerRental }} km</strong> par location.</div>
+                </div>
+            </div>
+            <!-- 4. Pénalité dépassement km -->
+            <div class="col-lg-6">
+                <div class="setting-card premium-card p-4 border-0 shadow-sm bg-white h-100">
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div class="setting-icon bg-danger bg-opacity-10 text-danger"><span class="ion-md-alert"></span></div>
+                        <div>
+                            <h6 class="fw-bold text-dark mb-1">Pénalité dépassement kilométrage</h6>
+                            <p class="text-muted small mb-0">Montant facturé par km supplémentaire.</p>
+                        </div>
+                    </div>
+                    <div class="input-group"><input type="number" class="form-control premium-input" [(ngModel)]="vehicleMgmt.penaltyPerExtraKm" (input)="onSettingChange()" min="0.1" max="10" step="0.1"><span class="input-group-text bg-light fw-bold text-muted border-0">DT / km</span></div>
+                    <div class="mt-3 p-3 rounded-4 bg-danger bg-opacity-10"><div class="d-flex justify-content-between"><span class="text-danger small fw-bold">Exemple : +50 km</span><span class="text-danger fw-bold">{{ (vehicleMgmt.penaltyPerExtraKm * 50).toFixed(1) }} DT</span></div></div>
+                </div>
+            </div>
+            <!-- 5. Temps entre réservations -->
+            <div class="col-lg-6">
+                <div class="setting-card premium-card p-4 border-0 shadow-sm bg-white h-100">
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div class="setting-icon bg-info bg-opacity-10 text-info"><span class="ion-md-time"></span></div>
+                        <div>
+                            <h6 class="fw-bold text-dark mb-1">Temps entre deux réservations</h6>
+                            <p class="text-muted small mb-0">Délai tampon entre la fin d'une location et le début de la suivante.</p>
+                        </div>
+                    </div>
+                    <select class="form-select-premium w-100" [(ngModel)]="vehicleMgmt.bufferTimeBetweenBookings" (change)="onSettingChange()">
+                        <option *ngFor="let opt of bufferTimeOptions" [ngValue]="opt.value">{{ opt.label }}</option>
+                    </select>
+                </div>
+            </div>
+            <!-- 6. Réservations simultanées -->
+            <div class="col-lg-6">
+                <div class="setting-card premium-card p-4 border-0 shadow-sm bg-white h-100">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="setting-icon bg-primary bg-opacity-10 text-primary"><span class="ion-md-copy"></span></div>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1">Réservations simultanées</h6>
+                                <p class="text-muted small mb-0">Autoriser plusieurs réservations sur un même véhicule.</p>
+                            </div>
+                        </div>
+                        <label class="custom-switch"><input type="checkbox" [(ngModel)]="vehicleMgmt.allowSimultaneousBookings" (change)="onSettingChange()"><span class="switch-slider"></span></label>
+                    </div>
+                    <div class="status-indicator mt-3 pt-3 border-top">
+                        <span class="d-flex align-items-center gap-2 small fw-bold" [ngClass]="vehicleMgmt.allowSimultaneousBookings ? 'text-success' : 'text-secondary'">
+                            <span class="status-dot" [ngClass]="vehicleMgmt.allowSimultaneousBookings ? 'bg-success' : 'bg-secondary'"></span>
+                            {{ vehicleMgmt.allowSimultaneousBookings ? 'Plusieurs réservations possibles' : 'Une seule réservation à la fois' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <!-- 7. Maintenance automatique -->
+            <div class="col-lg-6">
+                <div class="setting-card premium-card p-4 border-0 shadow-sm bg-white h-100">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="setting-icon bg-warning bg-opacity-10 text-warning"><span class="ion-md-construct"></span></div>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1">Mode maintenance automatique</h6>
+                                <p class="text-muted small mb-0">Passer le véhicule en maintenance après X locations.</p>
+                            </div>
+                        </div>
+                        <label class="custom-switch"><input type="checkbox" [(ngModel)]="vehicleMgmt.autoMaintenanceMode" (change)="onSettingChange()"><span class="switch-slider"></span></label>
+                    </div>
+                    <div class="status-indicator mt-3 pt-3 border-top">
+                        <span class="d-flex align-items-center gap-2 small fw-bold" [ngClass]="vehicleMgmt.autoMaintenanceMode ? 'text-warning' : 'text-secondary'">
+                            <span class="status-dot" [ngClass]="vehicleMgmt.autoMaintenanceMode ? 'bg-warning' : 'bg-secondary'"></span>
+                            {{ vehicleMgmt.autoMaintenanceMode ? 'Maintenance planifiée activée' : 'Maintenance manuelle uniquement' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <!-- 8. Seuil maintenance -->
+            <div class="col-lg-6">
+                <div class="setting-card premium-card p-4 border-0 shadow-sm bg-white h-100" [ngClass]="{'opacity-50': !vehicleMgmt.autoMaintenanceMode}">
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div class="setting-icon bg-secondary bg-opacity-10 text-secondary"><span class="ion-md-hammer"></span></div>
+                        <div>
+                            <h6 class="fw-bold text-dark mb-1">Seuil de maintenance</h6>
+                            <p class="text-muted small mb-0">Nombre de locations avant déclenchement.</p>
+                        </div>
+                    </div>
+                    <div class="input-group"><input type="number" class="form-control premium-input" [(ngModel)]="vehicleMgmt.rentalsBeforeMaintenance" (input)="onSettingChange()" min="1" max="100" [disabled]="!vehicleMgmt.autoMaintenanceMode"><span class="input-group-text bg-light fw-bold text-muted border-0">locations</span></div>
+                    <div class="info-banner mt-3" *ngIf="vehicleMgmt.autoMaintenanceMode"><span class="ion-md-information-circle me-1"></span> Maintenance après chaque <strong>{{ vehicleMgmt.rentalsBeforeMaintenance }}</strong> locations.</div>
+                </div>
+            </div>
+            <!-- 9. Compression photos -->
+            <div class="col-lg-6">
+                <div class="setting-card premium-card p-4 border-0 shadow-sm bg-white h-100">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="setting-icon bg-info bg-opacity-10 text-info"><span class="ion-md-images"></span></div>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1">Compression automatique des photos</h6>
+                                <p class="text-muted small mb-0">Compresser les images avant l'upload.</p>
+                            </div>
+                        </div>
+                        <label class="custom-switch"><input type="checkbox" [(ngModel)]="vehicleMgmt.autoCompressPhotos" (change)="onSettingChange()"><span class="switch-slider"></span></label>
+                    </div>
+                    <div class="status-indicator mt-3 pt-3 border-top">
+                        <span class="d-flex align-items-center gap-2 small fw-bold" [ngClass]="vehicleMgmt.autoCompressPhotos ? 'text-info' : 'text-secondary'">
+                            <span class="status-dot" [ngClass]="vehicleMgmt.autoCompressPhotos ? 'bg-info' : 'bg-secondary'"></span>
+                            {{ vehicleMgmt.autoCompressPhotos ? 'Compression activée' : 'Taille originale' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <!-- 10. Qualité images -->
+            <div class="col-lg-6">
+                <div class="setting-card premium-card p-4 border-0 shadow-sm bg-white h-100" [ngClass]="{'opacity-50': !vehicleMgmt.autoCompressPhotos}">
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div class="setting-icon bg-success bg-opacity-10 text-success"><span class="ion-md-image"></span></div>
+                        <div>
+                            <h6 class="fw-bold text-dark mb-1">Qualité des images</h6>
+                            <p class="text-muted small mb-0">Niveau de qualité pour les photos compressées.</p>
+                        </div>
+                    </div>
+                    <select class="form-select-premium w-100" [(ngModel)]="vehicleMgmt.imageQuality" (change)="onSettingChange()" [disabled]="!vehicleMgmt.autoCompressPhotos">
+                        <option *ngFor="let opt of imageQualityOptions" [value]="opt.value">{{ opt.label }}</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Save Bar -->
+    <div class="floating-save-bar animate-slide-up" *ngIf="hasChanges">
+        <div class="d-flex align-items-center justify-content-between">
+            <span class="d-flex align-items-center gap-2 text-white">
+                <span class="ion-md-alert fs-5"></span>
+                <span class="fw-bold">Modifications non enregistrées</span>
+            </span>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-light rounded-pill px-4 btn-sm" (click)="resetSettings()">Annuler</button>
+                <button class="btn btn-light text-dark fw-bold rounded-pill px-4 btn-sm" (click)="saveSettings()">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+</div>

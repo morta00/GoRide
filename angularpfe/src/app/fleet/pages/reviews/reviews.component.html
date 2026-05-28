@@ -1,0 +1,322 @@
+<div class="reviews-page animate-fade-in position-relative" (click)="closeDropdown()">
+    <!-- Success Toast -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1050">
+        <div class="toast align-items-center text-white bg-success border-0" [class.show]="showToast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center gap-2">
+                    <span class="ion-md-checkmark-circle fs-5"></span>
+                    <span class="fw-bold">{{ toastMessage }}</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" (click)="showToast = false" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header & Search -->
+    <div class="row g-4 align-items-center mb-4">
+        <div class="col-xl-4 col-lg-4">
+            <h2 class="fw-bold text-dark mb-1">Avis Clients</h2>
+            <p class="text-muted mb-0">Consultez les retours sur vos véhicules.</p>
+        </div>
+        <div class="col-xl-8 col-lg-8">
+            <div class="d-flex flex-wrap gap-3 justify-content-lg-end">
+                <div class="search-container-premium">
+                    <span class="ion-md-search"></span>
+                    <input type="text" placeholder="Rechercher par client, véhicule..." [(ngModel)]="searchTerm">
+                </div>
+                <select class="form-select-premium" [(ngModel)]="selectedPeriod">
+                    <option value="ALL">Toute période</option>
+                    <option value="TODAY">Aujourd'hui</option>
+                    <option value="WEEK">Cette semaine</option>
+                    <option value="MONTH">Ce mois</option>
+                    <option value="YEAR">Cette année</option>
+                </select>
+                <button class="btn btn-reset-premium" (click)="resetFilters()" *ngIf="searchTerm || selectedFilter !== 'ALL' || selectedPeriod !== 'ALL'">
+                    <span class="ion-md-refresh"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Filters -->
+    <div class="filters-scroll-container mb-5">
+        <div class="d-flex gap-2">
+            <button class="filter-pill" [class.active]="selectedFilter === 'ALL'" (click)="selectedFilter = 'ALL'">
+                Tous les avis <span class="count-badge">{{ getFilterCount('ALL') }}</span>
+            </button>
+            <button class="filter-pill" [class.active]="selectedFilter === '5STAR'" (click)="selectedFilter = '5STAR'">
+                <span class="ion-md-star text-warning" *ngIf="selectedFilter !== '5STAR'"></span>
+                <span class="ion-md-star text-white" *ngIf="selectedFilter === '5STAR'"></span> 5 Étoiles
+                <span class="count-badge">{{ getFilterCount('5STAR') }}</span>
+            </button>
+            <button class="filter-pill" [class.active]="selectedFilter === '4STAR'" (click)="selectedFilter = '4STAR'">
+                <span class="ion-md-star text-warning" *ngIf="selectedFilter !== '4STAR'"></span>
+                <span class="ion-md-star text-white" *ngIf="selectedFilter === '4STAR'"></span> 4 Étoiles
+                <span class="count-badge">{{ getFilterCount('4STAR') }}</span>
+            </button>
+            <button class="filter-pill" [class.active]="selectedFilter === '3STAR'" (click)="selectedFilter = '3STAR'">
+                <span class="ion-md-star text-warning" *ngIf="selectedFilter !== '3STAR'"></span>
+                <span class="ion-md-star text-white" *ngIf="selectedFilter === '3STAR'"></span> 3 Étoiles
+                <span class="count-badge">{{ getFilterCount('3STAR') }}</span>
+            </button>
+            <button class="filter-pill" [class.active]="selectedFilter === 'POSITIVE'" (click)="selectedFilter = 'POSITIVE'">
+                <span class="ion-md-thumbs-up" [class.text-success]="selectedFilter !== 'POSITIVE'" [class.text-white]="selectedFilter === 'POSITIVE'"></span> Positifs
+                <span class="count-badge">{{ getFilterCount('POSITIVE') }}</span>
+            </button>
+            <button class="filter-pill" [class.active]="selectedFilter === 'NEGATIVE'" (click)="selectedFilter = 'NEGATIVE'">
+                <span class="ion-md-thumbs-down" [class.text-danger]="selectedFilter !== 'NEGATIVE'" [class.text-white]="selectedFilter === 'NEGATIVE'"></span> Négatifs
+                <span class="count-badge">{{ getFilterCount('NEGATIVE') }}</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Advanced Statistics Overview -->
+    <div class="row g-4 mb-5" *ngIf="filteredReviews.length > 0">
+        <!-- Key KPIs -->
+        <div class="col-xl-3 col-lg-6">
+            <div class="premium-card p-4 border-0 shadow-sm bg-white h-100 animate-fade-in d-flex flex-column justify-content-center">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h6 class="text-muted fw-bold text-uppercase mb-0">Taux de satisfaction</h6>
+                    <div class="icon-shape bg-success bg-opacity-10 text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                        <span class="ion-md-heart fs-5"></span>
+                    </div>
+                </div>
+                <h2 class="display-5 fw-bold text-dark mb-2">{{ satisfactionRate }}%</h2>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge" [ngClass]="satisfactionTrend.startsWith('+') ? 'bg-success' : 'bg-danger'">
+                        <span [class]="satisfactionTrend.startsWith('+') ? 'ion-md-arrow-up' : 'ion-md-arrow-down'"></span> {{ satisfactionTrend }}
+                    </span>
+                    <span class="text-muted small">vs période précédente</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-lg-6">
+            <div class="premium-card p-4 border-0 shadow-sm bg-white h-100 animate-fade-in" style="animation-delay: 0.1s;">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h6 class="text-muted fw-bold text-uppercase mb-0">Note Moyenne</h6>
+                    <div class="icon-shape bg-warning bg-opacity-10 text-warning rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                        <span class="ion-md-star fs-5"></span>
+                    </div>
+                </div>
+                <h2 class="display-5 fw-bold text-dark mb-2">{{ averageRating }}</h2>
+                <div class="d-flex text-warning fs-6 mb-1">
+                    <span class="ion-md-star" *ngFor="let s of getStarsArray(Math.round(+averageRating))"></span>
+                    <span class="ion-md-star-outline" *ngFor="let s of getStarsArray(5 - Math.round(+averageRating))"></span>
+                </div>
+                <span class="text-muted small">Basé sur {{ totalReviews }} avis</span>
+            </div>
+        </div>
+
+        <!-- Evolution Chart -->
+        <div class="col-xl-6 col-lg-12">
+            <div class="premium-card p-4 border-0 shadow-sm bg-white h-100 animate-fade-in" style="animation-delay: 0.2s;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold text-dark mb-0">Évolution des notes</h5>
+                    <span class="badge bg-light text-dark border"><span class="ion-md-stats me-1"></span> Tendance</span>
+                </div>
+                <div style="height: 180px;">
+                    <canvas baseChart
+                        [data]="barChartData"
+                        [options]="barChartOptions"
+                        [type]="barChartType">
+                    </canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rating Distribution -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="premium-card p-4 border-0 shadow-sm bg-white h-100 animate-fade-in" style="animation-delay: 0.3s">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold text-dark mb-0">Répartition des avis</h5>
+                    <div class="d-flex gap-3 text-muted small fw-bold">
+                        <span><span class="text-success ion-md-square"></span> Positifs ({{ positivePercentage }}%)</span>
+                        <span><span class="text-danger ion-md-square"></span> Négatifs ({{ negativePercentage }}%)</span>
+                    </div>
+                </div>
+                <div class="distribution-bars">
+                    <div class="d-flex align-items-center mb-3" *ngFor="let dist of ratingDistribution">
+                        <div class="star-label d-flex align-items-center gap-1 text-muted fw-bold me-3" style="width: 45px;">
+                            {{ dist.star }} <span class="ion-md-star text-warning"></span>
+                        </div>
+                        <div class="progress flex-grow-1 bg-light rounded-pill" style="height: 10px;">
+                            <div class="progress-bar rounded-pill" role="progressbar" 
+                                 [ngClass]="{'bg-success': dist.star >= 4, 'bg-warning': dist.star === 3, 'bg-danger': dist.star <= 2}"
+                                 [style.width.%]="dist.percentage" [attr.aria-valuenow]="dist.percentage" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <div class="count-label text-muted small fw-bold ms-3" style="width: 40px; text-align: right;">
+                            {{ dist.count }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vehicle Rankings -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="row g-4 h-100">
+                <!-- Top Vehicles -->
+                <div class="col-12 h-50 pb-2">
+                    <div class="premium-card p-3 border-0 shadow-sm bg-white h-100 animate-fade-in d-flex flex-column" style="animation-delay: 0.4s">
+                        <h6 class="fw-bold text-success mb-3"><span class="ion-md-trending-up me-2"></span> Véhicules les mieux notés</h6>
+                        <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2" *ngFor="let v of topVehicles">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="ion-md-car text-muted"></span>
+                                <span class="fw-bold text-dark small">{{ v.name }}</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-1 text-success fw-bold small">
+                                <span>{{ v.rating }}</span> <span class="ion-md-star"></span>
+                            </div>
+                        </div>
+                        <div class="text-center text-muted small mt-auto" *ngIf="topVehicles.length === 0">Aucune donnée</div>
+                    </div>
+                </div>
+                <!-- Worst Vehicles -->
+                <div class="col-12 h-50 pt-2">
+                    <div class="premium-card p-3 border-0 shadow-sm bg-white h-100 animate-fade-in d-flex flex-column" style="animation-delay: 0.5s">
+                        <h6 class="fw-bold text-danger mb-3"><span class="ion-md-trending-down me-2"></span> Véhicules à surveiller</h6>
+                        <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2" *ngFor="let v of worstVehicles">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="ion-md-car text-muted"></span>
+                                <span class="fw-bold text-dark small">{{ v.name }}</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-1 text-danger fw-bold small">
+                                <span>{{ v.rating }}</span> <span class="ion-md-star"></span>
+                            </div>
+                        </div>
+                        <div class="text-center text-muted small mt-auto" *ngIf="worstVehicles.length === 0">Aucun véhicule critique</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="text-center py-5" *ngIf="filteredReviews.length === 0">
+        <div class="empty-icon-wrapper mb-3">
+            <span class="ion-md-search fs-1 text-muted"></span>
+        </div>
+        <h5 class="fw-bold text-dark">Aucun avis trouvé</h5>
+        <p class="text-muted">Ajustez vos filtres ou votre recherche pour voir plus de résultats.</p>
+        <button class="btn btn-outline-primary rounded-pill px-4 mt-2" (click)="resetFilters()">
+            Réinitialiser les filtres
+        </button>
+    </div>
+
+    <!-- Reviews Grid -->
+    <div class="row g-4" *ngIf="filteredReviews.length > 0">
+        <div class="col-xl-6 col-lg-6" *ngFor="let review of filteredReviews; let i = index">
+            <div class="review-card premium-card p-4 border-0 shadow-sm bg-white h-100 animate-fade-in position-relative overflow-hidden" [style.animation-delay]="(i * 0.1) + 's'">
+                
+                <!-- Recent Indicator -->
+                <div class="recent-indicator" *ngIf="review.isRecent">
+                    <span class="badge bg-primary px-3 py-2 rounded-pill shadow-sm small">Nouveau</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-start mb-4">
+                    <!-- Client Info -->
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="avatar-wrapper position-relative">
+                            <img [src]="review.clientAvatar" [alt]="review.clientName" class="rounded-circle avatar-img border border-2 border-white shadow-sm">
+                            <div class="verified-badge bg-success text-white rounded-circle shadow-sm d-flex align-items-center justify-content-center" *ngIf="review.isVerified" title="Client vérifié">
+                                <span class="ion-md-checkmark"></span>
+                            </div>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-dark mb-0">{{ review.clientName }}</h6>
+                            <p class="text-muted small mb-0">{{ review.displayDate }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Stars -->
+                    <div class="d-flex text-warning fs-5">
+                        <span class="ion-md-star" *ngFor="let s of getStarsArray(review.rating)"></span>
+                        <span class="ion-md-star-outline" *ngFor="let s of getStarsArray(5 - review.rating)"></span>
+                    </div>
+                </div>
+
+                <!-- Comment -->
+                <div class="review-comment mb-4">
+                    <p class="text-secondary mb-0">"{{ review.comment }}"</p>
+                </div>
+
+                <!-- Owner Reply Display -->
+                <div class="owner-reply-box bg-light rounded-4 p-3 mb-4 border-start border-4 border-primary position-relative animate-fade-in" *ngIf="review.ownerReply && replyingToId !== review.id">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <span class="badge bg-primary rounded-pill small"><span class="ion-md-person"></span> Réponse du propriétaire</span>
+                            <span class="text-muted small">{{ review.ownerReply.date }}</span>
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary rounded-pill small fw-normal ms-2" *ngIf="review.ownerReply.isEdited" title="Dernière modification : {{ review.ownerReply.editedDate }}">
+                                <span class="ion-md-create"></span> Modifié
+                            </span>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-link text-muted p-0" type="button" (click)="toggleDropdown(review.id, $event)">
+                                <span class="ion-md-more"></span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm" [class.show]="openDropdownId === review.id">
+                                <li><a class="dropdown-item small" href="javascript:void(0)" (click)="startReply(review.id, review.ownerReply.text); closeDropdown()"><span class="ion-md-create me-2"></span> Modifier</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item small text-danger" href="javascript:void(0)" (click)="requestDelete(review.id); closeDropdown()"><span class="ion-md-trash me-2"></span> Supprimer</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <p class="text-secondary mb-0 small">"{{ review.ownerReply.text }}"</p>
+                </div>
+
+                <!-- Reply Input Area -->
+                <div class="reply-input-area mb-4 animate-fade-in" *ngIf="replyingToId === review.id">
+                    <label class="form-label small fw-bold text-dark">Votre réponse :</label>
+                    <textarea class="form-control premium-textarea" rows="3" placeholder="Rédigez votre réponse ici..." [(ngModel)]="replyText" maxlength="500"></textarea>
+                    <div class="d-flex justify-content-between align-items-center mt-2">
+                        <small class="text-muted" [class.text-danger]="replyText.length === 500">{{ replyText.length }} / 500 caractères</small>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" (click)="cancelReply()">Annuler</button>
+                            <button class="btn btn-sm btn-primary rounded-pill px-3" [disabled]="!replyText || replyText.trim().length === 0" (click)="submitReply(review.id)">
+                                {{ review.ownerReply ? 'Enregistrer' : 'Publier' }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer / Vehicle Info -->
+                <div class="review-footer pt-3 border-top d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-2 text-primary fw-bold small bg-primary bg-opacity-10 px-3 py-2 rounded-pill">
+                        <span class="ion-md-car"></span>
+                        <span>{{ review.vehicle }}</span>
+                    </div>
+                    <button class="btn btn-link text-muted p-0 text-decoration-none premium-hover-text" 
+                            *ngIf="!review.ownerReply && replyingToId !== review.id"
+                            (click)="startReply(review.id)">
+                        <span class="ion-md-chatboxes me-1"></span> Répondre
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-premium-overlay" *ngIf="reviewToDelete !== null" (click)="cancelDelete()">
+        <div class="modal-premium-content modal-sm animate-slide-up" (click)="$event.stopPropagation()">
+            <div class="modal-premium-header border-0 pb-0 justify-content-end p-3">
+                <button class="btn-close-premium" (click)="cancelDelete()">
+                    <span class="ion-md-close"></span>
+                </button>
+            </div>
+            <div class="modal-premium-body text-center pt-0 px-4 pb-4">
+                <div class="icon-lg bg-danger bg-opacity-10 text-danger d-flex align-items-center justify-content-center mx-auto mb-4" style="font-size: 32px; border-radius: 50%;">
+                    <span class="ion-md-warning"></span>
+                </div>
+                <h4 class="fw-bold text-dark mb-2">Supprimer la réponse ?</h4>
+                <p class="text-muted small mb-4">Êtes-vous sûr de vouloir supprimer cette réponse ? Cette action est définitive et le client ne verra plus votre message.</p>
+                
+                <div class="d-flex gap-3 justify-content-center">
+                    <button class="btn btn-outline-secondary rounded-pill px-4" (click)="cancelDelete()">Annuler</button>
+                    <button class="btn btn-danger rounded-pill px-4" (click)="confirmDelete()">Oui, supprimer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,244 @@
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Revenus</h1>
+    <p class="page-subtitle">Suivez vos gains et consultez vos transactions.</p>
+  </div>
+</div>
+
+<!-- Revenue Stats -->
+<div class="revenue-stats" *ngIf="stats">
+  <div class="rev-card rev-primary">
+    <span class="rev-label">Aujourd'hui</span>
+    <span class="rev-value">{{ stats.todayEarnings | number:'1.2-2' }} DT</span>
+    <span class="rev-sub">{{ stats.todayRides }} courses</span>
+  </div>
+  <div class="rev-card">
+    <span class="rev-label">Cette semaine</span>
+    <span class="rev-value">{{ stats.weekEarnings | number:'1.2-2' }} DT</span>
+    <span class="rev-sub">{{ stats.weekRides }} courses</span>
+  </div>
+  <div class="rev-card">
+    <span class="rev-label">Ce mois</span>
+    <span class="rev-value">{{ stats.monthEarnings | number:'1.2-2' }} DT</span>
+    <span class="rev-sub">{{ stats.monthRides }} courses</span>
+  </div>
+  <div class="rev-card">
+    <span class="rev-label">Moyenne / Course</span>
+    <span class="rev-value">{{ stats.averagePerRide | number:'1.2-2' }} DT</span>
+    <span class="rev-sub">Sur le mois</span>
+  </div>
+</div>
+
+<div class="content-grid">
+  <!-- Chart -->
+  <div class="chart-section">
+    <div class="section-header">
+      <h3 class="section-title">Revenus de la semaine</h3>
+    </div>
+    <div class="chart-wrapper">
+      <canvas baseChart
+        [data]="chartData"
+        [options]="chartOptions"
+        [type]="chartType">
+      </canvas>
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="summary-section">
+    <h3 class="section-title">Résumé financier</h3>
+    <div class="summary-list">
+      <div class="summary-item">
+        <span class="summary-label">Total brut</span>
+        <span class="summary-value">{{ totalGross | number:'1.2-2' }} DT</span>
+      </div>
+      <div class="summary-item text-red">
+        <span class="summary-label">Commission GoRide (15%)</span>
+        <span class="summary-value">-{{ totalCommission | number:'1.2-2' }} DT</span>
+      </div>
+      <div class="summary-item text-green">
+        <span class="summary-label">Pourboires</span>
+        <span class="summary-value">+{{ totalTips | number:'1.2-2' }} DT</span>
+      </div>
+      <div class="summary-divider"></div>
+      <div class="summary-item summary-total">
+        <span class="summary-label">Total net</span>
+        <span class="summary-value">{{ totalNet | number:'1.2-2' }} DT</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Transactions Table Section -->
+<div class="transactions-section">
+  <div class="section-header-row">
+    <h3 class="section-title">Historique des transactions</h3>
+    
+    <div class="filters-container">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" [(ngModel)]="searchTerm" placeholder="Rechercher passager, trajet...">
+      </div>
+      
+      <div class="filter-group">
+        <select [(ngModel)]="statusFilter">
+          <option value="ALL">Tous les statuts</option>
+          <option value="PAID">Payé</option>
+          <option value="PENDING">En attente</option>
+          <option value="CANCELLED">Annulé</option>
+        </select>
+        
+        <select [(ngModel)]="paymentFilter">
+          <option value="ALL">Tous les paiements</option>
+          <option value="CASH">Espèces</option>
+          <option value="CARD">Carte</option>
+          <option value="WALLET">Wallet</option>
+        </select>
+        
+        <select [(ngModel)]="sortBy">
+          <option value="newest">Plus récent</option>
+          <option value="oldest">Plus ancien</option>
+          <option value="net_desc">Net décroissant</option>
+          <option value="net_asc">Net croissant</option>
+          <option value="gross_desc">Brut décroissant</option>
+          <option value="gross_asc">Brut croissant</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-responsive" *ngIf="!loading">
+    <table class="transactions-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Course</th>
+          <th>Passager</th>
+          <th>Trajet</th>
+          <th>Brut</th>
+          <th>Comm.</th>
+          <th>Tip</th>
+          <th>Net</th>
+          <th>Paiement</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let e of filteredEarnings">
+          <td class="text-muted">{{ e.date | date:'shortDate' }}</td>
+          <td class="fw-bold">#{{ e.rideId }}</td>
+          <td>{{ e.passengerName }}</td>
+          <td class="text-muted truncate-text" [title]="e.route">{{ e.route }}</td>
+          <td>{{ e.grossAmount | number:'1.2-2' }}</td>
+          <td class="text-red">-{{ e.commission | number:'1.2-2' }}</td>
+          <td class="text-green" *ngIf="e.tip > 0">+{{ e.tip | number:'1.2-2' }}</td>
+          <td *ngIf="e.tip === 0">—</td>
+          <td class="fw-bold">{{ e.netAmount | number:'1.2-2' }} DT</td>
+          <td>
+            <span class="payment-badge" [class.badge-cash]="e.paymentMethod === 'cash'" [class.badge-card]="e.paymentMethod === 'card'" [class.badge-wallet]="e.paymentMethod === 'wallet'">
+              {{ e.paymentMethod === 'cash' ? 'Espèces' : (e.paymentMethod === 'card' ? 'Carte' : 'Wallet') }}
+            </span>
+          </td>
+          <td>
+            <span class="status-badge" [class.status-paid]="e.status === 'PAID'" [class.status-pending]="e.status === 'PENDING'" [class.status-cancelled]="e.status === 'CANCELLED'">
+              {{ e.status }}
+            </span>
+          </td>
+          <td>
+            <div class="action-buttons">
+              <button class="btn-icon" (click)="openDetails(e)" title="Détails">
+                <i class="fas fa-info-circle"></i>
+              </button>
+              <button class="btn-icon" (click)="openReceipt(e)" title="Reçu">
+                <i class="fas fa-file-invoice-dollar"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="filteredEarnings.length === 0">
+          <td colspan="11" class="text-center py-4">Aucune transaction trouvée.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Détails -->
+<div class="modal-overlay" *ngIf="showDetailsModal" (click)="closeModals()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Détails de la transaction</h3>
+      <button class="close-btn" (click)="closeModals()">&times;</button>
+    </div>
+    <div class="modal-body" *ngIf="selectedEarning">
+      <div class="details-grid">
+        <div class="detail-item"><span class="label">ID Transaction</span><span class="value">{{ selectedEarning.id }}</span></div>
+        <div class="detail-item"><span class="label">Course ID</span><span class="value">#{{ selectedEarning.rideId }}</span></div>
+        <div class="detail-item"><span class="label">Passager</span><span class="value">{{ selectedEarning.passengerName }}</span></div>
+        <div class="detail-item"><span class="label">Trajet</span><span class="value">{{ selectedEarning.route }}</span></div>
+        <div class="detail-item"><span class="label">Date</span><span class="value">{{ selectedEarning.date | date:'medium' }}</span></div>
+        <div class="detail-divider"></div>
+        <div class="detail-item"><span class="label">Montant Brut</span><span class="value">{{ selectedEarning.grossAmount | number:'1.2-2' }} DT</span></div>
+        <div class="detail-item text-red"><span class="label">Commission GoRide</span><span class="value">-{{ selectedEarning.commission | number:'1.2-2' }} DT</span></div>
+        <div class="detail-item text-green"><span class="label">Pourboire</span><span class="value">+{{ selectedEarning.tip | number:'1.2-2' }} DT</span></div>
+        <div class="detail-item summary-total"><span class="label">Revenu Net</span><span class="value">{{ selectedEarning.netAmount | number:'1.2-2' }} DT</span></div>
+        <div class="detail-divider"></div>
+        <div class="detail-item"><span class="label">Paiement</span><span class="value">{{ selectedEarning.paymentMethod | uppercase }}</span></div>
+        <div class="detail-item"><span class="label">Statut</span>
+          <span class="status-badge" [class.status-paid]="selectedEarning.status === 'PAID'">{{ selectedEarning.status }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeModals()">Fermer</button>
+      <button class="btn-primary" (click)="openReceipt(selectedEarning!)">Voir reçu</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Reçu -->
+<div class="modal-overlay" *ngIf="showReceiptModal" (click)="closeModals()">
+  <div class="modal-content receipt-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Reçu GoRide</h3>
+      <button class="close-btn" (click)="closeModals()">&times;</button>
+    </div>
+    <div class="modal-body receipt-body" *ngIf="selectedEarning">
+      <div class="receipt-header">
+        <div class="logo">GoRide</div>
+        <div class="receipt-title">REÇU REVENU CHAUFFEUR</div>
+      </div>
+      
+      <div class="receipt-info">
+        <p><strong>Transaction ID:</strong> {{ selectedEarning.id }}</p>
+        <p><strong>Course ID:</strong> #{{ selectedEarning.rideId }}</p>
+        <p><strong>Date:</strong> {{ selectedEarning.date | date:'medium' }}</p>
+      </div>
+      
+      <div class="receipt-divider"></div>
+      
+      <div class="receipt-details">
+        <div class="r-row"><span>Passager</span><span>{{ selectedEarning.passengerName }}</span></div>
+        <div class="r-row"><span>Trajet</span><span>{{ selectedEarning.route }}</span></div>
+        <div class="r-divider"></div>
+        <div class="r-row"><span>Montant Brut</span><span>{{ selectedEarning.grossAmount | number:'1.2-2' }} DT</span></div>
+        <div class="r-row"><span>Commission GoRide (15%)</span><span>-{{ selectedEarning.commission | number:'1.2-2' }} DT</span></div>
+        <div class="r-row"><span>Pourboire</span><span>+{{ selectedEarning.tip | number:'1.2-2' }} DT</span></div>
+        <div class="r-row total"><span>TOTAL NET CHAUFFEUR</span><span>{{ selectedEarning.netAmount | number:'1.2-2' }} DT</span></div>
+      </div>
+      
+      <div class="receipt-footer">
+        <p>Méthode de paiement: <strong>{{ selectedEarning.paymentMethod | uppercase }}</strong></p>
+        <p>Statut: <strong>{{ selectedEarning.status }}</strong></p>
+        <p class="thanks">Merci d'utiliser GoRide !</p>
+      </div>
+    </div>
+    <div class="modal-footer no-print">
+      <button class="btn-secondary" (click)="closeModals()">Fermer</button>
+      <button class="btn-primary" (click)="printReceipt()">
+        <i class="fas fa-print"></i> Imprimer / Télécharger
+      </button>
+    </div>
+  </div>
+</div>

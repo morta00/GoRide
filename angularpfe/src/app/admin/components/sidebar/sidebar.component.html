@@ -1,0 +1,95 @@
+<aside class="sidebar shadow-sm">
+  <div class="sidebar-brand">
+    <app-logo [roleBadge]="'ADMINISTRATEUR'" [badgeBgColor]="'rgba(239, 68, 68, 0.08)'" [badgeTextColor]="'#ef4444'"></app-logo>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section">
+      <p class="section-title">Contrôle</p>
+      <a routerLink="/admin/dashboard" routerLinkActive="active" class="nav-item">
+        <span class="ion-ios-speedometer icon"></span>
+        <span>Tableau de bord</span>
+      </a>
+    </div>
+
+    <div class="nav-section">
+      <p class="section-title">Gestion</p>
+      <a routerLink="/admin/management" routerLinkActive="active" class="nav-item">
+        <span class="ion-ios-cube icon"></span>
+        <span>Gestion plateforme</span>
+      </a>
+      <a routerLink="/admin/services" routerLinkActive="active" class="nav-item">
+        <span class="ion-ios-git-network icon"></span>
+        <span>Demandes & Services</span>
+      </a>
+    </div>
+
+    <div class="nav-section">
+      <p class="section-title">Finances</p>
+      <a routerLink="/admin/payments" routerLinkActive="active" class="nav-item">
+        <span class="ion-ios-card icon"></span>
+        <span>Paiements & Factures</span>
+        <span *ngIf="counts.payments > 0" class="badge bg-warning text-dark ms-auto">{{ counts.payments }}</span>
+      </a>
+      <a routerLink="/admin/revenue" routerLinkActive="active" class="nav-item">
+        <span class="ion-ios-cash icon"></span>
+        <span>Revenus plateforme</span>
+      </a>
+    </div>
+
+    <div class="nav-section">
+      <p class="section-title">Communication</p>
+      <a routerLink="/admin/notifications" routerLinkActive="active" class="nav-item">
+        <span class="ion-ios-notifications icon"></span>
+        <span>Notifications</span>
+        <span *ngIf="counts.notifications > 0" class="badge bg-warning text-dark ms-auto">{{ counts.notifications }}</span>
+      </a>
+      <a routerLink="/admin/support" routerLinkActive="active" class="nav-item">
+        <span class="ion-ios-help-buoy icon"></span>
+        <span>Support</span>
+        <span *ngIf="counts.support > 0" class="badge bg-primary ms-auto">{{ counts.support }}</span>
+      </a>
+      <a routerLink="/admin/complaints" routerLinkActive="active" class="nav-item">
+        <span class="ion-ios-warning icon"></span>
+        <span>Réclamations</span>
+        <span *ngIf="counts.complaints > 0" class="badge bg-danger ms-auto">{{ counts.complaints }}</span>
+      </a>
+    </div>
+
+    <div class="nav-section">
+      <p class="section-title">Qualité</p>
+      <a routerLink="/admin/reviews" routerLinkActive="active" class="nav-item">
+        <span class="ion-ios-star icon"></span>
+        <span>Avis & Évaluations</span>
+      </a>
+      <a routerLink="/admin/reports" routerLinkActive="active" class="nav-item">
+        <span class="ion-ios-alert icon"></span>
+        <span>Signalements</span>
+        <span *ngIf="counts.reports > 0" class="badge bg-danger ms-auto">{{ counts.reports }}</span>
+      </a>
+    </div>
+
+    <div class="nav-section">
+      <p class="section-title">Système</p>
+      <a routerLink="/admin/settings" routerLinkActive="active" class="nav-item">
+        <span class="ion-ios-settings icon"></span>
+        <span>Paramètres plateforme</span>
+      </a>
+    </div>
+    
+    <div class="nav-section">
+      <p class="section-title">Compte admin</p>
+      <a routerLink="/admin/profile" routerLinkActive="active" class="nav-item">
+        <span class="ion-ios-person icon"></span>
+        <span>Profil admin</span>
+      </a>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <button class="btn btn-danger w-100 d-flex align-items-center justify-content-center gap-2" (click)="logout()">
+      <span class="ion-ios-log-out"></span>
+      <span>Déconnexion</span>
+    </button>
+  </div>
+</aside>

@@ -1,0 +1,119 @@
+/* HERO SECTION */
+.contact-hero {
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.letter-spacing-2 {
+  letter-spacing: 2px;
+}
+
+/* CONTACT BOXES */
+.contact-box {
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  border: 1px solid transparent;
+}
+
+.contact-box:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08) !important;
+  border-color: rgba(37, 99, 235, 0.1);
+}
+
+.icon-wrapper {
+  width: 70px;
+  height: 70px;
+  background: rgba(37, 99, 235, 0.08);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  transition: all 0.3s ease;
+}
+
+.contact-box:hover .icon-wrapper {
+  background: #2563eb;
+}
+
+.contact-box:hover .icon-wrapper span {
+  color: white !important;
+}
+
+/* FORM STYLES (Shared from Login/Signup) */
+.form-label-custom {
+  font-weight: 800;
+  color: #1e293b;
+  font-size: 0.85rem;
+  margin-bottom: 10px;
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.input-with-icon {
+  position: relative;
+}
+
+.input-icon {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 1.4rem;
+  z-index: 5;
+  transition: all 0.3s ease;
+}
+
+.custom-input {
+  background-color: #f8fafc !important;
+  border: 2px solid #e2e8f0 !important;
+  border-radius: 16px !important;
+  height: 58px !important;
+  padding: 15px 20px 15px 50px !important;
+  font-size: 1rem !important;
+  color: #0f172a !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.text-area-custom {
+  height: auto !important;
+  padding-left: 20px !important;
+  border-radius: 20px !important;
+}
+
+.custom-input:hover {
+  border-color: #cbd5e1 !important;
+}
+
+.custom-input:focus {
+  background-color: #ffffff !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15) !important;
+  transform: translateY(-3px);
+  outline: none !important;
+}
+
+.input-with-icon:focus-within .input-icon {
+  color: #3b82f6;
+  transform: translateY(-50%) scale(1.1) rotate(-5deg);
+}
+
+/* BUTTONS */
+.btn-primary-custom {
+  background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%) !important;
+  border: none !important;
+  border-radius: 16px !important;
+  color: white !important;
+  font-weight: 800 !important;
+  height: 60px !important;
+  font-size: 1.1rem !important;
+  letter-spacing: 0.5px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.btn-primary-custom:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 20px 40px rgba(37, 99, 235, 0.3) !important;
+}

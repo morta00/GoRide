@@ -1,0 +1,42 @@
+<div class="role-switcher-container" *ngIf="availableRoles.length > 1">
+  <div class="active-role-card" (click)="toggleDropdown()" [class.open]="showDropdown">
+    <div class="role-icon-box" [style.background-color]="activeRole?.color + '15'">
+      <span [class]="activeRole?.icon" [style.color]="activeRole?.color"></span>
+    </div>
+    <div class="role-info">
+      <span class="role-label">Mode actuel</span>
+      <span class="role-name">{{ activeRole?.label }}</span>
+    </div>
+    <span class="ion-ios-arrow-down arrow-icon" [class.rotated]="showDropdown"></span>
+  </div>
+
+  <div class="role-dropdown shadow-lg" *ngIf="showDropdown">
+    <div class="dropdown-header">
+       Changer de perspective
+    </div>
+    <div class="role-options">
+      <div 
+        *ngFor="let role of availableRoles" 
+        class="role-option" 
+        [class.active]="role.id === activeRole?.id"
+        (click)="switchRole(role)"
+      >
+        <div class="role-icon-box" [style.background-color]="role.color + '15'">
+          <span [class]="role.icon" [style.color]="role.color"></span>
+        </div>
+        <div class="option-info">
+          <span class="option-name">{{ role.label }}</span>
+          <span class="option-desc" *ngIf="role.id === activeRole?.id">Actif actuellement</span>
+          <span class="option-desc" *ngIf="role.id !== activeRole?.id">Passer en mode {{ role.label }}</span>
+        </div>
+        <div class="active-indicator" *ngIf="role.id === activeRole?.id">
+          <span class="ion-ios-checkmark-circle"></span>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+</div>
+
+<div class="overlay" *ngIf="showDropdown" (click)="showDropdown = false"></div>
+

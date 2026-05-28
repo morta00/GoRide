@@ -1,0 +1,152 @@
+<div class="conversations-page animate__animated animate__fadeIn">
+  <div class="page-header mb-4">
+    <h2 class="page-title">Conversations</h2>
+    <p class="page-subtitle text-muted">Échangez avec vos passagers, propriétaires de véhicules et l’équipe GoRide.</p>
+  </div>
+
+  <div class="messaging-container card shadow-sm">
+    <div class="row g-0 h-100">
+      
+      <!-- Sidebar: Conversation List -->
+      <div class="col-md-4 border-end chat-sidebar">
+        <div class="sidebar-header p-3 border-bottom">
+          <div class="search-box mb-3">
+            <span class="ion-md-search search-icon"></span>
+            <input type="text" [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="Rechercher un trajet, un véhicule...">
+          </div>
+          
+          <div class="filter-tabs-container">
+            <div class="filter-tabs">
+              <button [class.active]="activeFilter === 'ALL'" (click)="activeFilter = 'ALL'; applyFilters()">Toutes</button>
+              <button [class.active]="activeFilter === 'PASSENGER'" (click)="activeFilter = 'PASSENGER'; applyFilters()">Passagers</button>
+              <button [class.active]="activeFilter === 'OWNER'" (click)="activeFilter = 'OWNER'; applyFilters()">Propriétaires</button>
+              <button [class.active]="activeFilter === 'SUPPORT'" (click)="activeFilter = 'SUPPORT'; applyFilters()">Support</button>
+              <button [class.active]="activeFilter === 'COMPANY'" (click)="activeFilter = 'COMPANY'; applyFilters()">Entreprises</button>
+              <button [class.active]="activeFilter === 'UNREAD'" (click)="activeFilter = 'UNREAD'; applyFilters()">Non lues</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="conversation-list scrollable">
+          <div *ngFor="let conv of filteredConversations" 
+               [class.selected]="selectedConversation?.id === conv.id"
+               (click)="selectConversation(conv)"
+               class="conversation-item p-3">
+            <div class="avatar-wrapper">
+              <app-profile-avatar
+                [name]="conv.participantName"
+                [photoUrl]="conv.avatar"
+                [size]="44"
+                [showStatus]="false">
+              </app-profile-avatar>
+              <span class="type-indicator" [ngClass]="conv.type.toLowerCase()"></span>
+            </div>
+            
+            <div class="conv-info">
+              <div class="conv-header">
+                <span class="name">{{ conv.participantName }}</span>
+                <span class="time">{{ conv.lastMessageTime | date:'HH:mm' }}</span>
+              </div>
+              <div class="conv-meta">
+                <span class="role text-muted small">{{ conv.participantRole }}</span>
+                <span *ngIf="conv.unreadCount > 0" class="unread-badge">{{ conv.unreadCount }}</span>
+              </div>
+              <p class="last-msg text-truncate">{{ conv.lastMessage || 'Aucun message' }}</p>
+            </div>
+          </div>
+
+          <div *ngIf="filteredConversations.length === 0" class="empty-list p-5 text-center">
+            <span class="ion-md-chatbubbles text-muted mb-3 d-block" style="font-size: 3rem;"></span>
+            <p class="text-muted">Aucune conversation trouvée.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat Area -->
+      <div class="col-md-8 chat-area">
+        <div *ngIf="selectedConversation" class="h-100 d-flex flex-column">
+          <!-- Chat Header -->
+          <div class="chat-header p-3 border-bottom d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center">
+              <app-profile-avatar
+                class="me-3"
+                [name]="selectedConversation.participantName"
+                [photoUrl]="selectedConversation.avatar"
+                [size]="44"
+                [showStatus]="false">
+              </app-profile-avatar>
+              <div>
+                <h5 class="mb-0">{{ selectedConversation.participantName }}</h5>
+                <div class="d-flex align-items-center gap-2">
+                  <span class="status-badge" [ngClass]="selectedConversation.type.toLowerCase()">
+                    {{ getTypeLabel(selectedConversation.type) }}
+                  </span>
+                  <span *ngIf="selectedConversation.relatedTitle" class="related-title text-muted small">
+                    • {{ selectedConversation.relatedTitle }}
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="header-actions">
+              <button class="btn btn-outline-primary btn-sm rounded-pill px-3" (click)="handleAction(selectedConversation)">
+                <span [ngSwitch]="selectedConversation.type">
+                  <span *ngSwitchCase="'PASSENGER'"><span class="ion-md-car me-2"></span> Voir trajet</span>
+                  <span *ngSwitchCase="'OWNER'"><span class="ion-md-key me-2"></span> Voir véhicule</span>
+                  <span *ngSwitchCase="'COMPANY'"><span class="ion-md-business me-2"></span> Voir offre</span>
+                  <span *ngSwitchCase="'SUPPORT'"><span class="ion-md-help-circle me-2"></span> Support</span>
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Messages -->
+          <div class="messages-container p-4 scrollable" #scrollContainer>
+            <div *ngFor="let msg of selectedConversation.messages" 
+                 class="message-wrapper mb-4"
+                 [class.sent]="msg.sender === 'DRIVER'"
+                 [class.received]="msg.sender !== 'DRIVER'">
+              <div class="message-bubble-wrapper">
+                <div class="message-bubble animate__animated animate__fadeIn">
+                  <div class="message-content">{{ msg.content }}</div>
+                </div>
+                <div class="message-time">{{ msg.timestamp | date:'HH:mm' }}</div>
+              </div>
+            </div>
+
+            <div *ngIf="selectedConversation.messages.length === 0" class="text-center py-5">
+              <p class="text-muted italic">Début de la conversation. Envoyez un message pour commencer l'échange.</p>
+            </div>
+          </div>
+
+          <!-- Input Area -->
+          <div class="chat-input-area p-3 border-top">
+            <form (submit)="$event.preventDefault(); sendMessage()" class="d-flex gap-3 align-items-center">
+              <div class="input-wrapper flex-grow-1">
+                <input type="text" 
+                       [(ngModel)]="newMessageContent" 
+                       name="message" 
+                       class="form-control chat-input" 
+                       placeholder="Écrivez votre message ici..."
+                       autocomplete="off">
+              </div>
+              <button type="submit" class="btn btn-primary btn-send shadow-sm" [disabled]="!newMessageContent.trim()">
+                <span class="ion-md-send"></span>
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="!selectedConversation" class="h-100 d-flex flex-column align-items-center justify-content-center p-5 text-center bg-light-soft">
+          <div class="empty-state-icon mb-4">
+            <span class="ion-md-chatbubbles"></span>
+          </div>
+          <h4 class="fw-bold">Vos messages</h4>
+          <p class="text-muted max-w-300">Sélectionnez une conversation dans la liste pour commencer à échanger avec vos partenaires GoRide.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

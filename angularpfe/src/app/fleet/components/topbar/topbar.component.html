@@ -1,0 +1,163 @@
+<header class="topbar">
+  <div class="topbar-left">
+    <h1 class="page-title">{{ getPageTitle() }}</h1>
+  </div>
+
+  <div class="topbar-right">
+    <div class="search-box d-none d-md-flex" style="position: relative;">
+      <span class="ion-ios-search icon"></span>
+      <input
+        type="text"
+        placeholder="Rechercher un véhicule, une transaction..."
+        [(ngModel)]="searchQuery"
+        (input)="onSearchInput()"
+        (keydown.enter)="onSearchSubmit()"
+        (blur)="closeSearchDropdown()">
+      
+      <!-- Search Results Dropdown -->
+      <div *ngIf="showSearchDropdown" class="search-dropdown-menu" (mousedown)="$event.preventDefault()">
+        <div *ngIf="isSearching" class="search-dropdown-loading">
+          Recherche en cours...
+        </div>
+        
+        <div *ngIf="!isSearching && !hasSearchResults()" class="search-dropdown-empty">
+          Aucun résultat trouvé
+        </div>
+        
+        <div *ngIf="!isSearching && hasSearchResults()" class="search-dropdown-results">
+          
+          <!-- Vehicles -->
+          <div *ngIf="searchResults.vehicles?.length > 0" class="search-results-section">
+            <div class="section-title"><span class="ion-ios-car"></span> Véhicules</div>
+            <div class="section-items">
+              <div *ngFor="let v of searchResults.vehicles" class="search-item" (mousedown)="navigateToResult('vehicle', v.id)">
+                <span class="item-name">{{ v.name }}</span>
+                <span class="item-meta">{{ v.plateNumber }} • {{ v.category }}</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Bookings -->
+          <div *ngIf="searchResults.bookings?.length > 0" class="search-results-section">
+            <div class="section-title"><span class="ion-ios-calendar"></span> Réservations</div>
+            <div class="section-items">
+              <div *ngFor="let b of searchResults.bookings" class="search-item" (mousedown)="navigateToResult('booking', b.id)">
+                <span class="item-name">{{ b.contractNumber }}</span>
+                <span class="item-meta">{{ b.clientName }} • {{ b.vehicleName }} • {{ b.price }} DT ({{ b.status }})</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Users -->
+          <div *ngIf="searchResults.users?.length > 0" class="search-results-section">
+            <div class="section-title"><span class="ion-ios-person"></span> Locataires / Chauffeurs</div>
+            <div class="section-items">
+              <div *ngFor="let u of searchResults.users" class="search-item" (mousedown)="navigateToResult('booking')">
+                <span class="item-name">{{ u.name }}</span>
+                <span class="item-meta">{{ u.email }} • {{ u.phone }}</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Conversations -->
+          <div *ngIf="searchResults.conversations?.length > 0" class="search-results-section">
+            <div class="section-title"><span class="ion-ios-chatbubbles"></span> Conversations</div>
+            <div class="section-items">
+              <div *ngFor="let c of searchResults.conversations" class="search-item" (mousedown)="navigateToResult('conversation', c.id)">
+                <span class="item-name">Discussion avec {{ c.participantName }}</span>
+                <span class="item-meta">{{ c.vehicleName ? 'Véhicule : ' + c.vehicleName : 'Assistance / Support' }}</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Payments -->
+          <div *ngIf="searchResults.payments?.length > 0" class="search-results-section">
+            <div class="section-title"><span class="ion-ios-cash"></span> Transactions</div>
+            <div class="section-items">
+              <div *ngFor="let p of searchResults.payments" class="search-item" (mousedown)="navigateToResult('payment', p.id)">
+                <span class="item-name">Paiement reçu : {{ p.amount }} DT</span>
+                <span class="item-meta">Contrat {{ p.contractNumber }} • {{ p.clientName }}</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Reviews -->
+          <div *ngIf="searchResults.reviews?.length > 0" class="search-results-section">
+            <div class="section-title"><span class="ion-ios-star"></span> Avis Clients</div>
+            <div class="section-items">
+              <div *ngFor="let r of searchResults.reviews" class="search-item" (mousedown)="navigateToResult('review', r.id)">
+                <span class="item-name">Note : {{ r.rating }}/5</span>
+                <span class="item-meta">"{{ r.comment }}" — {{ r.clientName }}</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Notifications -->
+          <div *ngIf="searchResults.notifications?.length > 0" class="search-results-section">
+            <div class="section-title"><span class="ion-ios-notifications"></span> Notifications</div>
+            <div class="section-items">
+              <div *ngFor="let n of searchResults.notifications" class="search-item" (mousedown)="navigateToResult('notification', n.id)">
+                <span class="item-name">{{ n.title }}</span>
+                <span class="item-meta">{{ n.message }}</span>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+
+    <button class="icon-btn" routerLink="/fleet/messages">
+      <span class="ion-ios-mail-outline"></span>
+      <span *ngIf="unreadMessagesCount > 0" class="notification-badge">{{ unreadMessagesCount }}</span>
+    </button>
+
+    <div class="user-profile-container">
+      <div class="user-profile" (click)="toggleDropdown()">
+        <div class="avatar-wrapper position-relative">
+          <app-profile-avatar [firstName]="currentUser?.firstName" [lastName]="currentUser?.lastName" [photoUrl]="currentUser?.photoUrl" [size]="40"></app-profile-avatar>
+          <div class="status-online" style="position:absolute;bottom:0;right:0;width:10px;height:10px;background:#10b981;border-radius:50%;border:2px solid white;z-index:10;"></div>
+        </div>
+        <div class="user-info d-none d-md-block">
+          <span class="user-name">{{ currentUserFullName }}</span>
+          <span class="user-role text-warning">Gestionnaire Flotte</span>
+        </div>
+        <span class="ion-ios-arrow-down arrow-icon"></span>
+      </div>
+
+      <!-- Dropdown Menu -->
+      <div class="dropdown-menu-custom shadow-lg" *ngIf="isUserDropdownOpen">
+        <div class="dropdown-header px-3 py-2 border-bottom">
+           <span class="text-muted small fw-bold">BASCULER D'ESPACE</span>
+        </div>
+        <div class="role-list p-1">
+          <button 
+            *ngFor="let role of availableRoles" 
+            class="dropdown-item role-item-custom d-flex align-items-center gap-2"
+            [class.active-role-item]="role.id === authService.getActiveRole()"
+            (click)="switchRole(role.id, role.route)"
+          >
+            <span [class]="role.icon" [style.color]="role.color"></span>
+            <span>{{ role.label }}</span>
+            <span class="ms-auto ion-ios-checkmark-circle text-primary" *ngIf="role.id === authService.getActiveRole()"></span>
+          </button>
+        </div>
+        <div class="dropdown-divider"></div>
+        <a class="dropdown-item" (click)="goToHome($event)" style="cursor: pointer;">
+          <span class="ion-ios-home-outline"></span> Accueil
+        </a>
+        <a class="dropdown-item" (click)="goToProfile($event)" style="cursor: pointer;">
+          <span class="ion-ios-person-outline"></span> Mon Profil
+        </a>
+        <a class="dropdown-item" (click)="goToSettings($event)" style="cursor: pointer;">
+          <span class="ion-ios-settings-outline"></span> Paramètres
+        </a>
+        <div class="dropdown-divider"></div>
+        <a class="dropdown-item text-danger" (click)="authService.logout()">
+          <span class="ion-ios-log-out text-danger"></span> Déconnexion
+        </a>
+      </div>
+    </div>
+  </div>
+</header>
+

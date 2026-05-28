@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.angular/
+*.zip
+target/
+*.log
+# Keep Maven wrapper (GoRide/mvnw + GoRide/.mvn/wrapper/)
+.DS_Store
+
+# Local secrets: tracked in this private repo for collaborators (see API-KEYS.md)
+# For a public fork, uncomment the line below and use .example only:
+# **/application-local.properties
+!**/application-local.properties.example

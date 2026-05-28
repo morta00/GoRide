@@ -1,0 +1,182 @@
+<header class="topbar">
+  <div class="topbar-left">
+    <h1 class="page-title">{{ getPageTitle() }}</h1>
+  </div>
+
+  <div class="topbar-right">
+    <div class="status-toggle-wrapper" [class.is-online]="isOnline" [class.is-offline]="!isOnline">
+      <div class="status-toggle-label">
+        <span class="status-indicator" [class.online]="isOnline" aria-hidden="true"></span>
+        <span class="status-text">{{ isOnline ? 'En ligne' : 'Hors ligne' }}</span>
+      </div>
+      <label class="status-switch" [attr.aria-label]="isOnline ? 'Passer hors ligne' : 'Passer en ligne'">
+        <input type="checkbox" [checked]="isOnline" (change)="toggleStatus()">
+        <span class="status-switch-track"></span>
+      </label>
+    </div>
+
+    <div class="driver-search d-none d-md-flex" [class.is-focused]="showSearchDropdown">
+      <span class="driver-search-icon ion-ios-search" aria-hidden="true"></span>
+      <input
+        type="search"
+        class="driver-search-input"
+        [(ngModel)]="searchQuery"
+        (input)="onSearchInput()"
+        (focus)="onSearchFocus()"
+        (keydown.enter)="onSearchSubmit()"
+        (blur)="closeSearchDropdown()"
+        placeholder="Trajet, client ou lieu…"
+        autocomplete="off"
+        aria-label="Rechercher un trajet ou un client" />
+      <button
+        *ngIf="searchQuery"
+        type="button"
+        class="driver-search-clear"
+        (mousedown)="$event.preventDefault(); clearSearch()"
+        aria-label="Effacer la recherche">
+        <span class="ion-ios-close-circle"></span>
+      </button>
+
+      <div *ngIf="showSearchDropdown" class="search-dropdown-menu" (mousedown)="$event.preventDefault()">
+        <div *ngIf="isSearching" class="search-dropdown-loading">
+          <span class="ion-ios-sync search-spinner"></span>
+          Recherche en cours…
+        </div>
+
+        <div *ngIf="!isSearching && !hasSearchResults()" class="search-dropdown-empty">
+          Aucun résultat pour « {{ searchQuery }} »
+        </div>
+
+        <div *ngIf="!isSearching && hasSearchResults()" class="search-dropdown-results">
+          <div *ngIf="requestResults.length > 0" class="search-results-section">
+            <div class="section-title"><span class="ion-ios-paper"></span> Demandes</div>
+            <div class="section-items">
+              <button
+                type="button"
+                class="search-item"
+                *ngFor="let r of requestResults"
+                (click)="openRequest(r)">
+                <span class="item-name">{{ r.clientName }}</span>
+                <span class="item-meta">{{ r.from }} → {{ r.to }}</span>
+              </button>
+            </div>
+          </div>
+
+          <div *ngIf="tripResults.length > 0" class="search-results-section">
+            <div class="section-title"><span class="ion-ios-navigate"></span> Mes trajets</div>
+            <div class="section-items">
+              <button
+                type="button"
+                class="search-item"
+                *ngFor="let t of tripResults"
+                (click)="openTrip(t)">
+                <span class="item-name">{{ t.departure }} → {{ t.destination }}</span>
+                <span class="item-meta">{{ t.departureTime | date:'dd/MM HH:mm' }} · {{ t.availableSeats }} places</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="!isSearching && searchQuery" class="search-dropdown-footer">
+          <button type="button" class="footer-link" (click)="goToRequests()">Voir toutes les demandes</button>
+          <button type="button" class="footer-link" (click)="goToTrips()">Voir tous les trajets</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="notification-container position-relative">
+      <button class="icon-btn" (click)="toggleNotifications()">
+        <span class="ion-ios-notifications-outline"></span>
+        <span class="notification-badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+      </button>
+
+      <!-- Dropdown Notifications -->
+      <div class="dropdown-menu-custom shadow-lg" *ngIf="isNotificationDropdownOpen">
+        <div class="dropdown-header px-3 py-3 border-bottom d-flex justify-content-between align-items-center bg-white">
+           <span class="text-dark fw-bold m-0">Notifications</span>
+           <button class="btn btn-link text-primary p-0 m-0 small text-decoration-none fw-bold" (click)="markAllAsRead()" *ngIf="unreadCount > 0">Tout lu</button>
+        </div>
+        
+        <div class="notification-list p-0 bg-white">
+          <div *ngIf="recentNotifications.length === 0" class="p-4 text-center text-muted small">
+            Aucune notification
+          </div>
+          
+          <div class="notif-item d-flex gap-3 align-items-start p-3 border-bottom" 
+               *ngFor="let notif of recentNotifications"
+               (click)="onNotificationClick(notif)"
+               [style.background-color]="notif.isRead ? 'transparent' : '#f0f9ff'"
+               style="cursor: pointer;">
+            <div class="notif-icon-circle d-flex align-items-center justify-content-center flex-shrink-0" [ngClass]="'bg-soft-' + notif.color">
+              <span [class]="notif.icon" [ngClass]="'text-' + notif.color"></span>
+            </div>
+            <div class="notif-content flex-grow-1">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="notif-label small fw-bold">{{ notif.label }}</span>
+                <span class="notif-time text-muted">{{ notif.time }}</span>
+              </div>
+              <p class="notif-description mb-0 text-muted small">{{ notif.description }}</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="dropdown-footer px-3 py-2 text-center border-top bg-light" routerLink="/driver/notifications">
+          <span class="text-primary small fw-bold">Voir toutes les notifications</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="user-profile-container">
+      <div class="user-profile" (click)="toggleDropdown()">
+        <div class="avatar-wrapper position-relative">
+          <app-profile-avatar
+            [firstName]="currentUser?.firstName"
+            [lastName]="currentUser?.lastName"
+            [photoUrl]="currentUser?.photoUrl"
+            [size]="40"
+            [showStatus]="true"
+            [isOnline]="isOnline">
+          </app-profile-avatar>
+        </div>
+        <div class="user-info d-none d-md-block">
+          <span class="user-name">{{ currentUserFullName }}</span>
+          <span class="user-role">Chauffeur partenaire</span>
+        </div>
+        <span class="ion-ios-arrow-down arrow-icon"></span>
+      </div>
+
+      <!-- Dropdown Menu -->
+      <div class="dropdown-menu-custom shadow-lg" *ngIf="isUserDropdownOpen">
+        <div class="dropdown-header px-3 py-2 border-bottom">
+           <span class="text-muted small fw-bold">BASCULER D'ESPACE</span>
+        </div>
+        <div class="role-list p-1">
+          <button 
+            *ngFor="let role of availableRoles" 
+            class="dropdown-item role-item-custom d-flex align-items-center gap-2"
+            [class.active-role-item]="role.id === authService.getActiveRole()"
+            (click)="switchRole(role.id, role.route)"
+          >
+            <span [class]="role.icon" [style.color]="role.color"></span>
+            <span>{{ role.label }}</span>
+            <span class="ms-auto ion-ios-checkmark-circle text-primary" *ngIf="role.id === authService.getActiveRole()"></span>
+          </button>
+        </div>
+        <div class="dropdown-divider"></div>
+        <a class="dropdown-item" (click)="goToHome($event)" style="cursor: pointer;">
+          <span class="ion-ios-home-outline"></span> Accueil GoRide
+        </a>
+        <a class="dropdown-item" (click)="goToProfile($event)" style="cursor: pointer;">
+          <span class="ion-ios-person-outline"></span> Mon Profil
+        </a>
+        <a class="dropdown-item" (click)="goToSettings($event)" style="cursor: pointer;">
+          <span class="ion-ios-settings"></span> Paramètres
+        </a>
+        <div class="dropdown-divider"></div>
+        <a class="dropdown-item text-danger" (click)="logout()">
+          <span class="ion-ios-log-out text-danger"></span> Déconnexion
+        </a>
+      </div>
+    </div>
+  </div>
+</header>

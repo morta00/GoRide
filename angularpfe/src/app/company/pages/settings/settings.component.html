@@ -1,0 +1,345 @@
+<div class="settings-container animate__animated animate__fadeIn">
+  <div class="header-section mb-5">
+    <h2 class="fw-bold text-dark">Paramètres</h2>
+    <p class="text-muted">Personnalisez les préférences de service, notifications et sécurité de votre entreprise.</p>
+  </div>
+
+  <div class="row g-4">
+    <!-- A. Préférences de services -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm rounded-4 h-100">
+        <div class="card-body p-4">
+          <div class="d-flex align-items-center gap-3 mb-4">
+            <div class="icon-circle bg-soft-primary text-primary">
+              <i class="ion-md-options"></i>
+            </div>
+            <h5 class="fw-bold mb-0">Préférences de services</h5>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Type de service préféré</label>
+            <select class="form-select rounded-3" [(ngModel)]="settings.servicePreferences.preferredServiceType">
+              <option>Location véhicules</option>
+              <option>Chauffeurs avec voiture</option>
+              <option>Service mixte</option>
+              <option>Tous les services</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Durée par défaut</label>
+            <select class="form-select rounded-3" [(ngModel)]="settings.servicePreferences.defaultDuration">
+              <option>1 jour</option>
+              <option>2-3 jours</option>
+              <option>1 semaine</option>
+              <option>Longue durée</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Ville principale</label>
+            <select class="form-select rounded-3" [(ngModel)]="settings.servicePreferences.mainCity">
+              <option>Tunis</option>
+              <option>Ariana</option>
+              <option>Sousse</option>
+              <option>Sfax</option>
+              <option>Autre</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Budget maximum par jour (DT)</label>
+            <input type="number" class="form-control rounded-3" [(ngModel)]="settings.servicePreferences.maxDailyBudget">
+          </div>
+
+          <div class="form-check form-switch mb-4">
+            <input class="form-check-input" type="checkbox" [(ngModel)]="settings.servicePreferences.requireApprovalBeforeReservation">
+            <label class="form-check-label small fw-bold">Demander validation avant chaque réservation</label>
+          </div>
+
+          <button class="btn btn-primary w-100 rounded-3 py-2 fw-bold" (click)="saveSection('servicePreferences')">
+            Enregistrer préférences de services
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- B. Préférences véhicules -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm rounded-4 h-100">
+        <div class="card-body p-4">
+          <div class="d-flex align-items-center gap-3 mb-4">
+            <div class="icon-circle bg-soft-success text-success">
+              <i class="ion-md-car"></i>
+            </div>
+            <h5 class="fw-bold mb-0">Préférences véhicules</h5>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Catégorie préférée</label>
+            <select class="form-select rounded-3" [(ngModel)]="settings.vehiclePreferences.preferredCategory">
+              <option>Économique</option>
+              <option>Berline</option>
+              <option>SUV</option>
+              <option>Premium</option>
+              <option>Utilitaire</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Nombre de véhicules par défaut</label>
+            <input type="number" class="form-control rounded-3" [(ngModel)]="settings.vehiclePreferences.defaultVehicleCount">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold d-block">Options souhaitées</label>
+            <div class="d-flex flex-wrap gap-2 mt-2">
+              <span *ngFor="let opt of ['Assurance incluse', 'GPS', 'Climatisation', 'Véhicule récent', 'Livraison sur site']"
+                    class="badge-selectable" 
+                    [class.active]="isOptionSelected(opt)"
+                    (click)="toggleOption(opt)">
+                {{ opt }}
+              </span>
+            </div>
+          </div>
+
+          <div class="form-check form-switch mb-2">
+            <input class="form-check-input" type="checkbox" [(ngModel)]="settings.vehiclePreferences.onlyVerifiedVehicles">
+            <label class="form-check-label small fw-bold">Afficher seulement véhicules vérifiés</label>
+          </div>
+
+          <div class="form-check form-switch mb-4">
+            <input class="form-check-input" type="checkbox" [(ngModel)]="settings.vehiclePreferences.onlyHighRatedOwners">
+            <label class="form-check-label small fw-bold">Afficher seulement propriétaires bien notés</label>
+          </div>
+
+          <button class="btn btn-primary w-100 rounded-3 py-2 fw-bold" (click)="saveSection('vehiclePreferences')">
+            Enregistrer préférences véhicules
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- C. Préférences chauffeurs -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm rounded-4 h-100">
+        <div class="card-body p-4">
+          <div class="d-flex align-items-center gap-3 mb-4">
+            <div class="icon-circle bg-soft-warning text-warning">
+              <i class="ion-md-person"></i>
+            </div>
+            <h5 class="fw-bold mb-0">Préférences chauffeurs</h5>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Note minimum chauffeur</label>
+            <select class="form-select rounded-3" [(ngModel)]="settings.driverPreferences.minimumDriverRating">
+              <option [value]="4.0">4.0</option>
+              <option [value]="4.5">4.5</option>
+              <option [value]="4.8">4.8</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Type de mission fréquent</label>
+            <select class="form-select rounded-3" [(ngModel)]="settings.driverPreferences.frequentMissionType">
+              <option>Transport employés</option>
+              <option>Transport clients</option>
+              <option>Mission VIP</option>
+              <option>Aéroport</option>
+              <option>Livraison documents</option>
+            </select>
+          </div>
+
+          <div class="form-check form-switch mb-2">
+            <input class="form-check-input" type="checkbox" [(ngModel)]="settings.driverPreferences.requireVehicleWithDriver">
+            <label class="form-check-label small fw-bold">Exiger véhicule avec chauffeur</label>
+          </div>
+
+          <div class="form-check form-switch mb-2">
+            <input class="form-check-input" type="checkbox" [(ngModel)]="settings.driverPreferences.requireVerifiedDriver">
+            <label class="form-check-label small fw-bold">Exiger chauffeur vérifié</label>
+          </div>
+
+          <div class="form-check form-switch mb-4">
+            <input class="form-check-input" type="checkbox" [(ngModel)]="settings.driverPreferences.requireBusinessExperience">
+            <label class="form-check-label small fw-bold">Exiger expérience entreprise</label>
+          </div>
+
+          <button class="btn btn-primary w-100 rounded-3 py-2 fw-bold" (click)="saveSection('driverPreferences')">
+            Enregistrer préférences chauffeurs
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- D. Notifications -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm rounded-4 h-100">
+        <div class="card-body p-4">
+          <div class="d-flex align-items-center gap-3 mb-4">
+            <div class="icon-circle bg-soft-info text-info">
+              <i class="ion-md-notifications"></i>
+            </div>
+            <h5 class="fw-bold mb-0">Notifications</h5>
+          </div>
+
+          <div class="notification-scroll-area mb-4">
+
+            <div class="form-check form-switch mb-3 d-flex justify-content-between align-items-center ps-0">
+              <label class="form-check-label small fw-bold">Demande refusée par propriétaire</label>
+              <input class="form-check-input ms-0" type="checkbox" [(ngModel)]="settings.notifications.ownerRejected">
+            </div>
+            <div class="form-check form-switch mb-3 d-flex justify-content-between align-items-center ps-0">
+              <label class="form-check-label small fw-bold">Chauffeur accepté</label>
+              <input class="form-check-input ms-0" type="checkbox" [(ngModel)]="settings.notifications.driverAccepted">
+            </div>
+            <div class="form-check form-switch mb-3 d-flex justify-content-between align-items-center ps-0">
+              <label class="form-check-label small fw-bold">Chauffeur refusé</label>
+              <input class="form-check-input ms-0" type="checkbox" [(ngModel)]="settings.notifications.driverRejected">
+            </div>
+            <div class="form-check form-switch mb-3 d-flex justify-content-between align-items-center ps-0">
+              <label class="form-check-label small fw-bold">Nouvelle facture</label>
+              <input class="form-check-input ms-0" type="checkbox" [(ngModel)]="settings.notifications.newInvoice">
+            </div>
+            <div class="form-check form-switch mb-3 d-flex justify-content-between align-items-center ps-0">
+              <label class="form-check-label small fw-bold">Paiement confirmé</label>
+              <input class="form-check-input ms-0" type="checkbox" [(ngModel)]="settings.notifications.paymentConfirmed">
+            </div>
+            <div class="form-check form-switch mb-3 d-flex justify-content-between align-items-center ps-0">
+              <label class="form-check-label small fw-bold">Nouveau message</label>
+              <input class="form-check-input ms-0" type="checkbox" [(ngModel)]="settings.notifications.newMessage">
+            </div>
+            <div class="form-check form-switch mb-3 d-flex justify-content-between align-items-center ps-0">
+              <label class="form-check-label small fw-bold">Service terminé</label>
+              <input class="form-check-input ms-0" type="checkbox" [(ngModel)]="settings.notifications.serviceCompleted">
+            </div>
+            <div class="form-check form-switch mb-0 d-flex justify-content-between align-items-center ps-0">
+              <label class="form-check-label small fw-bold">Avis à laisser</label>
+              <input class="form-check-input ms-0" type="checkbox" [(ngModel)]="settings.notifications.reviewReminder">
+            </div>
+          </div>
+
+          <button class="btn btn-primary w-100 rounded-3 py-2 fw-bold" (click)="saveSection('notifications')">
+            Enregistrer notifications
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- E. Confidentialité -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm rounded-4 h-100">
+        <div class="card-body p-4">
+          <div class="d-flex align-items-center gap-3 mb-4">
+            <div class="icon-circle bg-soft-danger text-danger">
+              <i class="ion-md-lock"></i>
+            </div>
+            <h5 class="fw-bold mb-0">Confidentialité</h5>
+          </div>
+
+          <div class="form-check form-switch mb-3 d-flex justify-content-between align-items-center ps-0">
+            <label class="form-check-label small fw-bold">Afficher le nom de l’entreprise aux partenaires</label>
+            <input class="form-check-input ms-0" type="checkbox" [(ngModel)]="settings.privacy.showCompanyNameToPartners">
+          </div>
+          <div class="form-check form-switch mb-3 d-flex justify-content-between align-items-center ps-0">
+            <label class="form-check-label small fw-bold">Afficher le numéro du responsable après acceptation</label>
+            <input class="form-check-input ms-0" type="checkbox" [(ngModel)]="settings.privacy.showManagerPhoneAfterAcceptance">
+          </div>
+          <div class="form-check form-switch mb-3 d-flex justify-content-between align-items-center ps-0">
+            <label class="form-check-label small fw-bold">Autoriser les chauffeurs à contacter l’entreprise</label>
+            <input class="form-check-input ms-0" type="checkbox" [(ngModel)]="settings.privacy.allowDriversToContactCompany">
+          </div>
+          <div class="form-check form-switch mb-3 d-flex justify-content-between align-items-center ps-0">
+            <label class="form-check-label small fw-bold">Conserver l’historique des conversations</label>
+            <input class="form-check-input ms-0" type="checkbox" [(ngModel)]="settings.privacy.keepConversationHistory">
+          </div>
+          <div class="form-check form-switch mb-4 d-flex justify-content-between align-items-center ps-0">
+            <label class="form-check-label small fw-bold">Autoriser le support GoRide à consulter les demandes</label>
+            <input class="form-check-input ms-0" type="checkbox" [(ngModel)]="settings.privacy.allowSupportAccessForIssues">
+          </div>
+
+          <button class="btn btn-primary w-100 rounded-3 py-2 fw-bold" (click)="saveSection('privacy')">
+            Enregistrer confidentialité
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- F. Langue, affichage et sécurité -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm rounded-4 h-100">
+        <div class="card-body p-4">
+          <div class="d-flex align-items-center gap-3 mb-4">
+            <div class="icon-circle bg-soft-dark text-dark">
+              <i class="ion-md-settings"></i>
+            </div>
+            <h5 class="fw-bold mb-0">Langue, affichage et sécurité</h5>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Langue</label>
+              <select class="form-select rounded-3" [(ngModel)]="settings.displayAndSecurity.language">
+                <option>Français</option>
+                <option>Anglais</option>
+                <option>Arabe</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Thème</label>
+              <select class="form-select rounded-3" [(ngModel)]="settings.displayAndSecurity.theme">
+                <option>Clair</option>
+                <option>Sombre</option>
+                <option>Système</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Taille du texte</label>
+            <select class="form-select rounded-3" [(ngModel)]="settings.displayAndSecurity.textSize">
+              <option>Normal</option>
+              <option>Grand</option>
+            </select>
+          </div>
+
+          <div class="security-switches mb-4">
+            <div class="form-check form-switch mb-2">
+              <input class="form-check-input" type="checkbox" [(ngModel)]="settings.displayAndSecurity.confirmBeforeCancel">
+              <label class="form-check-label small fw-bold">Confirmation avant annulation d’une demande</label>
+            </div>
+            <div class="form-check form-switch mb-2">
+              <input class="form-check-input" type="checkbox" [(ngModel)]="settings.displayAndSecurity.confirmBeforePayment">
+              <label class="form-check-label small fw-bold">Confirmation avant paiement d’une facture</label>
+            </div>
+            <div class="form-check form-switch mb-2">
+              <input class="form-check-input" type="checkbox" [(ngModel)]="settings.displayAndSecurity.paymentPinEnabled">
+              <label class="form-check-label small fw-bold">Demander code PIN pour paiements</label>
+            </div>
+            <div class="form-check form-switch mb-2">
+              <input class="form-check-input" type="checkbox" [(ngModel)]="settings.displayAndSecurity.budgetExceededAlert">
+              <label class="form-check-label small fw-bold">Alerte si budget dépassé</label>
+            </div>
+            <div class="form-check form-switch mb-0">
+              <input class="form-check-input" type="checkbox" [(ngModel)]="settings.displayAndSecurity.missingDocumentAlert">
+              <label class="form-check-label small fw-bold">Alerte si document entreprise manquant</label>
+            </div>
+          </div>
+
+          <button class="btn btn-primary w-100 rounded-3 py-2 fw-bold" (click)="saveSection('displayAndSecurity')">
+            Enregistrer affichage et sécurité
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Toast -->
+  <div class="custom-toast" *ngIf="showToast">
+    <div class="d-flex align-items-center gap-2">
+      <i class="ion-md-checkmark-circle text-success h4 mb-0"></i>
+      <span>{{ toastMessage }}</span>
+    </div>
+  </div>
+</div>

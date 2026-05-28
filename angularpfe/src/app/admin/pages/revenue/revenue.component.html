@@ -1,0 +1,322 @@
+<div class="admin-revenue animate__animated animate__fadeIn">
+  
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold text-dark mb-1">Revenus plateforme</h2>
+      <p class="text-muted">Analysez le chiffre d’affaires, les commissions et la performance financière de GoRide.</p>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-primary rounded-pill fw-bold px-4 shadow-sm" (click)="exportReport()">
+        <span class="ion-ios-download me-2"></span>Exporter rapport
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-2">
+      <div class="stat-card bg-white shadow-sm p-3 rounded-4 border-start border-primary border-4 h-100">
+        <p class="text-muted tiny fw-bold text-uppercase mb-1">Chiffre d’affaires</p>
+        <h4 class="fw-bold mb-1 text-dark">{{ stats.totalCA | number:'1.0-0' }} DT</h4>
+        <span class="tiny text-success fw-bold"><span class="ion-ios-trending-up me-1"></span>+{{ stats.growth }}%</span>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="stat-card bg-white shadow-sm p-3 rounded-4 border-start border-dark border-4 h-100">
+        <p class="text-muted tiny fw-bold text-uppercase mb-1">Commissions GoRide</p>
+        <h4 class="fw-bold mb-0 text-dark">{{ stats.commissions | number:'1.0-0' }} DT</h4>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="stat-card bg-white shadow-sm p-3 rounded-4 border-start border-success border-4 h-100">
+        <p class="text-muted tiny fw-bold text-uppercase mb-1">Revenus Partenaires</p>
+        <h4 class="fw-bold mb-0 text-success">{{ stats.netPartners | number:'1.0-0' }} DT</h4>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="stat-card bg-white shadow-sm p-3 rounded-4 border-start border-primary border-4 h-100">
+        <p class="text-muted tiny fw-bold text-uppercase mb-1">Paiements réussis</p>
+        <h4 class="fw-bold mb-0 text-primary">{{ stats.successPayments }}</h4>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="stat-card bg-white shadow-sm p-3 rounded-4 border-start border-warning border-4 h-100">
+        <p class="text-muted tiny fw-bold text-uppercase mb-1">En attente</p>
+        <h4 class="fw-bold mb-0 text-warning">{{ stats.pendingPayments }}</h4>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="stat-card bg-primary text-white shadow-sm p-3 rounded-4 h-100">
+        <p class="text-white-50 tiny fw-bold text-uppercase mb-1">Croissance</p>
+        <h4 class="fw-bold mb-0">+{{ stats.growth }}%</h4>
+        <span class="tiny text-white-50">Ce mois-ci</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <!-- Evolution Chart -->
+    <div class="col-md-8">
+      <div class="chart-card bg-white shadow-sm p-4 rounded-4 h-100">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h5 class="fw-bold text-dark mb-0">Évolution du chiffre d’affaires</h5>
+          <select class="form-select form-select-sm rounded-pill border-0 bg-light px-3" style="width: auto;"
+                  (change)="onEvolutionPeriodChange($event)">
+            <option>30 derniers jours</option>
+            <option>Cette année</option>
+          </select>
+        </div>
+        
+        <div *ngIf="monthlyData.length === 0" class="text-center py-5 text-muted">
+          <span class="ion-ios-stats fs-1 opacity-25 d-block mb-2"></span>
+          <p class="fw-bold mb-0">Aucune donnée sur cette période</p>
+        </div>
+
+        <div *ngIf="monthlyData.length > 0" class="bar-chart-container d-flex align-items-end gap-3 px-2 pt-4" style="height: 200px;">
+          <div *ngFor="let item of monthlyData" class="bar-wrapper flex-grow-1 text-center">
+            <div class="bar bg-primary rounded-top animate__animated animate__slideInUp" 
+                 [style.height.%]="barHeightPercent(item.amount)" 
+                 [title]="item.amount + ' DT'">
+              <span class="bar-value tiny fw-bold text-primary" *ngIf="item.amount > 0">{{ item.amount }} DT</span>
+            </div>
+            <p class="tiny text-muted fw-bold mt-2 mb-0">{{ item.month }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary Quick Info -->
+    <div class="col-md-4">
+      <div class="summary-card bg-dark text-white p-4 rounded-4 h-100 position-relative overflow-hidden">
+        <div class="position-relative z-index-1">
+          <h5 class="fw-bold mb-3">Résumé financier</h5>
+          <p class="text-white-50 small mb-4">
+            Ce mois-ci, les services entreprises représentent la plus grande part du chiffre d’affaires, suivis par les locations de véhicules. Les commissions GoRide progressent de 18% par rapport au mois précédent.
+          </p>
+          <div class="d-grid gap-2">
+            <button class="btn btn-primary rounded-pill fw-bold" (click)="goToPayments()">Voir paiements</button>
+            <button class="btn btn-outline-light rounded-pill fw-bold border-opacity-25" (click)="goToInvoices()">Voir factures</button>
+          </div>
+        </div>
+        <span class="ion-ios-stats position-absolute bottom-0 end-0 fs-1 text-white opacity-10 m-3" style="font-size: 100px !important;"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <!-- Revenue Breakdown -->
+    <div class="col-md-6">
+      <div class="content-card bg-white shadow-sm p-4 rounded-4 h-100">
+        <h5 class="fw-bold text-dark mb-4">Répartition par service</h5>
+        <div class="table-responsive">
+          <table class="table table-borderless align-middle">
+            <tbody>
+              <tr *ngFor="let s of serviceBreakdown">
+                <td>
+                  <span class="small fw-bold text-dark d-block">{{ s.name }}</span>
+                  <span class="tiny text-muted">{{ s.count }} services</span>
+                </td>
+                <td class="text-center">
+                   <div class="progress rounded-pill" style="height: 6px; width: 80px;">
+                      <div class="progress-bar bg-primary" [style.width.%]="s.percentage"></div>
+                   </div>
+                   <span class="tiny text-muted">{{ s.percentage }}%</span>
+                </td>
+                <td class="text-end">
+                  <span class="fw-bold text-dark d-block">{{ s.amount }} DT</span>
+                  <span class="tiny text-success">Comm: {{ s.commission }} DT</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Commissions GoRide -->
+    <div class="col-md-6">
+      <div class="content-card bg-white shadow-sm p-4 rounded-4 h-100">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h5 class="fw-bold text-dark mb-0">Commissions GoRide</h5>
+          <button class="btn btn-link p-0 small fw-bold text-primary text-decoration-none" (click)="goToPayments()">Voir transactions liées</button>
+        </div>
+        <div class="p-4 bg-primary-soft rounded-4 border border-white shadow-sm text-center">
+          <p class="text-muted small fw-bold mb-1">Total commissions encaissées</p>
+          <h2 class="fw-bold text-primary mb-0">{{ stats.commissions }} DT</h2>
+          <hr class="my-3 opacity-10">
+          <div class="row g-2">
+            <div class="col-3" *ngFor="let s of serviceBreakdown">
+              <span class="tiny text-muted text-uppercase d-block mb-1" style="font-size: 8px;">{{ s.name.split(' ')[0] }}</span>
+              <span class="fw-bold text-dark small">{{ s.commission }} DT</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <!-- Top Partners -->
+    <div class="col-md-7">
+      <div class="content-card bg-white shadow-sm p-4 rounded-4 h-100">
+        <h5 class="fw-bold text-dark mb-4">Top partenaires générateurs</h5>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr class="tiny text-muted text-uppercase">
+                <th>Partenaire</th>
+                <th class="text-center">Revenus / Dépenses</th>
+                <th class="text-center">Commissions</th>
+                <th class="text-end">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let p of topPartners">
+                <td>
+                  <span class="fw-bold small text-dark d-block">{{ p.name }}</span>
+                  <span class="tiny text-muted">{{ p.type }}</span>
+                </td>
+                <td class="text-center">
+                  <span class="fw-bold text-dark">{{ p.revenue || p.spending }} DT</span>
+                </td>
+                <td class="text-center">
+                  <span class="badge bg-success-soft text-success rounded-pill px-2 tiny">{{ p.commission }} DT</span>
+                </td>
+                <td class="text-end">
+                  <button class="btn btn-sm btn-light border rounded-pill px-3 fw-bold" (click)="openPartnerDetails(p)">Détails</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Revenue -->
+    <div class="col-md-5">
+      <div class="content-card bg-white shadow-sm p-4 rounded-4 h-100">
+        <h5 class="fw-bold text-dark mb-4">Revenus récents</h5>
+        <div class="recent-list d-flex flex-column gap-3">
+          <div *ngFor="let r of recentRevenue" class="revenue-item d-flex justify-content-between align-items-center p-2 rounded-3 hover-bg-light">
+            <div class="d-flex align-items-center gap-3">
+              <div class="icon-circle bg-light p-2 rounded-circle d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
+                <span class="ion-ios-cash text-primary"></span>
+              </div>
+              <div>
+                <span class="small fw-bold d-block">{{ getTypeLabel(r.type) }}</span>
+                <span class="tiny text-muted">{{ r.payerName }}</span>
+              </div>
+            </div>
+            <div class="text-end">
+              <span class="fw-bold d-block" [class.text-danger]="r.type === 'REFUND'">{{ r.type === 'REFUND' ? '-' : '' }}{{ r.amount }} DT</span>
+              <button class="btn btn-link p-0 tiny fw-bold text-primary text-decoration-none" (click)="openRevenueDetails(r)">Détails</button>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-light w-100 rounded-pill mt-4 fw-bold small" (click)="goToPayments()">Voir tous les paiements</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Partner Modal -->
+<div class="modal-overlay animate__animated animate__fadeIn" *ngIf="showPartnerModal" (click)="closePartnerModal()">
+  <div class="modal-content-wrapper shadow-lg bg-white p-4" style="max-width: 550px; z-index: 10000;" (click)="$event.stopPropagation()">
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+      <h5 class="fw-bold text-dark mb-0">Profil Partenaire</h5>
+      <button class="btn btn-light rounded-circle" (click)="closePartnerModal()">
+        <span class="ion-ios-close fs-4"></span>
+      </button>
+    </div>
+    
+    <div class="modal-body" *ngIf="selectedPartner">
+       <div class="text-center mb-4">
+          <div class="bg-primary text-white d-inline-flex align-items-center justify-content-center rounded-circle mb-3" style="width: 70px; height: 70px;">
+             <h2 class="mb-0">{{ selectedPartner.name.charAt(0) }}</h2>
+          </div>
+          <h4 class="fw-bold text-dark mb-1">{{ selectedPartner.name }}</h4>
+          <span class="badge bg-primary-soft text-primary rounded-pill px-3">{{ selectedPartner.type }}</span>
+       </div>
+
+       <div class="row g-3">
+          <div class="col-6">
+             <div class="p-3 bg-light rounded-4 text-center">
+                <span class="tiny text-muted text-uppercase d-block mb-1">Revenus générés</span>
+                <h4 class="fw-bold text-success mb-0">{{ selectedPartner.revenue || selectedPartner.spending }} DT</h4>
+             </div>
+          </div>
+          <div class="col-6">
+             <div class="p-3 bg-light rounded-4 text-center">
+                <span class="tiny text-muted text-uppercase d-block mb-1">Commission GoRide</span>
+                <h4 class="fw-bold text-primary mb-0">{{ selectedPartner.commission }} DT</h4>
+             </div>
+          </div>
+          <div class="col-4 text-center">
+             <span class="tiny text-muted d-block">Services</span>
+             <span class="fw-bold">{{ selectedPartner.serviceCount }}</span>
+          </div>
+          <div class="col-4 text-center">
+             <span class="tiny text-muted d-block">Note</span>
+             <span class="fw-bold text-warning"><span class="ion-ios-star me-1"></span>{{ selectedPartner.rating }}</span>
+          </div>
+          <div class="col-4 text-center">
+             <span class="tiny text-muted d-block">Statut</span>
+             <span class="fw-bold text-success">{{ selectedPartner.status }}</span>
+          </div>
+       </div>
+
+       <div class="d-flex gap-2 mt-4">
+          <button class="btn btn-primary rounded-pill flex-grow-1 fw-bold shadow-sm" (click)="goToServices(selectedPartner.name)">Voir services</button>
+          <button class="btn btn-outline-primary rounded-pill flex-grow-1 fw-bold" (click)="goToPayments(selectedPartner.name)">Voir paiements</button>
+       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Revenue Modal -->
+<div class="modal-overlay animate__animated animate__fadeIn" *ngIf="showRevenueModal" (click)="closeRevenueModal()">
+  <div class="modal-content-wrapper shadow-lg bg-white p-4" style="max-width: 500px; z-index: 10000;" (click)="$event.stopPropagation()">
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+      <h5 class="fw-bold text-dark mb-0">Détails Revenu</h5>
+      <button class="btn btn-light rounded-circle" (click)="closeRevenueModal()">
+        <span class="ion-ios-close fs-4"></span>
+      </button>
+    </div>
+    
+    <div class="modal-body" *ngIf="selectedRevenue">
+       <div class="p-4 bg-success-soft rounded-4 text-center mb-4">
+          <span class="tiny text-success text-uppercase fw-bold d-block mb-1">Montant Encaissé</span>
+          <h1 class="fw-bold text-success mb-0">{{ selectedRevenue.amount }} DT</h1>
+       </div>
+
+       <div class="d-flex flex-column gap-3">
+          <div class="d-flex justify-content-between border-bottom pb-2">
+             <span class="text-muted">Type de revenu</span>
+             <span class="fw-bold">{{ getTypeLabel(selectedRevenue.type) }}</span>
+          </div>
+          <div class="d-flex justify-content-between border-bottom pb-2">
+             <span class="text-muted">Source / Payeur</span>
+             <span class="fw-bold text-dark">{{ selectedRevenue.payerName }}</span>
+          </div>
+          <div class="d-flex justify-content-between border-bottom pb-2">
+             <span class="text-muted">Commission GoRide</span>
+             <span class="fw-bold text-danger">{{ selectedRevenue.commission || 0 }} DT</span>
+          </div>
+          <div class="d-flex justify-content-between border-bottom pb-2">
+             <span class="text-muted">Date</span>
+             <span class="fw-bold small">{{ selectedRevenue.date | date:'medium' }}</span>
+          </div>
+          <div class="d-flex justify-content-between border-bottom pb-2">
+             <span class="text-muted">Référence</span>
+             <span class="fw-bold text-primary">{{ selectedRevenue.id }}</span>
+          </div>
+       </div>
+
+       <div class="d-flex gap-2 mt-4">
+          <button class="btn btn-light rounded-pill flex-grow-1 fw-bold" (click)="closeRevenueModal()">Fermer</button>
+          <button class="btn btn-primary rounded-pill flex-grow-1 fw-bold shadow-sm" (click)="goToPayments(selectedRevenue.id)">Voir paiement</button>
+       </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,178 @@
+<div class="company-conversations-page animate__animated animate__fadeIn">
+  <div class="row g-0 h-100">
+    <!-- Left Sidebar: Conversations List -->
+    <div class="col-lg-4 col-xl-3 border-end bg-white d-flex flex-column h-100 chat-sidebar">
+      <!-- Header -->
+      <div class="p-4 border-bottom">
+        <h2 class="fw-bold mb-1">Conversations</h2>
+        <p class="text-muted small mb-3">Échangez avec les propriétaires, chauffeurs et le support.</p>
+        
+        <!-- Search -->
+        <div class="search-box mb-3">
+          <i class="ion-md-search"></i>
+          <input type="text" class="form-control rounded-pill bg-light border-0" 
+                 placeholder="Rechercher..." [(ngModel)]="searchTerm" (input)="applyFilters()">
+        </div>
+
+        <!-- Filters -->
+        <div class="d-flex gap-2 overflow-auto pb-1 filters-scroll">
+          <button class="btn btn-sm rounded-pill px-3" [class.btn-primary]="typeFilter === 'ALL'" 
+                  [class.btn-light]="typeFilter !== 'ALL'" (click)="typeFilter = 'ALL'; applyFilters()">Toutes</button>
+          <button class="btn btn-sm rounded-pill px-3" [class.btn-primary]="typeFilter === 'OWNER'" 
+                  [class.btn-light]="typeFilter !== 'OWNER'" (click)="typeFilter = 'OWNER'; applyFilters()">Propriétaires</button>
+          <button class="btn btn-sm rounded-pill px-3" [class.btn-primary]="typeFilter === 'DRIVER'" 
+                  [class.btn-light]="typeFilter !== 'DRIVER'" (click)="typeFilter = 'DRIVER'; applyFilters()">Chauffeurs</button>
+          <button class="btn btn-sm rounded-pill px-3" [class.btn-primary]="typeFilter === 'SUPPORT'" 
+                  [class.btn-light]="typeFilter !== 'SUPPORT'" (click)="typeFilter = 'SUPPORT'; applyFilters()">Support</button>
+          <button class="btn btn-sm rounded-pill px-3" [class.btn-primary]="typeFilter === 'UNREAD'" 
+                  [class.btn-light]="typeFilter !== 'UNREAD'" (click)="typeFilter = 'UNREAD'; applyFilters()">Non lues</button>
+        </div>
+      </div>
+
+      <!-- List -->
+      <div class="flex-grow-1 overflow-auto conversations-list">
+        <div *ngFor="let c of filteredConversations" class="conv-item p-3 d-flex gap-3 align-items-center clickable"
+             [class.active]="selectedConversation?.id === c.id" (click)="selectConversation(c)">
+          <div class="avatar bg-soft-primary text-primary fw-bold">{{ getInitials(c.participantName) }}</div>
+          <div class="flex-grow-1 min-width-0">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <h6 class="fw-bold mb-0 text-truncate">{{ c.participantName }}</h6>
+              <span class="text-muted tiny">{{ c.lastMessageAt | date:'HH:mm' }}</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+              <p class="text-muted small mb-0 text-truncate">{{ c.lastMessage }}</p>
+              <span class="badge rounded-pill bg-primary" *ngIf="c.unreadCount > 0">{{ c.unreadCount }}</span>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="loadingConversations" class="p-4 text-center text-muted">Chargement…</div>
+        <div *ngIf="!loadingConversations && filteredConversations.length === 0" class="p-5 text-center">
+          <i class="ion-md-chatbubbles text-light display-1"></i>
+          <p class="text-muted mt-3">Aucune conversation trouvée.</p>
+          <p class="text-muted small" *ngIf="errorMessage">{{ errorMessage }}</p>
+          <p class="text-muted small" *ngIf="!errorMessage">Connectez-vous avec <strong>company@goride.demo</strong> pour voir les conversations démo.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Chat Area -->
+    <div class="col-lg-8 col-xl-9 d-flex flex-column h-100 bg-chat-pattern">
+      <ng-container *ngIf="selectedConversation; else emptyState">
+        <!-- Chat Header -->
+        <div class="chat-header p-3 px-4 bg-white border-bottom d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center gap-3">
+            <div class="avatar-small bg-soft-primary text-primary">{{ getInitials(selectedConversation.participantName) }}</div>
+            <div>
+              <h6 class="fw-bold mb-0">{{ selectedConversation.participantName }}</h6>
+              <div class="d-flex align-items-center gap-2">
+                <span class="status-dot" [class.online]="selectedConversation.status === 'online'"></span>
+                <span class="text-muted small">{{ selectedConversation.participantRole }}</span>
+                <span class="badge bg-light text-dark border ms-2" *ngIf="selectedConversation.serviceType">{{ selectedConversation.serviceType }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-icon btn-light rounded-circle" (click)="openCall()">
+              <i class="ion-md-call"></i>
+            </button>
+            <button class="btn btn-icon btn-light rounded-circle" (click)="openInfo()">
+              <i class="ion-md-information-circle-outline"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Messages Area -->
+        <div class="chat-messages p-4 flex-grow-1 overflow-auto">
+          <div *ngIf="loadingMessages" class="text-center text-muted py-4">Chargement des messages…</div>
+          <div *ngFor="let m of selectedConversation.messages" class="message-wrapper mb-3"
+               [class.sent]="m.sender === 'COMPANY'" [class.received]="m.sender !== 'COMPANY'">
+            <div class="message-bubble">
+              <p class="mb-0">{{ m.text }}</p>
+              <span class="message-time">{{ m.time }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat Input -->
+        <div class="chat-input-area p-3 px-4 bg-white border-top">
+          <div class="input-group">
+            <input type="text" class="form-control rounded-pill border-0 bg-light px-4" 
+                   placeholder="Écrivez votre message..." [(ngModel)]="newMessage" (keyup.enter)="sendMessage()">
+            <button class="btn btn-primary rounded-circle ms-2 p-0 d-flex align-items-center justify-content-center" 
+                    style="width: 45px; height: 45px;" (click)="sendMessage()">
+              <i class="ion-md-send fs-5"></i>
+            </button>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-template #emptyState>
+        <div class="h-100 d-flex align-items-center justify-content-center text-center">
+          <div class="p-5 max-width-400">
+            <div class="mb-4">
+              <div class="empty-chat-icon bg-soft-primary text-primary mx-auto">
+                <i class="ion-md-chatboxes"></i>
+              </div>
+            </div>
+            <h3 class="fw-bold">Sélectionnez une conversation</h3>
+            <p class="text-muted">Choisissez un interlocuteur dans la liste de gauche pour commencer à échanger en temps réel.</p>
+          </div>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+
+  <!-- Call Modal -->
+  <div class="modal-overlay" *ngIf="showCallModal" (click)="closeModals()">
+    <div class="modal-card-premium animate__animated animate__zoomIn" (click)="$event.stopPropagation()">
+      <div class="p-5 text-center">
+        <div class="avatar-large bg-soft-primary text-primary mx-auto mb-4">{{ getInitials(selectedConversation?.participantName) }}</div>
+        <h4 class="fw-bold mb-1">Appeler {{ selectedConversation?.participantName }}</h4>
+        <p class="text-muted mb-4">{{ selectedConversation?.participantRole }}</p>
+        <h2 class="fw-bold text-primary mb-5">{{ getPhoneNumber() }}</h2>
+        <div class="d-grid">
+          <button class="btn btn-light rounded-pill py-3 fw-bold" (click)="closeModals()">Fermer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Info Modal -->
+  <div class="modal-overlay" *ngIf="showInfoModal" (click)="closeModals()">
+    <div class="modal-card-premium animate__animated animate__zoomIn" (click)="$event.stopPropagation()">
+      <div class="p-4 border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0">Informations</h5>
+        <button class="btn-close-custom" (click)="closeModals()">&times;</button>
+      </div>
+      <div class="p-4">
+        <div class="info-grid">
+          <div class="info-row">
+            <span class="label">INTERLOCUTEUR</span>
+            <span class="value">{{ selectedConversation?.participantName }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">RÔLE</span>
+            <span class="value">{{ selectedConversation?.participantRole }}</span>
+          </div>
+          <div class="info-row" *ngIf="selectedConversation?.serviceType">
+            <span class="label">SERVICE LIÉ</span>
+            <span class="value">{{ selectedConversation?.serviceType }}</span>
+          </div>
+          <div class="info-row" *ngIf="selectedConversation?.vehicleName">
+            <span class="label">VÉHICULE</span>
+            <span class="value">{{ selectedConversation?.vehicleName }}</span>
+          </div>
+          <div class="info-row" *ngIf="selectedConversation?.missionName">
+            <span class="label">MISSION</span>
+            <span class="value">{{ selectedConversation?.missionName }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">DERNIER ÉCHANGE</span>
+            <span class="value">{{ selectedConversation?.lastMessageAt | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+        </div>
+        <button class="btn btn-primary w-100 rounded-pill py-3 fw-bold mt-4" (click)="closeModals()">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>

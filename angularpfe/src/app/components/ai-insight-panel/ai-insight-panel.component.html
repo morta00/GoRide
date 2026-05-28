@@ -1,0 +1,80 @@
+<section class="ai-panel" [class.ai-panel--ride]="isRideMode">
+  <header class="ai-panel-header">
+    <div class="ai-brand">
+      <div class="ai-badge" [class.powered]="aiPowered">
+        <span class="ion-md-bulb"></span>
+        <span>{{ (aiPowered ? 'AI.BADGE' : 'AI.BADGE_BASIC') | translate }}</span>
+      </div>
+      <div class="ai-header-text">
+        <h3 class="ai-title">{{ title }}</h3>
+        <p class="ai-subtitle">{{ subtitle }}</p>
+      </div>
+    </div>
+  </header>
+
+  <p class="ai-section-label">{{ 'AI.PRIORITY_LABEL' | translate }}</p>
+  <div class="pref-grid" [class.pref-grid--ride]="isRideMode">
+    <button
+      type="button"
+      *ngFor="let p of preferenceOptions"
+      class="pref-card"
+      [class.active]="preference === p.id"
+      [class.accent-violet]="p.accent === 'violet'"
+      [class.accent-green]="p.accent === 'green'"
+      [class.accent-blue]="p.accent === 'blue'"
+      [class.accent-amber]="p.accent === 'amber'"
+      [class.accent-indigo]="p.accent === 'indigo'"
+      [class.accent-teal]="p.accent === 'teal'"
+      (click)="selectPreference(p.id)">
+      <span class="pref-icon-wrap">
+        <span [class]="p.icon"></span>
+      </span>
+      <span class="pref-label">{{ p.label }}</span>
+      <span class="pref-hint">{{ p.hint }}</span>
+      <span class="pref-check ion-md-checkmark" *ngIf="preference === p.id"></span>
+    </button>
+  </div>
+
+  <p class="ai-hint-change" *ngIf="resultMismatch">
+    <span class="ion-md-information-circle"></span>
+    {{ 'AI.PRIORITY_CHANGED' | translate }}
+  </p>
+
+  <button type="button" class="btn-analyze" [disabled]="loading" (click)="analyze()">
+    <span class="ion-md-flash" *ngIf="!loading"></span>
+    <span class="spinner-border spinner-border-sm" *ngIf="loading"></span>
+    {{ (loading ? 'AI.ANALYZING' : 'AI.ANALYZE') | translate }}
+  </button>
+
+  <div class="ai-alert" *ngIf="error">
+    <span class="ion-md-warning"></span>
+    {{ error }}
+  </div>
+
+  <div class="ai-result" *ngIf="result">
+    <div class="result-top">
+      <span class="result-pref-tag">{{ resultPreferenceLabel() }}</span>
+    </div>
+    <h4 class="result-headline">{{ result.headline }}</h4>
+    <p class="result-pick" *ngIf="result.recommendedLabel">
+      <span class="ion-md-car"></span>
+      <strong>{{ result.recommendedLabel }}</strong>
+      <span class="result-id" *ngIf="result.recommendedId">#{{ result.recommendedId }}</span>
+    </p>
+    <p class="result-reason">{{ result.reason }}</p>
+    <ul class="result-tips" *ngIf="result.tips?.length">
+      <li *ngFor="let tip of result.tips">
+        <span class="tip-bullet ion-md-checkmark-circle"></span>
+        <span>{{ tip }}</span>
+      </li>
+    </ul>
+    <button
+      type="button"
+      class="btn-show"
+      *ngIf="result.recommendedId && mode !== 'ride'"
+      (click)="highlightRecommended(result.recommendedId)">
+      <span class="ion-md-locate"></span>
+      {{ 'AI.SHOW_IN_LIST' | translate }}
+    </button>
+  </div>
+</section>

@@ -1,0 +1,124 @@
+<!-- CONTACT HERO -->
+<section class="contact-hero text-center py-5">
+  <div class="container py-5 mt-5">
+    <span class="text-primary fw-bold text-uppercase small letter-spacing-2 mb-3 d-block" data-aos="fade-down">{{ 'FOOTER.CONTACT' | translate }}</span>
+    <h1 class="display-4 fw-900 mb-4" data-aos="fade-up">{{ 'FOOTER.QUESTIONS' | translate }}</h1>
+    <p class="lead text-muted mx-auto" style="max-width: 600px;" data-aos="fade-up" data-aos-delay="100">
+      Notre équipe est à votre disposition pour répondre à toutes vos questions. N'hésitez pas à nous écrire, nous vous répondrons dans les plus brefs délais.
+    </p>
+  </div>
+</section>
+
+<!-- CONTACT SECTION -->
+<section class="contact-section pb-5 mb-5">
+  <div class="container">
+    
+    <!-- Info Boxes -->
+    <div class="row g-4 mb-5 justify-content-center">
+      <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+        <div class="contact-box p-5 text-center bg-white rounded-4 shadow-sm h-100">
+          <div class="icon-wrapper mx-auto mb-4">
+            <span class="ion-ios-pin text-primary"></span>
+          </div>
+          <h5 class="fw-bold mb-2">Adresse</h5>
+          <p class="text-muted mb-0">123 Rue de la Liberté,<br>Tunis, Tunisie</p>
+        </div>
+      </div>
+      <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+        <div class="contact-box p-5 text-center bg-white rounded-4 shadow-sm h-100">
+          <div class="icon-wrapper mx-auto mb-4">
+            <span class="ion-ios-call text-primary"></span>
+          </div>
+          <h5 class="fw-bold mb-2">Téléphone</h5>
+          <p class="text-muted mb-0"><a href="tel://1234567920" class="text-decoration-none text-muted">+216 71 000 000</a><br>Lun - Ven, 9h à 18h</p>
+        </div>
+      </div>
+      <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+        <div class="contact-box p-5 text-center bg-white rounded-4 shadow-sm h-100">
+          <div class="icon-wrapper mx-auto mb-4">
+            <span class="ion-ios-mail text-primary"></span>
+          </div>
+          <h5 class="fw-bold mb-2">Email</h5>
+          <p class="text-muted mb-0"><a href="mailto:contact@goride.tn" class="text-decoration-none text-muted">contact@goride.tn</a><br>Support 24/7</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact Form -->
+    <div class="row justify-content-center">
+      <div class="col-lg-8" data-aos="fade-up" data-aos-delay="400">
+        <form class="contact-form bg-white p-4 p-md-5 rounded-5 shadow-lg border border-light">
+          <h3 class="fw-800 mb-4 text-center">Envoyez-nous un message</h3>
+          
+          <div class="row g-4">
+            <div class="col-md-6">
+              <div class="form-group mb-0">
+                <label class="form-label-custom">Votre Nom</label>
+                <div class="input-with-icon">
+                  <span class="ion-ios-person input-icon"></span>
+                  <input type="text" class="form-control custom-input" placeholder="Ex: Ahmed">
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <div class="form-group mb-0">
+                <label class="form-label-custom">Votre Email</label>
+                <div class="input-with-icon">
+                  <span class="ion-ios-mail input-icon"></span>
+                  <input type="email" 
+                         class="form-control custom-input" 
+                         [(ngModel)]="contactEmail" 
+                         name="email" 
+                         #emailRef="ngModel" 
+                         required 
+                         email
+                         [class.is-invalid]="emailRef.invalid && (emailRef.dirty || emailRef.touched)"
+                         [class.is-valid]="emailRef.valid && (emailRef.dirty || emailRef.touched)"
+                         pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$"
+                         (blur)="contactEmail = contactEmail?.trim()?.toLowerCase() ?? ''"
+                         placeholder="Ex: nom@domaine.com">
+                  <span class="ion-md-checkmark-circle valid-check-icon" *ngIf="emailRef.valid && emailRef.dirty"></span>
+                </div>
+                <div class="invalid-feedback small mt-1 d-block" *ngIf="emailRef.invalid && (emailRef.dirty || emailRef.touched)">
+                  <span *ngIf="emailRef.errors?.['required']">Email requis.</span>
+                  <span *ngIf="emailRef.errors?.['pattern'] || emailRef.errors?.['email']">Format email invalide.</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <div class="form-group mb-0">
+                <label class="form-label-custom">Sujet</label>
+                <div class="input-with-icon">
+                  <span class="ion-ios-information-circle-outline input-icon"></span>
+                  <select class="form-select custom-input" style="padding-left: 50px;">
+                    <option selected disabled>Choisissez un sujet</option>
+                    <option>Support Client</option>
+                    <option>Devenir Chauffeur</option>
+                    <option>Solution Entreprise</option>
+                    <option>Autre demande</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <div class="form-group mb-0">
+                <label class="form-label-custom">Message</label>
+                <textarea class="form-control custom-input text-area-custom" rows="6" placeholder="Comment pouvons-nous vous aider ?"></textarea>
+              </div>
+            </div>
+
+            <div class="col-12 mt-5 text-center">
+              <button type="submit" class="btn btn-primary-custom w-100 py-3 d-flex align-items-center justify-content-center gap-2">
+                Envoyer le message <span class="ion-ios-send"></span>
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</section>

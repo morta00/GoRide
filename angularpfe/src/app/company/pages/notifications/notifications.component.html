@@ -1,0 +1,201 @@
+<div class="company-notifications-page animate__animated animate__fadeIn p-4">
+  <!-- Titre -->
+  <div class="mb-4">
+    <h2 class="fw-bold mb-1">Notifications</h2>
+    <p class="text-muted">Suivez les alertes importantes liées à vos demandes, missions, paiements et factures.</p>
+  </div>
+
+  <!-- Stats -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-3">
+      <div class="stat-card p-4 rounded-4 shadow-sm border-0 bg-white">
+        <div class="d-flex align-items-center gap-3">
+          <div class="stat-icon bg-soft-primary text-primary"><i class="ion-md-notifications"></i></div>
+          <div>
+            <h6 class="text-muted small mb-0">Total</h6>
+            <h3 class="fw-bold mb-0">{{ stats.total }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card p-4 rounded-4 shadow-sm border-0 bg-white">
+        <div class="d-flex align-items-center gap-3">
+          <div class="stat-icon bg-soft-danger text-danger"><i class="ion-md-mail-unread"></i></div>
+          <div>
+            <h6 class="text-muted small mb-0">Non lues</h6>
+            <h3 class="fw-bold mb-0">{{ stats.unread }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card p-4 rounded-4 shadow-sm border-0 bg-white">
+        <div class="d-flex align-items-center gap-3">
+          <div class="stat-icon bg-soft-warning text-warning"><i class="ion-md-flash"></i></div>
+          <div>
+            <h6 class="text-muted small mb-0">Importantes</h6>
+            <h3 class="fw-bold mb-0">{{ stats.important }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card p-4 rounded-4 shadow-sm border-0 bg-white">
+        <div class="d-flex align-items-center gap-3">
+          <div class="stat-icon bg-soft-success text-success"><i class="ion-md-calendar"></i></div>
+          <div>
+            <h6 class="text-muted small mb-0">Aujourd'hui</h6>
+            <h3 class="fw-bold mb-0">{{ stats.today }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="bg-white rounded-4 shadow-sm p-4 mb-4">
+    <div class="row g-3 align-items-center">
+      <div class="col-lg-4">
+        <div class="search-box">
+          <i class="ion-md-search"></i>
+          <input type="text" class="form-control rounded-pill bg-light border-0 px-5" 
+                 placeholder="Rechercher une notification..." [(ngModel)]="searchTerm" (input)="applyFilters()">
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="d-flex gap-2 overflow-auto filters-scroll pb-1">
+          <select class="form-select rounded-pill bg-light border-0 px-3" [(ngModel)]="typeFilter" (change)="applyFilters()">
+            <option value="ALL">Tous les types</option>
+            <option value="UNREAD">Non lues</option>
+            <option value="IMPORTANT">Importantes</option>
+            <option value="REQUESTS">Demandes</option>
+            <option value="MESSAGES">Messages</option>
+            <option value="INVOICES">Factures</option>
+            <option value="PAYMENTS">Paiements</option>
+            <option value="REVIEWS">Avis</option>
+            <option value="SUPPORT">Support</option>
+          </select>
+          <select class="form-select rounded-pill bg-light border-0 px-3" [(ngModel)]="sortBy" (change)="applyFilters()">
+            <option value="NEWEST">Plus récentes</option>
+            <option value="OLDEST">Plus anciennes</option>
+            <option value="UNREAD_FIRST">Non lues d'abord</option>
+            <option value="IMPORTANT_FIRST">Importantes d'abord</option>
+          </select>
+        </div>
+      </div>
+      <div class="col-lg-4 text-lg-end">
+        <button class="btn btn-outline-primary btn-sm rounded-pill px-3 me-2" (click)="markAllAsRead()">
+          Tout marquer comme lu
+        </button>
+        <button class="btn btn-outline-danger btn-sm rounded-pill px-3" (click)="deleteRead()">
+          Supprimer les lues
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notifications List -->
+  <div class="notifications-list">
+    <div *ngFor="let n of filteredNotifications" class="notif-card bg-white rounded-4 shadow-sm p-3 mb-3 animate__animated animate__fadeInUp clickable"
+         [class.unread]="!n.isRead" (click)="viewNotification(n)">
+      <div class="d-flex gap-3 align-items-start">
+        <div class="notif-icon-circle" [ngClass]="getTypeClass(n.type)">
+          <i [ngClass]="getTypeIcon(n.type)"></i>
+        </div>
+        <div class="flex-grow-1">
+          <div class="d-flex justify-content-between align-items-start mb-1">
+            <h6 class="fw-bold mb-0 d-flex align-items-center gap-2">
+              {{ n.title }}
+              <span class="badge bg-warning text-dark small-badge" *ngIf="n.isImportant"><i class="ion-md-flash"></i> Important</span>
+              <span class="badge bg-danger small-badge" *ngIf="!n.isRead">Nouveau</span>
+            </h6>
+            <span class="text-muted small">{{ n.createdAt | date:'dd MMM, HH:mm' }}</span>
+          </div>
+          <p class="text-muted small mb-3">{{ n.message }}</p>
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="badge rounded-pill" [ngClass]="getTypeClass(n.type)">{{ getTypeLabel(n.type) }}</span>
+            <div class="actions">
+              <button class="btn btn-link btn-sm text-primary p-0 me-3 fw-bold" (click)="$event.stopPropagation(); viewNotification(n)">Voir</button>
+              <button class="btn btn-link btn-sm text-secondary p-0 me-3 fw-bold" (click)="toggleRead(n, $event)">
+                {{ n.isRead ? 'Non lue' : 'Marquer comme lue' }}
+              </button>
+              <button class="btn btn-link btn-sm text-danger p-0 fw-bold" (click)="confirmDelete(n, $event)">Supprimer</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="filteredNotifications.length === 0" class="text-center py-5 bg-white rounded-4 shadow-sm">
+      <div class="empty-icon text-light mb-3">
+        <i class="ion-md-notifications-off display-1"></i>
+      </div>
+      <h4 class="fw-bold">Aucune notification</h4>
+      <p class="text-muted">Vous êtes à jour ! Aucune nouvelle alerte pour le moment.</p>
+      <button class="btn btn-primary rounded-pill px-4 mt-3" (click)="searchTerm=''; typeFilter='ALL'; applyFilters()">Voir toutes les notifications</button>
+    </div>
+  </div>
+
+  <!-- Modals -->
+  <!-- View Modal -->
+  <div class="modal-overlay" *ngIf="showModal" (click)="closeModals()">
+    <div class="modal-card-premium animate__animated animate__zoomIn" (click)="$event.stopPropagation()">
+      <div class="p-4 border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0">Détails de la notification</h5>
+        <button class="btn-close-custom" (click)="closeModals()">&times;</button>
+      </div>
+      <div class="p-5 text-center" *ngIf="selectedNotification">
+        <div class="notif-icon-large mx-auto mb-4" [ngClass]="getTypeClass(selectedNotification.type)">
+          <i [ngClass]="getTypeIcon(selectedNotification.type)"></i>
+        </div>
+        <h4 class="fw-bold mb-2">{{ selectedNotification.title }}</h4>
+        <p class="text-muted mb-4 px-4">{{ selectedNotification.message }}</p>
+        
+        <div class="info-grid text-start mb-4">
+          <div class="info-row d-flex justify-content-between py-2 border-bottom">
+            <span class="label text-muted">TYPE</span>
+            <span class="value fw-bold">{{ getTypeLabel(selectedNotification.type) }}</span>
+          </div>
+          <div class="info-row d-flex justify-content-between py-2 border-bottom">
+            <span class="label text-muted">DATE</span>
+            <span class="value fw-bold">{{ selectedNotification.createdAt | date:'dd MMMM yyyy, HH:mm' }}</span>
+          </div>
+          <div class="info-row d-flex justify-content-between py-2 border-bottom">
+            <span class="label text-muted">IMPORTANCE</span>
+            <span class="value fw-bold">{{ selectedNotification.isImportant ? 'Haute' : 'Normale' }}</span>
+          </div>
+          <div class="info-row d-flex justify-content-between py-2">
+            <span class="label text-muted">STATUT</span>
+            <span class="value fw-bold">{{ selectedNotification.isRead ? 'Lue' : 'Non lue' }}</span>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button class="btn btn-primary rounded-pill py-3 px-4 flex-grow-1 fw-bold shadow-sm" (click)="navigateToEntity()">
+            Ouvrir la page liée
+          </button>
+          <button class="btn btn-light rounded-pill py-3 px-4 fw-bold" (click)="closeModals()">Fermer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirm Modal -->
+  <div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="closeModals()">
+    <div class="modal-card-premium animate__animated animate__headShake" (click)="$event.stopPropagation()">
+      <div class="p-5 text-center">
+        <div class="delete-icon bg-soft-danger text-danger mx-auto mb-4">
+          <i class="ion-md-trash"></i>
+        </div>
+        <h4 class="fw-bold mb-3">Supprimer la notification ?</h4>
+        <p class="text-muted mb-5">Cette action est irréversible. Voulez-vous vraiment supprimer cette notification ?</p>
+        <div class="d-flex gap-3">
+          <button class="btn btn-danger rounded-pill py-3 px-4 flex-grow-1 fw-bold" (click)="deleteNotification()">Supprimer</button>
+          <button class="btn btn-light rounded-pill py-3 px-4 flex-grow-1 fw-bold" (click)="closeModals()">Annuler</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

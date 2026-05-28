@@ -1,0 +1,123 @@
+.company-dashboard {
+  background: #f8fafc;
+  min-height: 100vh;
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 20px;
+}
+
+.stat-card {
+  background: white;
+  padding: 20px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+  transition: transform 0.3s;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+}
+
+.stat-icon {
+  width: 45px;
+  height: 45px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.stat-info .label {
+  font-size: 0.75rem;
+  color: #64748b;
+  display: block;
+  font-weight: 600;
+}
+
+.stat-info .value {
+  font-size: 1.2rem;
+  font-weight: 800;
+  margin: 0;
+  color: #1e293b;
+}
+
+/* Soft Colors */
+.bg-soft-warning { background: #fffbeb; }
+.bg-soft-success { background: #f0fdf4; }
+.bg-soft-primary { background: #eff6ff; }
+.bg-soft-info { background: #ecfeff; }
+.bg-soft-danger { background: #fef2f2; }
+.bg-soft-indigo { background: #eef2ff; }
+.text-indigo { color: #4f46e5; }
+
+.bg-warning-light { background: #fff9db; }
+.bg-success-light { background: #ebfbee; }
+.bg-danger-light { background: #fff5f5; }
+
+.border-danger-soft { border: 1px solid #fee2e2; }
+
+/* Sections */
+.dashboard-section h5 {
+  color: #334155;
+}
+
+.last-mb-0:last-child { margin-bottom: 0 !important; }
+
+/* Quick Actions */
+.btn-soft-primary { background: #eff6ff; color: #3b82f6; }
+.btn-soft-warning { background: #fffbeb; color: #d97706; }
+.btn-soft-success { background: #f0fdf4; color: #16a34a; }
+.btn-soft-info { background: #ecfeff; color: #0891b2; }
+
+.btn-soft-primary:hover, .btn-soft-warning:hover, .btn-soft-success:hover, .btn-soft-info:hover {
+  filter: brightness(0.95);
+  transform: scale(1.02);
+}
+
+/* Modals */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(8px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-card-premium {
+  background: white;
+  border-radius: 25px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.2);
+}
+
+.btn-close-custom {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #94a3b8;
+}
+
+.x-small { font-size: 0.7rem; }
+
+.btn-white {
+  background: white;
+  color: #2563eb;
+  border: none;
+}
+
+@media (max-width: 768px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+}

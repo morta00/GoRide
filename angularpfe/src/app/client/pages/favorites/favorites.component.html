@@ -1,0 +1,172 @@
+<div class="favorites-container">
+  <!-- TOAST NOTIFICATION -->
+  <div class="toast-container" *ngIf="toastMessage">
+    <div class="toast-message animate__animated animate__fadeInUp">
+      <span class="ion-md-information-circle me-2"></span>
+      {{ toastMessage }}
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-text">
+      <h1>Véhicules favoris</h1>
+      <p>Retrouvez les voitures que vous avez sauvegardées pour les louer plus tard.</p>
+    </div>
+  </header>
+
+  <!-- Stats Grid -->
+  <section class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon total"><span class="ion-md-heart"></span></div>
+      <div class="stat-info">
+        <h3>{{ getStat('total') }}</h3>
+        <p>Total favoris</p>
+        <span class="stat-desc">Véhicules sauvegardés</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon available"><span class="ion-md-checkmark-circle"></span></div>
+      <div class="stat-info">
+        <h3>{{ getStat('available') }}</h3>
+        <p>Disponibles</p>
+        <span class="stat-desc">Prêts pour location</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon unavailable"><span class="ion-md-close-circle"></span></div>
+      <div class="stat-info">
+        <h3>{{ getStat('unavailable') }}</h3>
+        <p>Indisponibles</p>
+        <span class="stat-desc">Actuellement loués</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon price"><span class="ion-md-cash"></span></div>
+      <div class="stat-info">
+        <h3>{{ getStat('avgPrice') }} DT</h3>
+        <p>Prix moyen</p>
+        <span class="stat-desc">Par jour</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Filters Section -->
+  <section class="filters-card">
+    <div class="filters-grid">
+      <div class="search-box">
+        <span class="ion-md-search"></span>
+        <input 
+          type="text" 
+          [(ngModel)]="searchQuery" 
+          (input)="applyFilters()" 
+          placeholder="Rechercher par marque, modèle ou ville"
+        >
+      </div>
+
+      <div class="filter-group">
+        <label>Catégorie</label>
+        <select [(ngModel)]="selectedCategory" (change)="applyFilters()">
+          <option value="Toutes">Toutes les catégories</option>
+          <option value="Économique">Économique</option>
+          <option value="Compacte">Compacte</option>
+          <option value="SUV">SUV</option>
+          <option value="Luxe">Luxe</option>
+          <option value="Utilitaire">Utilitaire</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Disponibilité</label>
+        <select [(ngModel)]="selectedAvailability" (change)="applyFilters()">
+          <option value="Tous">Tous</option>
+          <option value="Disponibles">Disponibles</option>
+          <option value="Indisponibles">Indisponibles</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Prix max : <span>{{ maxPrice }} DT</span></label>
+        <input type="range" min="50" max="500" step="10" [(ngModel)]="maxPrice" (change)="applyFilters()">
+      </div>
+
+      <div class="filter-group">
+        <label>Trier par</label>
+        <select [(ngModel)]="sortBy" (change)="applySort()">
+          <option value="recent">Plus récents</option>
+          <option value="price-asc">Prix croissant</option>
+          <option value="price-desc">Prix décroissant</option>
+          <option value="rating">Mieux notés</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <!-- Vehicles Grid -->
+  <main class="favorites-grid-wrapper">
+    <div class="vehicles-grid" *ngIf="filteredVehicles.length > 0; else emptyState">
+      <div class="vehicle-card" *ngFor="let v of filteredVehicles">
+        <div class="card-image">
+          <div class="badge-status" [class.available]="v.isAvailable" [class.unavailable]="!v.isAvailable">
+            {{ v.isAvailable ? 'Disponible' : 'Indisponible' }}
+          </div>
+          <button type="button" class="favorite-btn active" (click)="removeFromFavorites(v.id, $event)">
+            <span class="ion-ios-heart"></span>
+          </button>
+          <img *ngIf="vehicleImage(v)"
+               [src]="vehicleImage(v)"
+               [alt]="v.name"
+               class="vehicle-image"
+               (error)="$any(v).image = ''">
+          <div *ngIf="!vehicleImage(v)" class="img-placeholder">
+            <span class="ion-md-car"></span>
+          </div>
+        </div>
+        
+        <div class="card-content">
+          <div class="title-row">
+            <h4>{{ v.name }}</h4>
+            <div class="rating">
+              <span class="ion-md-star"></span> {{ v.rating }}
+            </div>
+          </div>
+          
+          <p class="category-city">{{ v.category }} • {{ v.city }}</p>
+          <p class="owner-text"><span class="ion-md-person"></span> {{ v.owner }}</p>
+
+          <div class="specs-grid">
+            <span><span class="ion-md-settings"></span> {{ v.transmission }}</span>
+            <span><span class="ion-md-water"></span> {{ v.fuel }}</span>
+            <span><span class="ion-md-people"></span> {{ v.seats }} pl.</span>
+          </div>
+
+          <div class="card-footer">
+            <div class="price-info">
+              <span class="price-val">{{ v.price }} DT</span>
+              <span class="price-unit">/ jour</span>
+            </div>
+            <div class="action-btns">
+              <button type="button" class="btn-details" (click)="openExplore(v.id)">Détails</button>
+              <button type="button" class="btn-rent" *ngIf="v.isAvailable" (click)="openExplore(v.id)">Louer</button>
+              <button class="btn-similar" *ngIf="!v.isAvailable">Similaires</button>
+            </div>
+          </div>
+          
+          <button class="btn-remove-link" (click)="removeFromFavorites(v.id)">Retirer des favoris</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <ng-template #emptyState>
+      <div class="empty-results">
+        <div class="empty-icon">
+          <span class="ion-md-heart-empty"></span>
+        </div>
+        <h3>Vous n’avez aucun véhicule favori pour le moment.</h3>
+        <p>Explorez les véhicules disponibles et ajoutez ceux qui vous intéressent à vos favoris.</p>
+        <button class="btn-primary-glow" routerLink="/client/explore">Explorer les véhicules</button>
+      </div>
+    </ng-template>
+  </main>
+</div>

@@ -1,0 +1,313 @@
+<div class="company-dashboard p-4 animate__animated animate__fadeIn">
+  <!-- Header -->
+  <header class="dashboard-header d-flex justify-content-between align-items-center mb-5">
+    <div>
+      <h1 class="fw-bold text-dark mb-1">Bonjour, {{ userName }} 👋</h1>
+      <p class="text-muted mb-0">Gérez vos demandes de véhicules, chauffeurs, missions et paiements professionnels.</p>
+    </div>
+    <button class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow" (click)="goTo('/company/request-service')">
+      <i class="ion-md-add-circle me-2"></i> Demander un service
+    </button>
+  </header>
+
+  <!-- Statistics Cards -->
+  <div class="stats-grid mb-5">
+    <div class="stat-card">
+      <div class="stat-icon bg-soft-warning text-warning"><i class="ion-md-send"></i></div>
+      <div class="stat-info">
+        <span class="label">Demandes en attente</span>
+        <h3 class="value">{{ stats.pendingRequests }}</h3>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon bg-soft-success text-success"><i class="ion-md-checkmark-circle"></i></div>
+      <div class="stat-info">
+        <span class="label">Services acceptés</span>
+        <h3 class="value">{{ stats.acceptedServices }}</h3>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon bg-soft-primary text-primary"><i class="ion-md-briefcase"></i></div>
+      <div class="stat-info">
+        <span class="label">Missions en cours</span>
+        <h3 class="value">{{ stats.ongoingMissions }}</h3>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon bg-soft-info text-info"><i class="ion-md-car"></i></div>
+      <div class="stat-info">
+        <span class="label">Véhicules réservés</span>
+        <h3 class="value">{{ stats.reservedVehicles }}</h3>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon bg-soft-indigo text-indigo"><i class="ion-md-person"></i></div>
+      <div class="stat-info">
+        <span class="label">Chauffeurs réservés</span>
+        <h3 class="value">{{ stats.reservedDrivers }}</h3>
+      </div>
+    </div>
+    <div class="stat-card border-danger-soft">
+      <div class="stat-icon bg-soft-danger text-danger"><i class="ion-md-paper"></i></div>
+      <div class="stat-info">
+        <span class="label">Factures à payer</span>
+        <h3 class="value">{{ stats.pendingInvoices }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Left Column: Requests & Missions -->
+    <div class="col-lg-8">
+      <!-- Recent Requests -->
+      <section class="dashboard-section mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold mb-0">Demandes récentes</h5>
+          <button class="btn btn-link text-primary fw-bold text-decoration-none" (click)="goTo('/company/requests')">Voir tout</button>
+        </div>
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+          <div class="list-group list-group-flush">
+            <div class="list-group-item p-3" *ngFor="let req of recentRequests">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h6 class="fw-bold mb-1">{{ req.title }}</h6>
+                  <p class="text-muted small mb-0">{{ req.type }} • {{ req.city }} • {{ req.duration }}</p>
+                </div>
+                <div class="text-end">
+                  <span class="badge rounded-pill mb-2 d-block" [ngClass]="{
+                    'bg-warning-light text-warning': req.status.includes('attente'),
+                    'bg-success-light text-success': req.status === 'Acceptée'
+                  }">{{ req.status }}</span>
+                  <button class="btn btn-sm btn-outline-primary rounded-pill px-3" (click)="openRequestDetails(req)">Détails</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Ongoing Missions -->
+      <section class="dashboard-section mb-4">
+        <h5 class="fw-bold mb-3">Missions en cours</h5>
+        <div class="card border-0 shadow-sm rounded-4 p-4" *ngIf="ongoingMissions.length > 0">
+          <div *ngFor="let mission of ongoingMissions" class="mission-item mb-3 last-mb-0">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <h6 class="fw-bold">{{ mission.title }}</h6>
+                <div class="d-flex gap-3 text-muted small">
+                  <span><i class="ion-md-car me-1"></i> {{ mission.vehicles }} véhicules</span>
+                  <span><i class="ion-md-person me-1"></i> {{ mission.chauffeurs }} chauffeurs</span>
+                  <span><i class="ion-md-calendar me-1"></i> {{ mission.startDate | date:'dd/MM' }} - {{ mission.endDate | date:'dd/MM' }}</span>
+                </div>
+              </div>
+              <div class="text-end">
+                <h6 class="fw-bold text-primary mb-2">{{ mission.amount }} DT</h6>
+                <div class="d-flex gap-2">
+                  <button class="btn btn-sm btn-primary rounded-pill px-3" (click)="goTo('/company/requests')">Voir mission</button>
+                  <button class="btn btn-sm btn-outline-dark rounded-pill px-3" (click)="contactMission(mission)">Contacter</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card border-0 shadow-sm rounded-4 p-5 text-center" *ngIf="ongoingMissions.length === 0">
+          <p class="text-muted mb-3">Aucune mission en cours.</p>
+          <button class="btn btn-outline-primary rounded-pill px-4 mx-auto" (click)="goTo('/company/request-service')">Demander un service</button>
+        </div>
+      </section>
+
+      <!-- Confirmed Reservations -->
+      <section class="dashboard-section">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold mb-0">Dernières missions</h5>
+          <button class="btn btn-link text-primary fw-bold text-decoration-none" (click)="goTo('/company/requests')">Voir tout</button>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-6" *ngFor="let res of confirmedReservations">
+            <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
+              <div class="d-flex justify-content-between mb-2">
+                <span class="badge bg-success-light text-success rounded-pill">Confirmée</span>
+                <span class="text-muted small">{{ res.date | date:'dd MMM' }}</span>
+              </div>
+              <h6 class="fw-bold mb-1">{{ res.vehicle }}</h6>
+              <p class="text-muted small mb-3">{{ res.provider }} • {{ res.duration }}</p>
+              <div class="d-flex justify-content-between align-items-center mt-auto">
+                <span class="fw-bold text-dark">{{ res.amount }} DT</span>
+                <button class="btn btn-sm btn-link text-primary p-0 text-decoration-none fw-bold" (click)="openReservationDetails(res)">Détails</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Right Column: Finances, Notifications, Actions -->
+    <div class="col-lg-4">
+      <!-- Quick Actions -->
+      <section class="dashboard-section mb-4">
+        <h5 class="fw-bold mb-3">Actions rapides</h5>
+        <div class="card border-0 shadow-sm rounded-4 p-3">
+          <div class="d-grid gap-2">
+            <button class="btn btn-soft-primary text-start rounded-4 p-3 border-0" (click)="goTo('/company/request-service')">
+              <i class="ion-md-add-circle me-2"></i> Demander un service
+            </button>
+            <button class="btn btn-soft-warning text-start rounded-4 p-3 border-0" (click)="goTo('/company/requests')">
+              <i class="ion-md-list me-2"></i> Voir mes demandes
+            </button>
+            <button class="btn btn-soft-success text-start rounded-4 p-3 border-0" (click)="goTo('/company/payments')">
+              <i class="ion-md-paper me-2"></i> Voir les factures
+            </button>
+            <button class="btn btn-soft-info text-start rounded-4 p-3 border-0" (click)="goTo('/company/conversations?type=support')">
+              <i class="ion-md-help-buoy me-2"></i> Contacter le support
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Finances -->
+      <section class="dashboard-section mb-4">
+        <h5 class="fw-bold mb-3">Factures et paiements</h5>
+        <div class="card border-0 shadow-sm rounded-4 p-4">
+          <div class="mb-4">
+            <label class="text-muted small d-block mb-1">Dépensé ce mois</label>
+            <h3 class="fw-bold text-primary">{{ totalSpentMonth | number:'1.2-2' }} DT</h3>
+          </div>
+          
+          <div class="pending-invoice p-3 bg-danger-light rounded-4 mb-3" *ngIf="pendingInvoices.length > 0">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 class="fw-bold text-danger mb-0">Facture en attente</h6>
+                <span class="text-danger small">{{ pendingInvoices[0].id }} • {{ pendingInvoices[0].amount }} DT</span>
+              </div>
+              <button class="btn btn-sm btn-danger rounded-pill px-3" (click)="goTo('/company/payments')">Payer</button>
+            </div>
+          </div>
+
+          <div class="last-payment p-3 bg-light rounded-4" *ngIf="lastPayment; else noLastPayment">
+            <h6 class="fw-bold mb-1">Dernier paiement</h6>
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="text-muted small">{{ lastPayment.title }}</span>
+              <span class="fw-bold text-success">{{ lastPayment.amount }} DT</span>
+            </div>
+            <button class="btn btn-sm btn-link text-primary p-0 mt-2 text-decoration-none fw-bold" (click)="goTo('/company/payments')">Voir historique</button>
+          </div>
+          <ng-template #noLastPayment>
+            <div class="last-payment p-3 bg-light rounded-4">
+              <h6 class="fw-bold mb-1">Dernier paiement</h6>
+              <span class="text-muted small">Aucun paiement récent.</span>
+            </div>
+          </ng-template>
+        </div>
+      </section>
+
+      <!-- Review Section -->
+      <section class="dashboard-section mb-4" *ngIf="pendingReview">
+        <h5 class="fw-bold mb-3">Avis à laisser</h5>
+        <div class="card border-0 bg-primary text-white shadow-sm rounded-4 p-4">
+          <h6 class="fw-bold mb-2">{{ pendingReview.title }}</h6>
+          <p class="small mb-3 opacity-75">{{ pendingReview.desc }}</p>
+          <button class="btn btn-white text-primary rounded-pill w-100 fw-bold" (click)="goTo('/company/reviews')">Laisser un avis</button>
+        </div>
+      </section>
+
+      <!-- Notifications -->
+      <section class="dashboard-section">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold mb-0">Notifications</h5>
+          <button class="btn btn-link text-primary fw-bold text-decoration-none" (click)="goTo('/company/notifications')">Tout voir</button>
+        </div>
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+          <div class="list-group list-group-flush">
+            <div class="list-group-item p-3 border-0 border-bottom" *ngFor="let notif of recentNotifications">
+              <p class="small mb-1">{{ notif.text }}</p>
+              <span class="text-muted x-small">{{ notif.date }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Modals -->
+  <!-- Request Details Modal -->
+  <div class="modal-overlay" *ngIf="showRequestModal" (click)="closeModal()">
+    <div class="modal-card-premium animate__animated animate__zoomIn" (click)="$event.stopPropagation()">
+      <div class="modal-header-p p-4 border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0">Détails de la demande</h5>
+        <button class="btn-close-custom" (click)="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="text-muted small d-block">DEMANDE</label>
+            <h5 class="fw-bold">{{ selectedRequest?.title }}</h5>
+          </div>
+          <div class="col-6">
+            <label class="text-muted small d-block">TYPE</label>
+            <span class="fw-bold">{{ selectedRequest?.type }}</span>
+          </div>
+          <div class="col-6">
+            <label class="text-muted small d-block">STATUT</label>
+            <span class="badge rounded-pill bg-warning-light text-warning">{{ selectedRequest?.status }}</span>
+          </div>
+          <div class="col-6">
+            <label class="text-muted small d-block">VILLE</label>
+            <span class="fw-bold">{{ selectedRequest?.city }}</span>
+          </div>
+          <div class="col-6">
+            <label class="text-muted small d-block">DURÉE</label>
+            <span class="fw-bold">{{ selectedRequest?.duration }}</span>
+          </div>
+          <div class="col-6">
+            <label class="text-muted small d-block">VÉHICULES</label>
+            <span class="fw-bold">{{ selectedRequest?.vehiclesCount }}</span>
+          </div>
+          <div class="col-6">
+            <label class="text-muted small d-block">CHAUFFEURS</label>
+            <span class="fw-bold">{{ selectedRequest?.driversCount }}</span>
+          </div>
+          <div class="col-12">
+            <label class="text-muted small d-block">BUDGET ESTIMÉ</label>
+            <h4 class="fw-bold text-primary">{{ selectedRequest?.budget }} DT</h4>
+          </div>
+        </div>
+        <button class="btn btn-primary w-100 mt-4 py-3 rounded-pill fw-bold shadow" (click)="closeModal()">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reservation Details Modal -->
+  <div class="modal-overlay" *ngIf="showReservationModal" (click)="closeModal()">
+    <div class="modal-card-premium animate__animated animate__zoomIn" (click)="$event.stopPropagation()">
+      <div class="modal-header-p p-4 border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0">Détails de la réservation</h5>
+        <button class="btn-close-custom" (click)="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="text-muted small d-block">SERVICE / VÉHICULE</label>
+            <h5 class="fw-bold">{{ selectedReservation?.vehicle }}</h5>
+          </div>
+          <div class="col-12">
+            <label class="text-muted small d-block">PROPRIÉTAIRE / PRESTATAIRE</label>
+            <span class="fw-bold">{{ selectedReservation?.provider }}</span>
+          </div>
+          <div class="col-6">
+            <label class="text-muted small d-block">DURÉE</label>
+            <span class="fw-bold">{{ selectedReservation?.duration }}</span>
+          </div>
+          <div class="col-6">
+            <label class="text-muted small d-block">STATUT</label>
+            <span class="badge rounded-pill bg-success-light text-success">{{ selectedReservation?.status }}</span>
+          </div>
+          <div class="col-12">
+            <label class="text-muted small d-block">MONTANT TOTAL</label>
+            <h4 class="fw-bold text-primary">{{ selectedReservation?.amount }} DT</h4>
+          </div>
+        </div>
+        <button class="btn btn-primary w-100 mt-4 py-3 rounded-pill fw-bold shadow" (click)="closeModal()">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>

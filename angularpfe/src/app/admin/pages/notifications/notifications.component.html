@@ -1,0 +1,206 @@
+<div class="admin-notifications animate__animated animate__fadeIn">
+  
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold text-dark mb-1">Notifications</h2>
+      <p class="text-muted">Suivez les alertes importantes liées aux utilisateurs, services et paiements.</p>
+    </div>
+    <div class="search-wrapper">
+      <div class="input-group shadow-sm border-0 rounded-pill bg-white overflow-hidden">
+        <span class="input-group-text bg-white border-0 ps-3">
+          <span class="ion-ios-search text-primary"></span>
+        </span>
+        <input type="text" class="form-control border-0 py-2 shadow-none" 
+               placeholder="Rechercher une notification..." 
+               [(ngModel)]="searchTerm" (ngModelChange)="onSearch()">
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-2">
+      <div class="stat-card bg-white shadow-sm p-3 rounded-4 border-start border-primary border-4 h-100">
+        <p class="text-muted tiny fw-bold text-uppercase mb-1">Total</p>
+        <h4 class="fw-bold mb-0 text-dark">{{ stats.total }}</h4>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="stat-card bg-white shadow-sm p-3 rounded-4 border-start border-danger border-4 h-100">
+        <p class="text-muted tiny fw-bold text-uppercase mb-1">Non lues</p>
+        <h4 class="fw-bold mb-0 text-danger">{{ stats.unread }}</h4>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="stat-card bg-white shadow-sm p-3 rounded-4 border-start border-warning border-4 h-100">
+        <p class="text-muted tiny fw-bold text-uppercase mb-1">Importantes</p>
+        <h4 class="fw-bold mb-0 text-warning">{{ stats.important }}</h4>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="stat-card bg-white shadow-sm p-3 rounded-4 border-start border-info border-4 h-100">
+        <p class="text-muted tiny fw-bold text-uppercase mb-1">Aujourd'hui</p>
+        <h4 class="fw-bold mb-0 text-info">{{ stats.today }}</h4>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="stat-card bg-white shadow-sm p-3 rounded-4 border-start border-dark border-4 h-100">
+        <p class="text-muted tiny fw-bold text-uppercase mb-1">Réclamations</p>
+        <h4 class="fw-bold mb-0 text-dark">{{ stats.complaints }}</h4>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="stat-card bg-primary text-white shadow-sm p-3 rounded-4 h-100">
+        <p class="text-white-50 tiny fw-bold text-uppercase mb-1">Signalements</p>
+        <h4 class="fw-bold mb-0">{{ stats.reports }}</h4>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="content-card shadow-sm bg-white rounded-4 p-4">
+    
+    <!-- Controls -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+      <div class="d-flex flex-wrap gap-2">
+        <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="currentFilter === 'ALL' ? 'btn-primary' : 'btn-light border'" (click)="currentFilter = 'ALL'; applyFilters()">Toutes</button>
+        <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="currentFilter === 'UNREAD' ? 'btn-outline-danger' : 'btn-light border text-danger'" (click)="currentFilter = 'UNREAD'; applyFilters()">Non lues</button>
+        <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="currentFilter === 'IMPORTANT' ? 'btn-outline-warning' : 'btn-light border text-warning'" (click)="currentFilter = 'IMPORTANT'; applyFilters()">Importantes</button>
+        <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="currentFilter === 'VALIDATION' ? 'btn-light border text-primary' : 'btn-light border'" (click)="currentFilter = 'VALIDATION'; applyFilters()">Validations</button>
+        <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="currentFilter === 'PAYMENT' ? 'btn-light border text-primary' : 'btn-light border'" (click)="currentFilter = 'PAYMENT'; applyFilters()">Paiements</button>
+        <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="currentFilter === 'COMPLAINT' ? 'btn-light border text-primary' : 'btn-light border'" (click)="currentFilter = 'COMPLAINT'; applyFilters()">Réclamations</button>
+      </div>
+
+      <div class="d-flex gap-2">
+        <select class="form-select form-select-sm rounded-pill border" style="width: 150px;" [(ngModel)]="currentSort" (change)="applyFilters()">
+          <option value="NEWEST">Plus récentes</option>
+          <option value="OLDEST">Plus anciennes</option>
+          <option value="PRIORITY">Priorité haute</option>
+          <option value="UNREAD">Non lues d'abord</option>
+        </select>
+        <div class="dropdown">
+          <button class="btn btn-sm btn-light border rounded-pill px-3 fw-bold" type="button" data-bs-toggle="dropdown">
+            Actions globales
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 p-2">
+            <li><a class="dropdown-item rounded-3 small fw-bold" (click)="markAllAsRead()">Tout marquer comme lu</a></li>
+            <li><a class="dropdown-item rounded-3 small fw-bold text-danger" (click)="deleteRead()">Supprimer les lues</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item rounded-3 small fw-bold" (click)="resetToMocks()">Réinitialiser démo</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notification List -->
+    <div class="notification-list d-flex flex-column gap-3">
+      <div *ngFor="let n of filteredNotifications" 
+           class="notification-item p-3 rounded-4 border border-white shadow-sm transition-all position-relative"
+           [class.unread]="!n.isRead"
+           (click)="openDetails(n)">
+        
+        <div class="d-flex gap-3 align-items-start">
+          <div class="icon-circle p-2 rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" 
+               [class.bg-primary-soft]="n.isRead" [class.bg-primary]="!n.isRead" style="width: 45px; height: 45px;">
+            <span [class]="getTypeIcon(n.type) + (n.isRead ? ' text-primary' : ' text-white') + ' fs-4'"></span>
+          </div>
+          
+          <div class="flex-grow-1">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                {{ n.title }}
+                <span class="badge rounded-pill tiny" [ngClass]="getPriorityClass(n.priority)">{{ getPriorityLabel(n.priority) }}</span>
+                <span class="badge bg-primary-soft text-primary tiny rounded-pill" *ngIf="!n.isRead">NOUVEAU</span>
+              </h6>
+              <span class="tiny text-muted fw-bold">{{ n.createdAt | date:'short' }}</span>
+            </div>
+            <p class="text-muted small mb-2">{{ n.message }}</p>
+            
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="badge bg-light text-muted tiny fw-bold text-uppercase">{{ getTypeLabel(n.type) }}</span>
+              <div class="actions d-flex gap-2">
+                <button class="btn btn-link p-0 text-primary tiny fw-bold text-decoration-none" *ngIf="n.actionRoute" (click)="$event.stopPropagation(); goToLink(n.actionRoute)">
+                   Aller à la page <span class="ion-ios-arrow-round-forward"></span>
+                </button>
+                <button class="btn btn-link p-0 text-muted tiny fw-bold text-decoration-none" (click)="toggleRead(n, $event)">
+                   {{ n.isRead ? 'Marquer non lue' : 'Marquer lue' }}
+                </button>
+                <button class="btn btn-link p-0 text-danger tiny fw-bold text-decoration-none" (click)="delete(n, $event)">Supprimer</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="unread-dot position-absolute top-0 end-0 m-3" *ngIf="!n.isRead"></div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="filteredNotifications.length === 0" class="text-center py-5">
+        <span class="ion-ios-notifications-off fs-1 text-muted opacity-25 d-block mb-3"></span>
+        <h5 class="fw-bold text-muted">Aucune notification</h5>
+        <p class="text-muted small">Tout est à jour !</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Details Modal -->
+<div class="modal-overlay animate__animated animate__fadeIn" *ngIf="showDetailsModal" (click)="closeDetails()">
+  <div class="modal-content-wrapper shadow-lg bg-white p-4" style="max-width: 550px; z-index: 10000;" (click)="$event.stopPropagation()">
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+      <h5 class="fw-bold text-dark mb-0">Détails de l'alerte</h5>
+      <button class="btn btn-light rounded-circle" (click)="closeDetails()">
+        <span class="ion-ios-close fs-4"></span>
+      </button>
+    </div>
+    
+    <div class="modal-body" *ngIf="selectedNotification">
+      <div class="d-flex align-items-center gap-3 mb-4 p-3 bg-light rounded-4">
+        <div class="icon-circle bg-primary p-3 rounded-circle d-flex align-items-center justify-content-center">
+          <span [class]="getTypeIcon(selectedNotification.type) + ' text-white fs-2'"></span>
+        </div>
+        <div>
+          <h5 class="fw-bold text-dark mb-1">{{ selectedNotification.title }}</h5>
+          <span class="badge rounded-pill" [ngClass]="getPriorityClass(selectedNotification.priority)">{{ getPriorityLabel(selectedNotification.priority) }}</span>
+        </div>
+      </div>
+
+      <div class="px-2 mb-4">
+        <p class="text-dark fw-bold mb-1">Message :</p>
+        <p class="text-muted small">{{ selectedNotification.message }}</p>
+      </div>
+
+      <div class="row g-3 px-2 mb-4">
+        <div class="col-6">
+          <span class="tiny text-muted text-uppercase d-block">Type</span>
+          <span class="fw-bold small">{{ getTypeLabel(selectedNotification.type) }}</span>
+        </div>
+        <div class="col-6">
+          <span class="tiny text-muted text-uppercase d-block">Reçue le</span>
+          <span class="fw-bold small">{{ selectedNotification.createdAt | date:'medium' }}</span>
+        </div>
+        <div class="col-6">
+          <span class="tiny text-muted text-uppercase d-block">Statut</span>
+          <span class="fw-bold small">{{ selectedNotification.isRead ? 'Lue' : 'Nouvelle' }}</span>
+        </div>
+        <div class="col-6" *ngIf="selectedNotification.relatedEntityId">
+          <span class="tiny text-muted text-uppercase d-block">ID Lié</span>
+          <span class="fw-bold small text-primary">#{{ selectedNotification.relatedEntityId }}</span>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary rounded-pill flex-grow-1 fw-bold shadow-sm" *ngIf="selectedNotification.actionRoute" (click)="goToLink(selectedNotification.actionRoute)">
+          Aller à la page liée
+        </button>
+        <button class="btn btn-outline-primary rounded-pill flex-grow-1 fw-bold" (click)="toggleRead(selectedNotification)">
+          {{ selectedNotification.isRead ? 'Marquer non lue' : 'Marquer lue' }}
+        </button>
+        <button class="btn btn-outline-danger rounded-pill fw-bold" (click)="archive(selectedNotification)">
+          Archiver
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,869 @@
+:host {
+  --pay-primary: #2563eb;
+  --pay-primary-dark: #1d4ed8;
+  --pay-primary-soft: #eff6ff;
+  --pay-success: #059669;
+  --pay-success-soft: #ecfdf5;
+  --pay-warning: #d97706;
+  --pay-warning-soft: #fff7ed;
+  --pay-info: #0891b2;
+  --pay-info-soft: #ecfeff;
+  --pay-text: #0f172a;
+  --pay-muted: #64748b;
+  --pay-border: #e2e8f0;
+  --pay-bg: #f1f5f9;
+  --pay-card: #ffffff;
+  --pay-radius: 20px;
+  --pay-shadow: 0 4px 24px rgba(15, 23, 42, 0.06);
+  --pay-shadow-lg: 0 20px 50px rgba(37, 99, 235, 0.18);
+}
+
+.payments-page {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+}
+
+/* —— Header —— */
+.payments-header {
+  margin-bottom: 1.5rem;
+}
+
+.payments-kicker {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--pay-primary);
+  margin-bottom: 0.35rem;
+}
+
+.payments-title {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: var(--pay-text);
+  margin: 0 0 0.35rem;
+  letter-spacing: -0.03em;
+}
+
+.payments-subtitle {
+  margin: 0;
+  color: var(--pay-muted);
+  font-size: 0.95rem;
+  max-width: 520px;
+  line-height: 1.5;
+}
+
+/* —— Wallet hero —— */
+.wallet-hero {
+  position: relative;
+  border-radius: 24px;
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+  box-shadow: var(--pay-shadow-lg);
+}
+
+.wallet-hero-bg {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #1e40af 0%, #2563eb 45%, #3b82f6 100%);
+}
+
+.wallet-hero-bg::after {
+  content: '';
+  position: absolute;
+  top: -40%;
+  right: -15%;
+  width: 55%;
+  height: 140%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 65%);
+  pointer-events: none;
+}
+
+.wallet-hero-content {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.75rem 1.75rem 1.5rem;
+  z-index: 1;
+}
+
+.wallet-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  backdrop-filter: blur(6px);
+}
+
+.wallet-hero-amount {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+
+.amount-value {
+  font-size: clamp(2.25rem, 5vw, 3rem);
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.amount-currency {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.wallet-hero-meta {
+  margin: 0;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.wallet-hero-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 200px;
+}
+
+.btn-hero-primary,
+.btn-hero-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-hero-primary {
+  background: #fff;
+  color: var(--pay-primary-dark);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.btn-hero-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+}
+
+.btn-hero-primary--sm {
+  padding: 0.6rem 1.1rem;
+  font-size: 0.85rem;
+}
+
+.btn-hero-secondary {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.btn-hero-secondary:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* —— Metrics —— */
+.metrics-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.metric-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.15rem 1.25rem;
+  background: var(--pay-card);
+  border-radius: var(--pay-radius);
+  border: 1px solid var(--pay-border);
+  box-shadow: var(--pay-shadow);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.metric-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+}
+
+.metric-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  flex-shrink: 0;
+}
+
+.metric-icon--spend { background: var(--pay-primary-soft); color: var(--pay-primary); }
+.metric-icon--trips { background: var(--pay-success-soft); color: var(--pay-success); }
+.metric-icon--refund { background: var(--pay-info-soft); color: var(--pay-info); }
+
+.metric-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.metric-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--pay-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.metric-value {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--pay-text);
+  line-height: 1.2;
+}
+
+.metric-value small {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--pay-muted);
+}
+
+.metric-hint {
+  font-size: 0.68rem;
+  color: var(--pay-muted);
+  margin-top: 2px;
+}
+
+/* —— Perks —— */
+.perks-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+}
+
+.perk-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--pay-card);
+  border-radius: 16px;
+  border: 1px solid var(--pay-border);
+}
+
+.perk-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.perk-icon--gold { background: #fef3c7; color: #b45309; }
+.perk-icon--green { background: #dcfce7; color: #166534; }
+
+.perk-value {
+  display: block;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--pay-text);
+}
+
+.perk-value small {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.perk-label {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--pay-muted);
+}
+
+/* —— History —— */
+.history-section {
+  background: var(--pay-card);
+  border-radius: 24px;
+  border: 1px solid var(--pay-border);
+  box-shadow: var(--pay-shadow);
+  padding: 1.35rem 1.35rem 1rem;
+}
+
+.history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--pay-border);
+}
+
+.history-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--pay-text);
+}
+
+.history-count {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--pay-muted);
+  background: var(--pay-bg);
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+}
+
+/* —— Toolbar —— */
+.toolbar-card {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  padding: 0.85rem;
+  background: var(--pay-bg);
+  border-radius: 16px;
+}
+
+.toolbar-search {
+  flex: 1 1 220px;
+  position: relative;
+}
+
+.toolbar-search i {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--pay-muted);
+  font-size: 1.1rem;
+}
+
+.toolbar-search input {
+  width: 100%;
+  padding: 0.7rem 1rem 0.7rem 2.75rem;
+  border: 1px solid var(--pay-border);
+  border-radius: 12px;
+  background: #fff;
+  font-size: 0.88rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.toolbar-search input:focus {
+  border-color: var(--pay-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.toolbar-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  flex: 1 1 auto;
+}
+
+.toolbar-select {
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--pay-border);
+  border-radius: 12px;
+  background: #fff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--pay-text);
+  outline: none;
+  min-width: 130px;
+  cursor: pointer;
+}
+
+.toolbar-select:focus {
+  border-color: var(--pay-primary);
+}
+
+/* —— Transactions —— */
+.transactions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.tx-card {
+  display: flex;
+  gap: 1rem;
+  padding: 1.1rem 1.15rem;
+  background: #fff;
+  border: 1px solid var(--pay-border);
+  border-radius: 16px;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+  animation: txFadeIn 0.4s ease backwards;
+}
+
+@keyframes txFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tx-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  transform: translateX(4px);
+}
+
+.tx-card--topup {
+  border-left: 4px solid var(--pay-warning);
+  background: linear-gradient(90deg, #fffbeb 0%, #fff 12%);
+}
+
+.tx-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.tx-icon--payment { background: var(--pay-primary-soft); color: var(--pay-primary); }
+.tx-icon--shared_ride_payment { background: var(--pay-success-soft); color: var(--pay-success); }
+.tx-icon--refund { background: var(--pay-info-soft); color: var(--pay-info); }
+.tx-icon--wallet_topup { background: var(--pay-warning-soft); color: var(--pay-warning); }
+
+.tx-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.tx-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.tx-title {
+  margin: 0 0 0.2rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--pay-text);
+}
+
+.tx-desc {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--pay-muted);
+}
+
+.tx-amount-wrap {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.tx-amount {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.tx-amount--credit { color: var(--pay-success); }
+.tx-amount--debit { color: #dc2626; }
+
+.tx-date {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--pay-muted);
+  margin-top: 2px;
+}
+
+.tx-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.tx-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.tx-tag {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+}
+
+.tx-tag--type {
+  background: var(--pay-warning-soft);
+  color: #c2410c;
+}
+
+.tx-card:not(.tx-card--topup) .tx-tag--type {
+  background: var(--pay-primary-soft);
+  color: var(--pay-primary-dark);
+}
+
+.tx-tag--status.tx-tag--paid { background: #dcfce7; color: #166534; }
+.tx-tag--status.tx-tag--pending { background: #fef3c7; color: #92400e; }
+.tx-tag--status.tx-tag--refunded { background: #e0f2fe; color: #075985; }
+.tx-tag--status.tx-tag--failed { background: #fee2e2; color: #991b1b; }
+
+.tx-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tx-btn {
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.tx-btn--ghost {
+  background: var(--pay-bg);
+  color: var(--pay-text);
+}
+
+.tx-btn--ghost:hover {
+  background: var(--pay-border);
+}
+
+.tx-btn--primary {
+  background: var(--pay-primary);
+  color: #fff;
+}
+
+.tx-btn--primary:hover {
+  background: var(--pay-primary-dark);
+}
+
+/* —— Empty —— */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1.5rem;
+}
+
+.empty-icon {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 1rem;
+  border-radius: 20px;
+  background: var(--pay-primary-soft);
+  color: var(--pay-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+}
+
+.empty-state h3 {
+  margin: 0 0 0.35rem;
+  font-weight: 800;
+  color: var(--pay-text);
+}
+
+.empty-state p {
+  margin: 0 0 1.25rem;
+  color: var(--pay-muted);
+  font-size: 0.9rem;
+}
+
+/* —— Modals —— */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(8px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modal-card-premium,
+.modal-card-receipt {
+  background: #fff;
+  border-radius: 24px;
+  width: 100%;
+  max-width: 500px;
+  overflow: hidden;
+  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.25);
+}
+
+.modal-recharge-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--pay-border);
+  background: linear-gradient(180deg, #eff6ff, #fff);
+}
+
+.modal-recharge-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.recharge-presets {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.preset-chip {
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  border: 1px solid var(--pay-border);
+  background: #fff;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--pay-muted);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.preset-chip:hover,
+.preset-chip.active {
+  border-color: var(--pay-primary);
+  background: var(--pay-primary-soft);
+  color: var(--pay-primary);
+}
+
+.recharge-input {
+  border-radius: 12px !important;
+}
+
+.receipt-divider {
+  border-bottom: 2px dashed var(--pay-border);
+}
+
+.btn-close-custom {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--pay-muted);
+  cursor: pointer;
+  margin-left: auto;
+}
+
+.badge-status {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 50px;
+}
+
+.badge-status.paid { background: #dcfce7; color: #166534; }
+.badge-status.pending { background: #fef3c7; color: #92400e; }
+.badge-status.refunded { background: #e0f2fe; color: #075985; }
+.badge-status.failed { background: #fee2e2; color: #991b1b; }
+
+/* Benefits modal (conservé) */
+.benefits-modal { max-width: 560px; }
+
+.benefits-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 1.35rem 1.5rem;
+  border-bottom: 1px solid var(--pay-border);
+  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+}
+
+.benefits-modal-kicker {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pay-primary);
+  margin: 0;
+}
+
+.benefits-modal-body {
+  padding: 1.25rem 1.5rem 1.5rem;
+  background: #f8fafc;
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.benefit-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 18px;
+  background: #fff;
+  border: 1px solid var(--pay-border);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  min-height: 168px;
+}
+
+.benefit-card--featured {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  align-items: center;
+  min-height: auto;
+  border-color: #bfdbfe;
+  background: linear-gradient(135deg, #eff6ff 0%, #ffffff 55%, #f0f9ff 100%);
+}
+
+.benefit-card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.benefit-card-icon svg { width: 24px; height: 24px; }
+
+.benefit-card--coupons .benefit-card-icon { background: #dcfce7; color: #15803d; }
+.benefit-card--loyalty .benefit-card-icon { background: #fef3c7; color: #b45309; }
+.benefit-card--shared .benefit-card-icon { background: #e0f2fe; color: #0369a1; }
+.benefit-card--gold .benefit-card-icon--gold { background: #dbeafe; color: #1d4ed8; }
+
+.benefit-card-value {
+  display: block;
+  font-size: 1.65rem;
+  font-weight: 800;
+  color: var(--pay-text);
+}
+
+.benefit-card-title {
+  margin: 4px 0 0;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.benefit-card-desc {
+  margin: 4px 0 0;
+  font-size: 0.75rem;
+  color: var(--pay-muted);
+}
+
+.benefit-card-chip {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 0.62rem;
+  font-weight: 800;
+  padding: 4px 8px;
+  border-radius: 999px;
+}
+
+.benefit-card-chip--green { background: #dcfce7; color: #166534; }
+.benefit-card-chip--gold { background: #fef3c7; color: #92400e; }
+.benefit-card-chip--blue { background: #e0f2fe; color: #075985; }
+
+.benefit-card-status {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #fff;
+}
+
+/* —— Responsive —— */
+@media (max-width: 768px) {
+  .wallet-hero-content {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .wallet-hero-actions {
+    flex-direction: row;
+    min-width: 0;
+  }
+
+  .btn-hero-primary,
+  .btn-hero-secondary {
+    flex: 1;
+  }
+
+  .metrics-row {
+    grid-template-columns: 1fr;
+  }
+
+  .perks-row {
+    grid-template-columns: 1fr;
+  }
+
+  .toolbar-filters {
+    width: 100%;
+  }
+
+  .toolbar-select {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .tx-top {
+    flex-direction: column;
+  }
+
+  .tx-amount-wrap {
+    text-align: left;
+  }
+
+  .benefits-grid {
+    grid-template-columns: 1fr;
+  }
+}

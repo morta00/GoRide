@@ -1,0 +1,192 @@
+<div class="container py-5 animate-fade-in">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <div class="premium-card p-0 overflow-hidden border-0 shadow-lg">
+        <!-- Header Decor -->
+        <div class="bg-primary p-4 text-white d-flex align-items-center gap-3">
+          <div class="icon-circle bg-white-transparent fs-3">
+            <span class="ion-ios-car"></span>
+          </div>
+          <div>
+            <h3 class="mb-0 fw-bold">Ajouter un nouveau véhicule</h3>
+            <p class="mb-0 opacity-75 small">Remplissez les détails pour mettre votre véhicule en ligne</p>
+          </div>
+        </div>
+
+        <div class="p-5">
+          <div *ngIf="successMessage" class="alert alert-success rounded-4 border-0 shadow-sm mb-4 animate-fade-in">
+            <span class="ion-ios-checkmark-circle me-2"></span> {{ successMessage }}
+          </div>
+          <div *ngIf="errorMessage" class="alert alert-danger rounded-4 border-0 shadow-sm mb-4 animate-fade-in">
+            <span class="ion-ios-alert me-2"></span> {{ errorMessage }}
+          </div>
+
+          <form [formGroup]="vehicleForm" (ngSubmit)="onSubmit()" class="needs-validation">
+            
+            <!-- SECTION 1: GÉNÉRAL -->
+            <div class="form-section mb-5">
+              <h5 class="section-title-modern">
+                <span class="number">1</span> Informations Générales
+              </h5>
+              <div class="row g-4">
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Marque <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" formControlName="brand" placeholder="Ex: Mercedes-Benz" [class.is-invalid]="vehicleForm.get('brand')?.touched && vehicleForm.get('brand')?.invalid">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Modèle <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" formControlName="model" placeholder="Ex: Classe C" [class.is-invalid]="vehicleForm.get('model')?.touched && vehicleForm.get('model')?.invalid">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Catégorie <span class="text-danger">*</span></label>
+                  <select class="form-select" formControlName="category" [class.is-invalid]="vehicleForm.get('category')?.touched && vehicleForm.get('category')?.invalid">
+                    <option value="STANDARD">Standard</option>
+                    <option value="CONFORT">Confort</option>
+                    <option value="BUSINESS">Business / Luxe</option>
+                    <option value="XL">Van / Familiale</option>
+                    <option value="SPORT">Sportive</option>
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Immatriculation <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" formControlName="licensePlate" placeholder="Ex: 220 TUN 1234" [class.is-invalid]="vehicleForm.get('licensePlate')?.touched && vehicleForm.get('licensePlate')?.invalid">
+                  <div class="invalid-feedback">Format requis : "123 TUN 4567"</div>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Année <span class="text-danger">*</span></label>
+                  <input type="number" class="form-control" formControlName="year" [class.is-invalid]="vehicleForm.get('year')?.touched && vehicleForm.get('year')?.invalid">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Couleur <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" formControlName="color" placeholder="Ex: Noir Métallisé" [class.is-invalid]="vehicleForm.get('color')?.touched && vehicleForm.get('color')?.invalid">
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 2: TECHNIQUE -->
+            <div class="form-section mb-5">
+              <h5 class="section-title-modern">
+                <span class="number">2</span> Caractéristiques Techniques
+              </h5>
+              <div class="row g-4">
+                <div class="col-md-3">
+                  <label class="form-label fw-semibold">Transmission <span class="text-danger">*</span></label>
+                  <select class="form-select" formControlName="transmission">
+                    <option value="Manuelle">Manuelle</option>
+                    <option value="Automatique">Automatique</option>
+                  </select>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label fw-semibold">Carburant <span class="text-danger">*</span></label>
+                  <select class="form-select" formControlName="fuelType">
+                    <option value="Essence">Essence</option>
+                    <option value="Diesel">Diesel</option>
+                    <option value="Hybride">Hybride</option>
+                    <option value="Électrique">Électrique</option>
+                  </select>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label fw-semibold">Places <span class="text-danger">*</span></label>
+                  <input type="number" class="form-control" formControlName="seats">
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label fw-semibold">Kilométrage <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <input type="number" class="form-control" formControlName="mileage">
+                    <span class="input-group-text">km</span>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">Consommation moyenne <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" formControlName="consumption" placeholder="Ex: 6.5 L/100km">
+                </div>
+                <div class="col-md-6 d-flex align-items-center gap-4 pt-4">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" formControlName="hasAC" id="acSwitch">
+                    <label class="form-check-label fw-semibold" for="acSwitch">Climatisation</label>
+                  </div>
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" formControlName="hasWifi" id="wifiSwitch">
+                    <label class="form-check-label fw-semibold" for="wifiSwitch">WiFi</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 3: LOCATION & SÉCURITÉ -->
+            <div class="form-section mb-5">
+              <h5 class="section-title-modern">
+                <span class="number">3</span> Location & Tarification
+              </h5>
+              <div class="row g-4">
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Prix journalier (TND) <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text">DT</span>
+                    <input type="number" class="form-control" formControlName="dailyPrice" [class.is-invalid]="vehicleForm.get('dailyPrice')?.touched && vehicleForm.get('dailyPrice')?.invalid">
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Caution exigée (TND) <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text">DT</span>
+                    <input type="number" class="form-control" formControlName="depositAmount">
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Localisation <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" formControlName="location" placeholder="Ex: Aéroport Tunis-Carthage">
+                </div>
+                <div class="col-md-12">
+                  <label class="form-label fw-semibold">Informations Assurance <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" formControlName="insuranceInfo" placeholder="Ex: Assurance Tous Risques - GAT">
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 4: MEDIA -->
+            <div class="form-section mb-5">
+              <h5 class="section-title-modern">
+                <span class="number">4</span> Visuels & Détails
+              </h5>
+              <div class="row g-4">
+                <div class="col-md-12">
+                  <label class="form-label fw-semibold">Photo du véhicule <span class="text-danger">*</span></label>
+                  <div class="d-flex flex-wrap gap-3 align-items-start mb-3">
+                    <label class="btn btn-outline-primary rounded-pill px-4 mb-0">
+                      <span class="ion-ios-camera me-2"></span> Choisir une image
+                      <input type="file" class="d-none" accept="image/jpeg,image/png,image/webp,image/gif" (change)="onPhotoSelected($event)">
+                    </label>
+                    <button type="button" class="btn btn-link text-danger" *ngIf="selectedPhotoFile" (click)="clearPhoto()">Retirer</button>
+                  </div>
+                  <div *ngIf="photoPreviewUrl" class="mb-3">
+                    <img [src]="photoPreviewUrl" alt="Aperçu" class="rounded-4 shadow-sm" style="max-height: 220px; object-fit: cover;">
+                  </div>
+                  <label class="form-label fw-semibold text-muted small">Ou lien direct (optionnel si fichier choisi)</label>
+                  <div class="input-group mb-2">
+                    <span class="input-group-text"><span class="ion-ios-image"></span></span>
+                    <input type="text" class="form-control" formControlName="photoUrl" placeholder="https://..." [disabled]="!!selectedPhotoFile">
+                  </div>
+                  <small class="text-muted">JPG, PNG ou WEBP — 5 Mo max. La photo s'afficra sur la fiche véhicule.</small>
+                </div>
+                <div class="col-md-12">
+                  <label class="form-label fw-semibold">Description (Optionnel)</label>
+                  <textarea class="form-control" rows="4" formControlName="description" placeholder="Équipements spéciaux, état général, conditions de location..."></textarea>
+                </div>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-end align-items-center gap-3 pt-4 border-top">
+              <button type="button" class="btn btn-light rounded-pill px-4 py-2 fw-bold" routerLink="/fleet/vehicles">Annuler</button>
+              <button type="submit" class="btn btn-primary rounded-pill px-5 py-2 fw-bold shadow-sm" [disabled]="isSubmitting || vehicleForm.invalid || !hasPhoto()">
+                <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+                Publier le véhicule
+              </button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

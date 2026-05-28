@@ -1,0 +1,205 @@
+<div class="container py-4 relative">
+  <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050;" *ngIf="toastMessage">
+    <div class="alert alert-success shadow mb-0">{{ toastMessage }}</div>
+  </div>
+  <div class="mb-4">
+    <h2 class="text-primary fw-bold m-0">Louer un Véhicule</h2>
+    <p class="text-secondary">Trouvez la voiture idéale pour vos besoins professionnels ou personnels.</p>
+  </div>
+
+  <app-ai-insight-panel
+    class="d-block mb-4"
+    mode="vehicles"
+    title="Recommandation IA — location"
+    subtitle="Priorité confort, prix ou famille : suggestion basée sur les véhicules affichés."
+    [location]="filterLocation"
+    [startDate]="rentStartDate"
+    [endDate]="rentEndDate"
+    [passengers]="rentPassengers"
+    [brand]="filterBrand"
+    [maxPrice]="filterMaxPrice"
+    [transmission]="filterTransmission"
+    [vehicleIds]="aiVehicleIds"
+    (recommended)="onAiRecommended($event)">
+  </app-ai-insight-panel>
+
+  <!-- Filters -->
+  <div class="card border-0 shadow-sm rounded-4 p-3 mb-4">
+    <div class="row g-3 align-items-end">
+      <div class="col-md-6 col-lg-2">
+        <label class="form-label text-muted small">Ville</label>
+        <input type="text" class="form-control" [(ngModel)]="filterLocation" (ngModelChange)="applyFilters()" placeholder="Ex: Tunis">
+      </div>
+      <div class="col-md-6 col-lg-2">
+        <label class="form-label text-muted small">Marque</label>
+        <input type="text" class="form-control" [(ngModel)]="filterBrand" (ngModelChange)="applyFilters()" placeholder="Ex: Renault">
+      </div>
+      <div class="col-md-6 col-lg-2">
+        <label class="form-label text-muted small">Prix max (TND/jour)</label>
+        <input type="number" class="form-control" [(ngModel)]="filterMaxPrice" (ngModelChange)="applyFilters()" placeholder="Max">
+      </div>
+      <div class="col-md-6 col-lg-2">
+        <label class="form-label text-muted small">Transmission</label>
+        <select class="form-select" [(ngModel)]="filterTransmission" (ngModelChange)="applyFilters()">
+          <option value="">Toutes</option>
+          <option value="Manuelle">Manuelle</option>
+          <option value="Automatique">Automatique</option>
+        </select>
+      </div>
+      <div class="col-md-6 col-lg-2">
+        <label class="form-label text-muted small">Passagers</label>
+        <input type="number" class="form-control" min="1" max="9" [(ngModel)]="rentPassengers">
+      </div>
+      <div class="col-md-6 col-lg-2">
+        <label class="form-label text-muted small">Début location</label>
+        <input type="date" class="form-control" [(ngModel)]="rentStartDate">
+      </div>
+      <div class="col-md-6 col-lg-2">
+        <label class="form-label text-muted small">Fin location</label>
+        <input type="date" class="form-control" [(ngModel)]="rentEndDate">
+      </div>
+      <div class="col-md-6 col-lg-2 d-flex align-items-end">
+        <button
+          type="button"
+          class="btn w-100 rent-favoris-filter-btn"
+          [class.active]="showFavoritesOnly"
+          (click)="toggleFavoritesFilter()">
+          <span [class]="showFavoritesOnly ? 'ion-ios-heart' : 'ion-ios-heart-empty'"></span>
+          Favoris
+          <span class="badge bg-danger ms-1" *ngIf="favoritesCount > 0">{{ favoritesCount }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status"></div>
+  </div>
+
+  <!-- Vehicle Grid -->
+  <div class="row g-4" *ngIf="!isLoading">
+    <div class="col-md-6 col-lg-4" *ngFor="let v of filteredVehicles">
+      <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden vehicle-card">
+        <div class="position-relative">
+        <button
+          type="button"
+          class="rent-favorite-btn"
+          [class.active]="isFavorite(v.id)"
+          (click)="toggleFavorite(v, $event)">
+          <span [class]="isFavorite(v.id) ? 'ion-ios-heart' : 'ion-ios-heart-empty'"></span>
+        </button>
+        <img *ngIf="v.imageUrl || v.photoUrl"
+             [src]="v.imageUrl || v.photoUrl"
+             class="card-img-top object-fit-cover"
+             alt="Voiture"
+             style="height: 200px;"
+             (error)="onVehicleImageError(v, $event)">
+        <div *ngIf="!(v.imageUrl || v.photoUrl)" class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px; font-size: 60px; color: #cbd5e1;">
+          <span class="ion-ios-car"></span>
+        </div>
+        </div>
+        <div class="card-body p-4 d-flex flex-column">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <h5 class="card-title fw-bold m-0">{{ v.brand }} {{ v.model }}</h5>
+            <h5 class="text-primary fw-bold m-0">{{ v.dailyPrice }} <small class="text-muted fs-6">TND/j</small></h5>
+          </div>
+          
+          <div class="row g-2 mb-4 text-secondary small mt-2">
+            <div class="col-6"><i class="ion-ios-people me-1"></i> {{ v.seats }} Places</div>
+            <div class="col-6"><i class="ion-ios-color-fill me-1"></i> {{ v.fuelType }}</div>
+            <div class="col-6"><i class="ion-ios-cog me-1"></i> {{ v.transmission }}</div>
+            <div class="col-6"><i class="ion-ios-pin me-1"></i> {{ v.location }}</div>
+          </div>
+          
+          <button class="btn btn-primary w-100 mt-auto shadow-sm" (click)="openBooking(v)">
+            Réserver
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div *ngIf="filteredVehicles.length === 0" class="col-12 text-center py-5 bg-light rounded-4">
+      <h5 class="text-secondary">{{ showFavoritesOnly ? 'Aucun véhicule dans vos favoris.' : 'Aucun véhicule trouvé correspondant à vos critères.' }}</h5>
+      <button *ngIf="showFavoritesOnly" type="button" class="btn btn-outline-primary mt-2" (click)="toggleFavoritesFilter()">Voir tous les véhicules</button>
+    </div>
+  </div>
+
+  <!-- Booking Modal Overlay -->
+  <div class="app-modal-overlay" *ngIf="selectedVehicle" (click)="closeBooking()">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 520px; width: 100%;" (click)="$event.stopPropagation()">
+      <div class="modal-content rounded-4 border-0 shadow">
+        <div class="modal-header border-bottom-0 pb-0">
+          <h5 class="modal-title fw-bold">Demande de réservation</h5>
+          <button type="button" class="btn-close" (click)="closeBooking()"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="d-flex align-items-center mb-4 p-3 bg-light rounded-3">
+            <img *ngIf="selectedVehicle.imageUrl || selectedVehicle.photoUrl"
+                 [src]="selectedVehicle.imageUrl || selectedVehicle.photoUrl"
+                 class="rounded me-3 object-fit-cover"
+                 style="width: 80px; height: 60px;"
+                 (error)="onVehicleImageError(selectedVehicle, $event)">
+            <div *ngIf="!(selectedVehicle.imageUrl || selectedVehicle.photoUrl)" class="rounded me-3 bg-light d-flex align-items-center justify-content-center" style="width: 80px; height: 60px; font-size: 24px; color: #cbd5e1;">
+              <span class="ion-ios-car"></span>
+            </div>
+            <div>
+              <h6 class="fw-bold mb-1">{{ selectedVehicle.brand }} {{ selectedVehicle.model }}</h6>
+              <span class="text-primary fw-bold">{{ selectedVehicle.dailyPrice }} TND/jour</span>
+            </div>
+          </div>
+
+          <form (ngSubmit)="submitBooking()">
+            <div class="row g-3 mb-3">
+              <div class="col-6">
+                <label class="form-label text-muted small">Date de début</label>
+                <input type="date" class="form-control" [(ngModel)]="bookingRequest.startDate" name="startDate" required>
+              </div>
+              <div class="col-6">
+                <label class="form-label text-muted small">Date de fin</label>
+                <input type="date" class="form-control" [(ngModel)]="bookingRequest.endDate" name="endDate" required>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label text-muted small d-flex justify-content-between">
+                <span>Prix proposé (par jour)</span>
+                <span class="badge bg-warning text-dark">Négociable</span>
+              </label>
+              <div class="input-group">
+                <input type="number" class="form-control" [(ngModel)]="bookingRequest.proposedPrice" name="proposedPrice">
+                <span class="input-group-text">TND</span>
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label text-muted small">Notes pour le propriétaire</label>
+              <textarea class="form-control" rows="2" [(ngModel)]="bookingRequest.clientNotes" name="clientNotes" placeholder="Ex: Je souhaite louer la voiture pour travailler..."></textarea>
+            </div>
+
+            <!-- Price Preview -->
+            <div class="p-3 bg-primary bg-opacity-10 rounded-3 mb-4">
+              <div class="d-flex justify-content-between mb-2">
+                <span class="text-secondary">Prix journalier :</span>
+                <span class="fw-bold">{{ bookingRequest.proposedPrice }} TND</span>
+              </div>
+              <div class="d-flex justify-content-between mb-2 text-success" *ngIf="isDriver">
+                <span><i class="ion-ios-checkmark-circle"></i> Réduction Chauffeur (10%) :</span>
+                <span class="fw-bold">-{{ discountPreview | number:'1.2-2' }} TND</span>
+              </div>
+              <hr class="my-2 border-primary border-opacity-25">
+              <div class="d-flex justify-content-between">
+                <span class="fw-bold text-primary">Final estimé / jour :</span>
+                <span class="fw-bold text-primary fs-5">{{ finalPricePreview | number:'1.2-2' }} TND</span>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 py-2 rounded-3 fw-bold" [disabled]="isBooking">
+              <span *ngIf="isBooking" class="spinner-border spinner-border-sm me-2"></span>
+              Confirmer la demande
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

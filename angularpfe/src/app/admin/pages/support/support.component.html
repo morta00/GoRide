@@ -1,0 +1,210 @@
+<div class="admin-support animate__animated animate__fadeIn">
+  
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold text-dark mb-1">Support</h2>
+      <p class="text-muted">Gérez les demandes d’aide et messages envoyés au support GoRide.</p>
+    </div>
+    <div class="search-wrapper">
+      <div class="input-group shadow-sm border-0 rounded-pill bg-white overflow-hidden">
+        <span class="input-group-text bg-white border-0 ps-3">
+          <span class="ion-ios-search text-primary"></span>
+        </span>
+        <input type="text" class="form-control border-0 py-2 shadow-none" 
+               placeholder="Rechercher un ticket, utilisateur, email..." 
+               [(ngModel)]="searchTerm" (ngModelChange)="applyFilters()">
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-2">
+      <div class="stat-card bg-white shadow-sm p-3 rounded-4 border-start border-danger border-4 h-100">
+        <p class="text-muted tiny fw-bold text-uppercase mb-1">Tickets ouverts</p>
+        <h4 class="fw-bold mb-0 text-danger">{{ stats.open }}</h4>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="stat-card bg-white shadow-sm p-3 rounded-4 border-start border-primary border-4 h-100">
+        <p class="text-muted tiny fw-bold text-uppercase mb-1">En cours</p>
+        <h4 class="fw-bold mb-0 text-primary">{{ stats.inProgress }}</h4>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="stat-card bg-white shadow-sm p-3 rounded-4 border-start border-warning border-4 h-100">
+        <p class="text-muted tiny fw-bold text-uppercase mb-1">En attente User</p>
+        <h4 class="fw-bold mb-0 text-warning">{{ stats.waitingUser }}</h4>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="stat-card bg-white shadow-sm p-3 rounded-4 border-start border-success border-4 h-100">
+        <p class="text-muted tiny fw-bold text-uppercase mb-1">Résolus</p>
+        <h4 class="fw-bold mb-0 text-success">{{ stats.resolved }}</h4>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="stat-card bg-white shadow-sm p-3 rounded-4 border-start border-dark border-4 h-100">
+        <p class="text-muted tiny fw-bold text-uppercase mb-1">Priorité Haute</p>
+        <h4 class="fw-bold mb-0 text-dark">{{ stats.highPriority }}</h4>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="stat-card bg-primary text-white shadow-sm p-3 rounded-4 h-100">
+        <p class="text-white-50 tiny fw-bold text-uppercase mb-1">Délai réponse</p>
+        <h4 class="fw-bold mb-0">{{ stats.avgResponseTime }}</h4>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="content-card shadow-sm bg-white rounded-4 p-4">
+    
+    <!-- Controls -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+      <div class="d-flex flex-wrap gap-2">
+        <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="statusFilter === 'ALL' ? 'btn-primary' : 'btn-light border'" (click)="statusFilter = 'ALL'; applyFilters()">Tous</button>
+        <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="statusFilter === 'OPEN' ? 'btn-outline-danger' : 'btn-light border'" (click)="statusFilter = 'OPEN'; applyFilters()">Ouverts</button>
+        <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="statusFilter === 'IN_PROGRESS' ? 'btn-outline-primary' : 'btn-light border'" (click)="statusFilter = 'IN_PROGRESS'; applyFilters()">En cours</button>
+        <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="statusFilter === 'RESOLVED' ? 'btn-outline-success' : 'btn-light border'" (click)="statusFilter = 'RESOLVED'; applyFilters()">Résolus</button>
+        <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="categoryFilter === 'PAYMENT' ? 'btn-light border text-primary' : 'btn-light border'" (click)="categoryFilter = (categoryFilter === 'PAYMENT' ? 'ALL' : 'PAYMENT'); applyFilters()">Paiements</button>
+        <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="roleFilter === 'DRIVER' ? 'btn-light border text-primary' : 'btn-light border'" (click)="roleFilter = (roleFilter === 'DRIVER' ? 'ALL' : 'DRIVER'); applyFilters()">Chauffeurs</button>
+      </div>
+
+      <div class="d-flex gap-2">
+        <select class="form-select form-select-sm rounded-pill border" style="width: 150px;" [(ngModel)]="currentSort" (change)="applyFilters()">
+          <option value="NEWEST">Plus récents</option>
+          <option value="PRIORITY">Priorité haute</option>
+          <option value="LAST_MESSAGE">Dernier message</option>
+        </select>
+        <button class="btn btn-sm btn-light border rounded-pill px-3 fw-bold" (click)="resetToMocks()">Réinitialiser</button>
+      </div>
+    </div>
+
+    <!-- Ticket List -->
+    <div class="ticket-list d-flex flex-column gap-3">
+      <div *ngFor="let t of filteredTickets" 
+           class="ticket-item p-3 rounded-4 border border-white shadow-sm transition-all position-relative bg-white"
+           (click)="openDetails(t)">
+        
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <div class="d-flex align-items-center gap-3">
+             <div class="status-indicator" [class.bg-danger]="t.status === 'OPEN'" [class.bg-primary]="t.status === 'IN_PROGRESS'" [class.bg-success]="t.status === 'RESOLVED'"></div>
+             <div>
+                <h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                  {{ t.subject }}
+                  <span class="badge rounded-pill tiny" [ngClass]="getPriorityClass(t.priority)">{{ getPriorityLabel(t.priority) }}</span>
+                </h6>
+                <span class="tiny text-muted fw-bold">{{ t.id }} • Créé le {{ t.createdAt | date:'short' }}</span>
+             </div>
+          </div>
+          <div class="text-end">
+             <span class="badge rounded-pill px-3 py-1 tiny mb-1" [ngClass]="getStatusClass(t.status)">{{ getStatusLabel(t.status) }}</span>
+             <span class="tiny text-muted d-block" *ngIf="t.assignedTo">Assigné à : {{ t.assignedTo }}</span>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mt-3">
+          <div class="requester-info d-flex align-items-center gap-2">
+            <div class="bg-primary-soft rounded-circle d-flex align-items-center justify-content-center fw-bold text-primary" style="width: 30px; height: 30px; font-size: 12px;">{{ t.requesterName.charAt(0) }}</div>
+            <span class="small fw-bold text-dark">{{ t.requesterName }} <span class="tiny text-muted fw-normal">({{ getRoleLabel(t.requesterRole) }})</span></span>
+            <span class="badge bg-light text-muted tiny border">{{ getCategoryLabel(t.category) }}</span>
+          </div>
+          
+          <div class="actions d-flex gap-2">
+             <button class="btn btn-sm btn-primary rounded-pill px-3 fw-bold" (click)="openReply(t, $event)">Répondre</button>
+             <button class="btn btn-sm btn-light border rounded-pill px-3 fw-bold" *ngIf="!t.assignedTo" (click)="assignToMe(t, $event)">M'assigner</button>
+             <button class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold" *ngIf="t.status !== 'RESOLVED' && t.status !== 'CLOSED'" (click)="markResolved(t, $event)">Résolu</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="filteredTickets.length === 0" class="text-center py-5">
+        <span class="ion-ios-help-buoy fs-1 text-muted opacity-25 d-block mb-3"></span>
+        <h5 class="fw-bold text-muted">Aucun ticket trouvé</h5>
+        <p class="text-muted small">Essayez d'autres filtres ou une autre recherche.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Details Modal -->
+<div class="modal-overlay animate__animated animate__fadeIn" *ngIf="showDetailsModal" (click)="closeDetails()">
+  <div class="modal-content-wrapper shadow-lg bg-white p-4" style="max-width: 650px; z-index: 10000;" (click)="$event.stopPropagation()">
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+      <h5 class="fw-bold text-dark mb-0">Ticket {{ selectedTicket?.id }}</h5>
+      <button class="btn btn-light rounded-circle" (click)="closeDetails()">
+        <span class="ion-ios-close fs-4"></span>
+      </button>
+    </div>
+    
+    <div class="modal-body" *ngIf="selectedTicket">
+      <div class="mb-4">
+        <h4 class="fw-bold text-dark mb-1">{{ selectedTicket.subject }}</h4>
+        <div class="d-flex gap-2 align-items-center mt-2">
+           <span class="badge rounded-pill" [ngClass]="getStatusClass(selectedTicket.status)">{{ getStatusLabel(selectedTicket.status) }}</span>
+           <span class="badge rounded-pill" [ngClass]="getPriorityClass(selectedTicket.priority)">{{ getPriorityLabel(selectedTicket.priority) }}</span>
+           <span class="tiny text-muted fw-bold">{{ getCategoryLabel(selectedTicket.category) }}</span>
+        </div>
+      </div>
+
+      <div class="row g-3 mb-4 p-3 bg-light rounded-4">
+         <div class="col-md-6">
+            <span class="tiny text-muted text-uppercase d-block mb-1">Demandeur</span>
+            <span class="fw-bold small d-block">{{ selectedTicket.requesterName }}</span>
+            <span class="tiny text-muted">{{ selectedTicket.requesterEmail }}</span>
+         </div>
+         <div class="col-md-6">
+            <span class="tiny text-muted text-uppercase d-block mb-1">Rôle</span>
+            <span class="fw-bold small d-block">{{ getRoleLabel(selectedTicket.requesterRole) }}</span>
+            <span class="tiny text-muted">Créé le {{ selectedTicket.createdAt | date:'medium' }}</span>
+         </div>
+      </div>
+
+      <div class="chat-history mb-4 p-3 border rounded-4 bg-white" style="max-height: 300px; overflow-y: auto;">
+         <div *ngFor="let msg of selectedTicket.messages" class="message mb-3 p-3 rounded-4" 
+              [ngClass]="msg.sender === 'Admin GoRide' ? 'bg-primary-soft ms-5 border-start border-primary border-4' : (msg.sender === 'Système' ? 'bg-light text-center py-2' : 'bg-light me-5')">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+               <span class="tiny fw-bold text-dark">{{ msg.sender }}</span>
+               <span class="tiny text-muted">{{ msg.date | date:'short' }}</span>
+            </div>
+            <p class="small mb-0">{{ msg.content }}</p>
+         </div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary rounded-pill flex-grow-1 fw-bold shadow-sm" (click)="openReply(selectedTicket)">Répondre</button>
+        <button class="btn btn-success rounded-pill flex-grow-1 fw-bold" *ngIf="selectedTicket.status !== 'RESOLVED'" (click)="markResolved(selectedTicket)">Marquer résolu</button>
+        <button class="btn btn-outline-danger rounded-pill fw-bold" (click)="closeTicket(selectedTicket)">Fermer ticket</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Reply Modal -->
+<div class="modal-overlay animate__animated animate__fadeIn" *ngIf="showReplyModal" (click)="closeReply()">
+  <div class="modal-content-wrapper shadow-lg bg-white p-4" style="max-width: 500px; z-index: 10001;" (click)="$event.stopPropagation()">
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+      <h5 class="fw-bold text-dark mb-0">Répondre à {{ selectedTicket?.requesterName }}</h5>
+      <button class="btn btn-light rounded-circle" (click)="closeReply()">
+        <span class="ion-ios-close fs-4"></span>
+      </button>
+    </div>
+    
+    <div class="modal-body">
+       <div class="mb-3">
+          <p class="small text-muted mb-2">Sujet : <span class="fw-bold text-dark">{{ selectedTicket?.subject }}</span></p>
+          <label class="form-label small fw-bold text-dark">Votre message de réponse</label>
+          <textarea class="form-control rounded-4 shadow-none" rows="6" placeholder="Écrivez votre réponse ici..." [(ngModel)]="replyMessage" [class.is-invalid]="replyError"></textarea>
+          <div class="invalid-feedback small fw-bold" *ngIf="replyError">{{ replyError }}</div>
+       </div>
+
+       <div class="d-flex gap-2 mt-4">
+          <button class="btn btn-light rounded-pill flex-grow-1 fw-bold" (click)="closeReply()">Annuler</button>
+          <button class="btn btn-primary rounded-pill flex-grow-1 fw-bold shadow-sm" (click)="sendReply()">Envoyer la réponse</button>
+       </div>
+    </div>
+  </div>
+</div>

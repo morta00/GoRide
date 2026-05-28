@@ -1,0 +1,381 @@
+<div class="rides-container animate__animated animate__fadeIn">
+  <!-- Header -->
+  <header class="page-header mb-4">
+    <div class="welcome-text">
+      <h2>Mes trajets</h2>
+      <p>Gérez vos annonces de covoiturage et trajets publiés.</p>
+    </div>
+    <button class="btn btn-primary shadow-sm" (click)="openAddModal()">
+      <span class="ion-md-add-circle me-2"></span> Publier un trajet
+    </button>
+  </header>
+
+  <!-- Stats Grid -->
+  <div class="stats-grid mb-4">
+    <div class="stat-card">
+      <div class="stat-info">
+        <span class="stat-label">Total trajets</span>
+        <h3 class="stat-value text-dark">{{ stats.total }}</h3>
+      </div>
+    </div>
+    <div class="stat-card border-published">
+      <div class="stat-info">
+        <span class="stat-label">Publiés</span>
+        <h3 class="stat-value text-primary">{{ stats.published }}</h3>
+      </div>
+    </div>
+    <div class="stat-card border-confirmed">
+      <div class="stat-info">
+        <span class="stat-label">Confirmés</span>
+        <h3 class="stat-value text-warning">{{ stats.confirmed }}</h3>
+      </div>
+    </div>
+    <div class="stat-card border-progress">
+      <div class="stat-info">
+        <span class="stat-label">En cours</span>
+        <h3 class="stat-value text-info">{{ stats.inProgress }}</h3>
+      </div>
+    </div>
+    <div class="stat-card border-completed">
+      <div class="stat-info">
+        <span class="stat-label">Terminés</span>
+        <h3 class="stat-value text-success">{{ stats.completed }}</h3>
+      </div>
+    </div>
+    <div class="stat-card border-cancelled">
+      <div class="stat-info">
+        <span class="stat-label">Annulés</span>
+        <h3 class="stat-value text-danger">{{ stats.cancelled }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters & Controls Bar -->
+  <div class="content-card mb-4 controls-bar">
+    <div class="filter-groups">
+      <button *ngFor="let f of ['ALL', 'PUBLISHED', 'CONFIRMED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']"
+              class="filter-btn"
+              [class.active]="selectedStatus === f"
+              (click)="setFilter(f)">
+        {{ f === 'ALL' ? 'Tous' : getStatusLabel(f) }}
+      </button>
+    </div>
+    <div class="search-sort-group">
+      <div class="search-box">
+        <span class="ion-md-search icon"></span>
+        <input type="text" [(ngModel)]="searchTerm" (input)="onSearchChange()" placeholder="Départ, arrivée...">
+      </div>
+      <select class="form-select sort-select" [(ngModel)]="sortOption" (change)="onSortChange()">
+        <option value="recent">Plus récents</option>
+        <option value="oldest">Plus anciens</option>
+        <option value="priceAsc">Prix croissant</option>
+        <option value="priceDesc">Prix décroissant</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status"></div>
+    <p class="mt-3 text-muted">Chargement de vos trajets...</p>
+  </div>
+
+  <!-- Trips List -->
+  <div class="row g-4" *ngIf="!isLoading">
+    <div class="col-xl-4 col-md-6" *ngFor="let trip of filteredTrips">
+      <div class="content-card trip-card h-100 animate__animated animate__fadeInUp">
+        <div class="card-header-status mb-3">
+          <span class="status-pill" [ngClass]="getStatusClass(trip.status)">
+            {{ getStatusLabel(trip.status) }}
+          </span>
+          <span class="price-badge">{{ trip.pricePerSeat }} DT</span>
+        </div>
+
+        <div *ngIf="trip.source === 'RIDE_REQUEST'" class="passenger-info mb-3 p-2 bg-light rounded text-dark small">
+          <strong><span class="ion-md-person me-1"></span>Client :</strong> {{ trip.clientName }}<br>
+          <span class="text-primary fw-bold mt-1 d-inline-block">Course demandée par un passager</span>
+        </div>
+
+        <div class="route-info mb-4">
+          <div class="route-item">
+            <span class="dot start"></span>
+            <div class="details">
+              <span class="label">Départ</span>
+              <span class="value">{{ trip.departure }}</span>
+            </div>
+          </div>
+          <div class="route-line"></div>
+          <div class="route-item">
+            <span class="dot end"></span>
+            <div class="details">
+              <span class="label">Arrivée</span>
+              <span class="value">{{ trip.destination }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="trip-meta mb-4">
+          <div class="meta-item">
+            <span class="ion-md-calendar icon"></span>
+            <span>{{ trip.departureTime | date:'dd/MM/yyyy' }}</span>
+          </div>
+          <div class="meta-item">
+            <span class="ion-md-time icon"></span>
+            <span>{{ trip.departureTime | date:'HH:mm' }}</span>
+          </div>
+          <div class="meta-item">
+            <span class="ion-md-people icon"></span>
+            <span>{{ trip.availableSeats }} places libres</span>
+          </div>
+        </div>
+
+        <div class="card-actions mt-auto pt-3 border-top">
+          <!-- Action Buttons Based on Status -->
+          <ng-container [ngSwitch]="trip.status">
+            <!-- PUBLISHED -->
+            <div *ngSwitchCase="'PUBLISHED'" class="action-grid">
+              <button class="btn btn-sm btn-light" (click)="openDetailsModal(trip)">Détails</button>
+              <button class="btn btn-sm btn-outline-primary" (click)="openEditModal(trip)">Modifier</button>
+              <button class="btn btn-sm btn-outline-warning" (click)="goToRequests(trip.id)">Demandes</button>
+              <button class="btn btn-sm btn-soft-danger" (click)="updateStatus(trip.id, 'CANCELLED')">Annuler</button>
+            </div>
+            <!-- CONFIRMED -->
+            <div *ngSwitchCase="'CONFIRMED'" class="action-grid">
+              <button class="btn btn-sm btn-light" (click)="openDetailsModal(trip)">Détails</button>
+              <button class="btn btn-sm btn-primary" (click)="updateStatus(trip.id, 'IN_PROGRESS')">Démarrer</button>
+              <button class="btn btn-sm btn-outline-info" (click)="goToChat(trip.id)">Contacter</button>
+              <button class="btn btn-sm btn-soft-danger" (click)="updateStatus(trip.id, 'CANCELLED')">Annuler</button>
+            </div>
+            <!-- IN_PROGRESS -->
+            <div *ngSwitchCase="'IN_PROGRESS'" class="action-grid single-row">
+              <button class="btn btn-sm btn-success w-100" (click)="updateStatus(trip.id, 'COMPLETED')">Terminer le trajet</button>
+              <button class="btn btn-sm btn-outline-info" (click)="goToChat(trip.id)">Contacter passagers</button>
+            </div>
+            <!-- COMPLETED -->
+            <div *ngSwitchCase="'COMPLETED'" class="action-grid">
+              <button class="btn btn-sm btn-light" (click)="openDetailsModal(trip)">Voir détails</button>
+              <button class="btn btn-sm btn-soft-success" (click)="openReceiptModal(trip)">Voir reçu</button>
+            </div>
+            <!-- CANCELLED -->
+            <div *ngSwitchCase="'CANCELLED'" class="action-grid">
+              <button class="btn btn-sm btn-light" (click)="openDetailsModal(trip)">Détails</button>
+              <button class="btn btn-sm btn-primary" (click)="republish(trip)">Republier</button>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="col-12" *ngIf="filteredTrips.length === 0">
+      <div class="empty-state-card text-center py-5">
+        <span class="ion-md-search text-muted mb-3" style="font-size: 3rem; display: block;"></span>
+        <h4 *ngIf="allTrips.length > 0">Aucun trajet ne correspond à votre recherche.</h4>
+        <h4 *ngIf="allTrips.length === 0">Aucun trajet publié</h4>
+        <p class="text-muted" *ngIf="allTrips.length > 0">Essayez d'ajuster vos filtres ou la recherche.</p>
+        <p class="text-muted" *ngIf="allTrips.length === 0">Partagez votre premier trajet avec la communauté GoRide.</p>
+        <button class="btn btn-link" (click)="setFilter('ALL'); searchTerm = ''; applyFilters()">Réinitialiser</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form Modal -->
+  <div class="modal-overlay" *ngIf="showFormModal" (click)="closeFormModal()">
+    <div class="modal-card animate__animated animate__zoomIn" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ isEditing ? 'Modifier le trajet' : 'Publier un trajet' }}</h3>
+        <button class="close-btn" (click)="closeFormModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="tripForm" (ngSubmit)="onSubmit()">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Départ</label>
+              <input type="text" class="form-control" formControlName="departure" placeholder="Ville de départ">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Arrivée</label>
+              <input type="text" class="form-control" formControlName="destination" placeholder="Ville d'arrivée">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Date</label>
+              <input type="date" class="form-control" formControlName="date">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Heure</label>
+              <input type="time" class="form-control" formControlName="time">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Places</label>
+              <input type="number" class="form-control" formControlName="seats">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Prix (DT)</label>
+              <input type="number" class="form-control" formControlName="price">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Véhicule</label>
+              <input type="text" class="form-control" formControlName="vehicle">
+            </div>
+            <div class="col-12">
+              <div class="form-check form-switch mt-2">
+                <input class="form-check-input" type="checkbox" formControlName="luggage" id="luggageSwitch">
+                <label class="form-check-label" for="luggageSwitch">Bagages autorisés</label>
+              </div>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Commentaire (Optionnel)</label>
+              <textarea class="form-control" formControlName="comment" rows="2" placeholder="Ex: Climatisation, Musique..."></textarea>
+            </div>
+          </div>
+          <div class="modal-footer mt-4 px-0 pb-0">
+            <button type="button" class="btn btn-light me-2" (click)="closeFormModal()">Annuler</button>
+            <button type="submit" class="btn btn-primary px-4" [disabled]="tripForm.invalid">
+              {{ isEditing ? 'Sauvegarder' : 'Publier' }}
+            </button>
+          </div>
+          <div *ngIf="tripForm.errors?.['sameLocation']" class="text-danger small mt-2 text-center">
+            Le départ et l'arrivée doivent être différents.
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Details Modal -->
+  <div class="modal-overlay" *ngIf="showDetailsModal" (click)="closeDetailsModal()">
+    <div class="modal-card details-modal animate__animated animate__fadeInUp" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Détails du trajet</h3>
+        <button class="close-btn" (click)="closeDetailsModal()">&times;</button>
+      </div>
+      <div class="modal-body" *ngIf="selectedTrip">
+        <div class="details-grid">
+          <div class="detail-section">
+            <label>Itinéraire</label>
+            <div class="route-info-large">
+              <div class="route-point">
+                <span class="dot start"></span>
+                <strong>{{ selectedTrip.departure }}</strong>
+              </div>
+              <div class="route-connector"></div>
+              <div class="route-point">
+                <span class="dot end"></span>
+                <strong>{{ selectedTrip.destination }}</strong>
+              </div>
+            </div>
+          </div>
+          
+          <div class="info-row mt-4">
+            <div class="info-box">
+              <span class="label">Date & Heure</span>
+              <span class="value">{{ selectedTrip.departureTime | date:'dd MMM yyyy' }} à {{ selectedTrip.departureTime | date:'HH:mm' }}</span>
+            </div>
+            <div class="info-box">
+              <span class="label">Prix</span>
+              <span class="value text-primary">{{ selectedTrip.pricePerSeat }} DT</span>
+            </div>
+            <div class="info-box">
+              <span class="label">Places</span>
+              <span class="value">{{ selectedTrip.availableSeats }} libres</span>
+            </div>
+          </div>
+
+          <div class="info-row mt-3">
+            <div class="info-box">
+              <span class="label">Véhicule</span>
+              <span class="value">{{ selectedTrip.vehicleName || 'Mon Véhicule' }}</span>
+            </div>
+            <div class="info-box">
+              <span class="label">Bagages</span>
+              <span class="value">{{ selectedTrip.notes ? 'Voir notes' : 'N/A' }}</span>
+            </div>
+            <div class="info-box">
+              <span class="label">Statut</span>
+              <span class="status-pill-small" [ngClass]="getStatusClass(selectedTrip.status)">
+                {{ getStatusLabel(selectedTrip.status) }}
+              </span>
+            </div>
+          </div>
+
+          <div class="comment-box mt-4" *ngIf="selectedTrip.notes">
+            <label>Note du chauffeur</label>
+            <p>"{{ selectedTrip.notes }}"</p>
+          </div>
+
+          <div class="stats-footer mt-4 p-3 bg-light rounded-3 d-flex justify-content-between">
+            <span>Trajet ID: <strong>{{ selectedTrip.id }}</strong></span>
+            <span class="text-muted small">ID: {{ selectedTrip.id }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-primary w-100" (click)="closeDetailsModal()">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Receipt Modal -->
+  <div class="modal-overlay" *ngIf="showReceiptModal" (click)="closeReceiptModal()">
+    <div class="modal-card receipt-modal animate__animated animate__fadeInDown" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="text-success"><span class="ion-md-checkmark-circle me-2"></span>Reçu du trajet</h3>
+        <button class="close-btn" (click)="closeReceiptModal()">&times;</button>
+      </div>
+      <div class="modal-body" *ngIf="selectedTrip">
+        <div class="receipt-content p-4 border rounded-4 bg-light">
+          <div class="text-center mb-4 border-bottom pb-3">
+            <h4 class="fw-bold mb-1">GORIDE RECEPT</h4>
+            <span class="text-muted small">Réf: {{ selectedTrip.id }}</span>
+          </div>
+          
+          <div class="receipt-row d-flex justify-content-between mb-2">
+            <span class="text-muted">Trajet</span>
+            <span class="fw-bold">{{ selectedTrip.departure }} → {{ selectedTrip.destination }}</span>
+          </div>
+          <div class="receipt-row d-flex justify-content-between mb-2">
+            <span class="text-muted">Date</span>
+            <span class="fw-bold">{{ selectedTrip.departureTime | date:'dd MMM yyyy' }}</span>
+          </div>
+          <div class="receipt-row d-flex justify-content-between mb-2 border-bottom pb-2">
+            <span class="text-muted">Véhicule</span>
+            <span class="fw-bold">{{ selectedTrip.vehicleName || 'Mon Véhicule' }}</span>
+          </div>
+
+          <div class="receipt-row d-flex justify-content-between mt-3 mb-2">
+            <span>Prix par place</span>
+            <span>{{ selectedTrip.pricePerSeat }} DT</span>
+          </div>
+          <div class="receipt-row d-flex justify-content-between mb-2">
+            <span>Places occupées</span>
+            <span>x{{ 5 - selectedTrip.availableSeats }}</span>
+          </div>
+          <div class="receipt-row d-flex justify-content-between fw-bold fs-5 mt-2 border-top pt-2 text-dark">
+            <span>Total Brut</span>
+            <span>{{ getGrossAmount() | number:'1.2-2' }} DT</span>
+          </div>
+          
+          <div class="receipt-row d-flex justify-content-between text-danger small mt-2">
+            <span>Commission GoRide (10%)</span>
+            <span>-{{ getCommission() | number:'1.2-2' }} DT</span>
+          </div>
+          
+          <div class="receipt-row d-flex justify-content-between fw-bold fs-4 mt-3 border-top pt-3 text-primary">
+            <span>GAIN NET</span>
+            <span>{{ getNetAmount() | number:'1.2-2' }} DT</span>
+          </div>
+        </div>
+        
+        <div class="text-center mt-4">
+          <p class="text-muted small">Merci d'utiliser GoRide pour vos trajets !</p>
+        </div>
+      </div>
+      <div class="modal-footer gap-2">
+        <button class="btn btn-outline-dark" (click)="printReceipt()">
+          <span class="ion-md-print me-2"></span>Imprimer
+        </button>
+        <button class="btn btn-primary px-4" (click)="closeReceiptModal()">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>

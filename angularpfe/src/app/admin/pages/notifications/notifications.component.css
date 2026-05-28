@@ -1,0 +1,72 @@
+.admin-notifications {
+  padding: 10px;
+}
+
+.stat-card {
+  transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+}
+
+.tiny { font-size: 10px; }
+
+/* Notification Item */
+.notification-item {
+  background: #fdfdfd;
+  cursor: pointer;
+  border-color: #f1f5f9 !important;
+}
+
+.notification-item:hover {
+  background: #f8fafc;
+  transform: translateX(5px);
+  border-color: #e2e8f0 !important;
+}
+
+.notification-item.unread {
+  background: #ffffff;
+  border-left: 4px solid #2563eb !important;
+}
+
+.unread-dot {
+  width: 10px;
+  height: 10px;
+  background-color: #2563eb;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(37, 99, 235, 0.5);
+}
+
+.bg-primary-soft { background-color: rgba(37, 99, 235, 0.1); }
+.bg-danger-soft { background-color: rgba(239, 68, 68, 0.1); }
+.bg-warning-soft { background-color: rgba(245, 158, 11, 0.1); }
+
+/* Modal Styling */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content-wrapper {
+  border-radius: 28px;
+  animation: modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalSlideUp {
+  from { opacity: 0; transform: translateY(30px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.transition-all {
+  transition: all 0.3s ease;
+}

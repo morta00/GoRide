@@ -1,0 +1,336 @@
+<div class="vehicle-page animate__animated animate__fadeIn">
+  <div class="page-header mb-4">
+    <h2 class="page-title">Mon véhicule</h2>
+    <p class="page-subtitle text-muted">Gérez votre véhicule personnel ou louez un véhicule partenaire GoRide.</p>
+  </div>
+
+  <div *ngIf="successMessage" class="alert alert-success animate__animated animate__fadeInDown mb-4">
+    {{ successMessage }}
+  </div>
+
+  <!-- ==================== 1. EMPTY STATE GLOBAL (Aucun véhicule configuré) ==================== -->
+  <div class="card shadow-sm border-0 rounded-4 p-5 text-center my-4 animate__animated animate__fadeIn" *ngIf="!isConfigured" style="max-width: 650px; margin: 0 auto;">
+    <div class="icon-box-circle bg-soft-primary text-primary mx-auto mb-4" style="width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background-color: rgba(59, 130, 246, 0.1);">
+      <span class="ion-md-car text-primary" style="font-size: 3rem; color: #3b82f6;"></span>
+    </div>
+    <h3 class="fw-bold mb-3 text-dark">Aucun véhicule de travail configuré</h3>
+    <p class="text-muted mb-4 fs-5" style="line-height: 1.6;">
+      Vous devez configurer votre véhicule personnel ou louer un véhicule auprès d’un propriétaire pour proposer des trajets.
+    </p>
+
+    <div class="vehicle-empty-actions">
+      <button type="button" class="vehicle-empty-btn vehicle-empty-btn--primary" (click)="openPersonalModal()">
+        <span class="ion-md-add-circle"></span>
+        <span>Ajouter mon véhicule</span>
+      </button>
+      <button type="button" class="vehicle-empty-btn vehicle-empty-btn--outline" (click)="goToPartnerExplore()">
+        <span class="ion-md-business"></span>
+        <span>Louer une voiture</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== 2. CONTENU GLOBAL SI VÉHICULE CONFIGURÉ ==================== -->
+  <div class="row" *ngIf="isConfigured">
+    <!-- Main Content -->
+    <div class="col-lg-8">
+      
+      <!-- Mode Switcher -->
+      <div class="mode-switcher card shadow-sm mb-4">
+        <div class="d-flex p-2 gap-2">
+          <button class="mode-btn flex-grow-1" [class.active]="vehicleWorkMode === MODE_OWN" (click)="setWorkMode(MODE_OWN)">
+            <span class="ion-md-person me-2"></span> Mon propre véhicule
+          </button>
+          <button class="mode-btn flex-grow-1" [class.active]="vehicleWorkMode === MODE_PARTNER" (click)="setWorkMode(MODE_PARTNER)">
+            <span class="ion-md-business me-2"></span> Véhicule partenaire
+          </button>
+        </div>
+      </div>
+
+      <!-- Tab: Mon propre véhicule -->
+      <div *ngIf="vehicleWorkMode === MODE_OWN">
+        <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-4">
+          <div class="card-header bg-white p-4 border-0">
+            <div class="d-flex justify-content-between align-items-center">
+              <h4 class="mb-0 fw-bold">Détails du véhicule</h4>
+              <span class="status-badge" [ngClass]="personalVehicle.status === 'Validé' ? 'valid' : 'pending'">
+                {{ personalVehicle.status }}
+              </span>
+            </div>
+          </div>
+          <div class="card-body p-4 pt-0">
+            <div class="row g-4">
+              <div class="col-md-6">
+                <div class="info-item-box">
+                  <label>Marque & Modèle</label>
+                  <p>{{ personalVehicle.brand || 'Non renseigné' }} {{ personalVehicle.model || '' }}</p>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="info-item-box">
+                  <label>Numéro de plaque</label>
+                  <p class="font-monospace fw-bold" style="letter-spacing: 0.5px;">{{ personalVehicle.plateNumber || 'Non renseigné' }}</p>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="info-item-box">
+                  <label>Année</label>
+                  <p>{{ personalVehicle.year || 'Non renseigné' }}</p>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="info-item-box">
+                  <label>Carburant</label>
+                  <p>{{ personalVehicle.fuelType || 'Non renseigné' }}</p>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="info-item-box">
+                  <label>Transmission</label>
+                  <p>{{ personalVehicle.transmission || 'Non renseigné' }}</p>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="info-item-box">
+                  <label>Kilométrage</label>
+                  <p>{{ personalVehicle.mileage !== null ? personalVehicle.mileage + ' km' : 'Non renseigné' }}</p>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="info-item-box">
+                  <label>Nombre de places</label>
+                  <p>{{ personalVehicle.seats || 'Non renseigné' }}</p>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="info-item-box">
+                  <label>Couleur</label>
+                  <p>{{ personalVehicle.color || 'Non renseigné' }}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mt-4 pt-4 border-top d-flex gap-2">
+              <button class="btn btn-primary rounded-pill px-4" (click)="openPersonalModal()">
+                Modifier les informations
+              </button>
+              <button class="btn btn-outline-danger rounded-pill px-4" (click)="removeActiveVehicle()">
+                Retirer comme véhicule actif
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Véhicule partenaire -->
+      <div *ngIf="vehicleWorkMode === MODE_PARTNER">
+        <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-4" *ngIf="selectedPartnerVehicle">
+          <div class="card-body p-0">
+            <div class="row g-0">
+              <div class="col-md-5">
+                <img [src]="selectedPartnerVehicle.image" class="w-100 h-100 object-fit-cover" style="min-height: 300px;">
+              </div>
+              <div class="col-md-7 p-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                  <div>
+                    <h3 class="fw-bold mb-1">{{ selectedPartnerVehicle.name }}</h3>
+                    <span class="badge bg-primary-soft text-primary">{{ selectedPartnerVehicle.category }}</span>
+                  </div>
+                  <div class="text-end">
+                    <span class="price-tag">{{ selectedPartnerVehicle.driverPrice }} DT</span>
+                    <p class="text-muted small">par jour</p>
+                  </div>
+                </div>
+
+                <div class="specs-grid mb-4">
+                  <div class="spec-item">
+                    <span class="ion-md-speedometer"></span>
+                    <span>{{ selectedPartnerVehicle.type }}</span>
+                  </div>
+                  <div class="spec-item">
+                    <span class="ion-md-color-palette"></span>
+                    <span>Standard</span>
+                  </div>
+                  <div class="spec-item">
+                    <span class="ion-md-flame"></span>
+                    <span>{{ selectedPartnerVehicle.fuel }}</span>
+                  </div>
+                </div>
+
+                <div class="owner-info p-3 bg-light rounded-3 d-flex align-items-center gap-3 mb-4">
+                  <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center">
+                    <span class="ion-md-business"></span>
+                  </div>
+                  <div>
+                    <p class="mb-0 small text-muted">Propriétaire / Agence</p>
+                    <p class="mb-0 fw-bold">{{ selectedPartnerVehicle.agency }}</p>
+                  </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                  <button class="btn btn-outline-danger rounded-pill px-4" (click)="removeActiveVehicle()">
+                    Terminer la location
+                  </button>
+                  <button class="btn btn-primary rounded-pill px-4" (click)="router.navigate(['/driver/conversations'], {queryParams: {vehicleId: selectedPartnerVehicle.id}})">
+                    Contacter le propriétaire
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty state rented vehicle -->
+        <div class="card shadow-sm border-0 rounded-4 p-5 text-center mb-4" *ngIf="!selectedPartnerVehicle">
+          <div class="empty-state-icon mb-4">
+            <span class="ion-md-car text-muted" style="font-size: 4rem;"></span>
+          </div>
+          <h4 class="fw-bold text-dark">Aucun véhicule partenaire loué</h4>
+          <p class="text-muted max-w-400 mx-auto mb-4">
+            Aucun véhicule partenaire loué. Vous pouvez louer une voiture disponible auprès d’un propriétaire GoRide.
+          </p>
+          <button class="btn btn-primary rounded-pill px-5" (click)="goToPartnerExplore()">
+            Louer une voiture
+          </button>
+        </div>
+      </div>
+
+      <!-- History Section -->
+      <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-4">
+        <div class="card-header bg-white p-4">
+          <h4 class="mb-0 fw-bold">Historique du véhicule</h4>
+        </div>
+        <div class="card-body p-4" *ngIf="history.length === 0">
+          <p class="text-muted text-center my-3">Aucun historique de véhicule.</p>
+        </div>
+        <div class="card-body p-0" *ngIf="history.length > 0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="bg-light">
+                <tr>
+                  <th class="px-4 py-3">Date</th>
+                  <th class="py-3">Événement</th>
+                  <th class="py-3 px-4">Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let act of history">
+                  <td class="px-4 text-muted small">
+                    {{ act.createdAt | date:'dd MMM yyyy HH:mm' }}
+                  </td>
+                  <td>
+                    <span class="fw-bold">{{ act.title }}</span>
+                  </td>
+                  <td class="px-4 text-muted small">
+                    {{ act.description }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Sidebar -->
+    <div class="col-lg-4">
+      <div class="card shadow-sm border-0 rounded-4 mb-4">
+        <div class="card-body p-4">
+          <h5 class="fw-bold mb-3">Documents obligatoires</h5>
+          
+          <div *ngIf="documents.length === 0" class="text-muted text-center py-3">
+            Aucun document envoyé.
+          </div>
+
+          <div class="document-list" *ngIf="documents.length > 0">
+            <div class="doc-item d-flex align-items-center justify-content-between mb-3" *ngFor="let doc of documents">
+              <div class="d-flex align-items-center gap-2">
+                <span class="ion-md-checkmark-circle text-success" *ngIf="doc.status === 'verified' || doc.status === 'APPROVED'"></span>
+                <span class="ion-md-time text-warning" *ngIf="doc.status === 'pending' || doc.status === 'PENDING'"></span>
+                <span class="ion-md-alert text-danger" *ngIf="doc.status === 'rejected' || doc.status === 'REJECTED' || doc.status === 'expired' || doc.status === 'EXPIRED'"></span>
+                <span class="small">{{ doc.name }}</span>
+              </div>
+              <span class="badge" [ngClass]="{
+                'bg-success-soft text-success': doc.status === 'verified' || doc.status === 'APPROVED',
+                'bg-warning-soft text-warning': doc.status === 'pending' || doc.status === 'PENDING',
+                'bg-danger-soft text-danger': doc.status === 'rejected' || doc.status === 'REJECTED' || doc.status === 'expired' || doc.status === 'EXPIRED'
+              }">
+                {{ 
+                  doc.status === 'verified' || doc.status === 'APPROVED' ? 'Vérifié' : 
+                  (doc.status === 'pending' || doc.status === 'PENDING' ? 'En cours' : 
+                  (doc.status === 'expired' || doc.status === 'EXPIRED' ? 'Expiré' : 'Rejeté'))
+                }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Personal Vehicle -->
+<div class="modal-overlay" *ngIf="showPersonalModal" (click)="closePersonalModal()">
+  <div class="modal-container-centered animate__animated animate__zoomIn" (click)="$event.stopPropagation()">
+    <div class="modal-header border-bottom p-4">
+      <h4 class="mb-0 fw-bold">Configurer mon véhicule</h4>
+      <button class="btn-close" (click)="closePersonalModal()"></button>
+    </div>
+    <div class="modal-body p-4">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Marque <span class="text-danger">*</span></label>
+          <input type="text" class="form-control rounded-3" [(ngModel)]="personalVehicle.brand" placeholder="Ex: Renault">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Modèle <span class="text-danger">*</span></label>
+          <input type="text" class="form-control rounded-3" [(ngModel)]="personalVehicle.model" placeholder="Ex: Clio 5">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Numéro de plaque <span class="text-danger">*</span></label>
+          <input type="text" class="form-control rounded-3" [(ngModel)]="personalVehicle.plateNumber" placeholder="Ex: 456 TU 7890">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Kilométrage (km)</label>
+          <input type="number" class="form-control rounded-3" [(ngModel)]="personalVehicle.mileage">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Année de production <span class="text-danger">*</span></label>
+          <input type="number" class="form-control rounded-3" [(ngModel)]="personalVehicle.year">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Couleur</label>
+          <input type="text" class="form-control rounded-3" [(ngModel)]="personalVehicle.color" placeholder="Ex: Gris">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Nombre de places <span class="text-danger">*</span></label>
+          <input type="number" class="form-control rounded-3" [(ngModel)]="personalVehicle.seats">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Carburant</label>
+          <select class="form-select rounded-3" [(ngModel)]="personalVehicle.fuelType">
+            <option value="Essence">Essence</option>
+            <option value="Diesel">Diesel</option>
+            <option value="Électrique">Électrique</option>
+            <option value="Hybride">Hybride</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Transmission</label>
+          <select class="form-select rounded-3" [(ngModel)]="personalVehicle.transmission">
+            <option value="Manuelle">Manuelle</option>
+            <option value="Automatique">Automatique</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer border-top p-3">
+      <button class="btn btn-light rounded-pill px-4" (click)="closePersonalModal()">Annuler</button>
+      <button class="btn btn-primary rounded-pill px-4" (click)="savePersonalVehicle()">
+        <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+        Enregistrer
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,285 @@
+<div class="admin-complaints animate__animated animate__fadeIn">
+  
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold text-dark mb-1">Réclamations</h2>
+      <p class="text-muted">Traitez les litiges, incidents et problèmes signalés par les utilisateurs GoRide.</p>
+    </div>
+    <div class="search-wrapper">
+      <div class="input-group shadow-sm border-0 rounded-pill bg-white overflow-hidden">
+        <span class="input-group-text bg-white border-0 ps-3">
+          <span class="ion-ios-search text-primary"></span>
+        </span>
+        <input type="text" class="form-control border-0 py-2 shadow-none" 
+               placeholder="Rechercher une réclamation, utilisateur, service..." 
+               [(ngModel)]="searchTerm" (ngModelChange)="applyFilters()">
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-2">
+      <div class="stat-card bg-white shadow-sm p-3 rounded-4 border-start border-danger border-4 h-100">
+        <p class="text-muted tiny fw-bold text-uppercase mb-1">Ouvertes</p>
+        <h4 class="fw-bold mb-0 text-danger">{{ stats.open }}</h4>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="stat-card bg-white shadow-sm p-3 rounded-4 border-start border-warning border-4 h-100">
+        <p class="text-muted tiny fw-bold text-uppercase mb-1">En examen</p>
+        <h4 class="fw-bold mb-0 text-warning">{{ stats.inReview }}</h4>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="stat-card bg-white shadow-sm p-3 rounded-4 border-start border-info border-4 h-100">
+        <p class="text-muted tiny fw-bold text-uppercase mb-1">Attente Réponse</p>
+        <h4 class="fw-bold mb-0 text-info">{{ stats.waitingResponse }}</h4>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="stat-card bg-white shadow-sm p-3 rounded-4 border-start border-success border-4 h-100">
+        <p class="text-muted tiny fw-bold text-uppercase mb-1">Résolues</p>
+        <h4 class="fw-bold mb-0 text-success">{{ stats.resolved }}</h4>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="stat-card bg-white shadow-sm p-3 rounded-4 border-start border-dark border-4 h-100">
+        <p class="text-muted tiny fw-bold text-uppercase mb-1">Priorité Haute</p>
+        <h4 class="fw-bold mb-0 text-dark">{{ stats.highPriority }}</h4>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="stat-card bg-primary text-white shadow-sm p-3 rounded-4 h-100">
+        <p class="text-white-50 tiny fw-bold text-uppercase mb-1">Temps moyen</p>
+        <h4 class="fw-bold mb-0">{{ stats.avgTreatment }}</h4>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content Card -->
+  <div class="content-card shadow-sm bg-white rounded-4 p-4">
+    
+    <!-- Filters -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+      <div class="d-flex flex-wrap gap-2">
+        <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="statusFilter === 'ALL' ? 'btn-primary' : 'btn-light border'" (click)="statusFilter = 'ALL'; applyFilters()">Toutes</button>
+        <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="statusFilter === 'OPEN' ? 'btn-outline-danger' : 'btn-light border'" (click)="statusFilter = 'OPEN'; applyFilters()">Ouvertes</button>
+        <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="statusFilter === 'IN_REVIEW' ? 'btn-outline-warning' : 'btn-light border'" (click)="statusFilter = 'IN_REVIEW'; applyFilters()">En examen</button>
+        <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="priorityFilter === 'HIGH' ? 'btn-danger' : 'btn-light border'" (click)="priorityFilter = (priorityFilter === 'HIGH' ? 'ALL' : 'HIGH'); applyFilters()">Haute Priorité</button>
+        <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="categoryFilter === 'PAYMENT' ? 'btn-light border text-primary' : 'btn-light border'" (click)="categoryFilter = (categoryFilter === 'PAYMENT' ? 'ALL' : 'PAYMENT'); applyFilters()">Paiements</button>
+      </div>
+
+      <div class="d-flex gap-2">
+        <select class="form-select form-select-sm rounded-pill border" style="width: 150px;" [(ngModel)]="currentSort" (change)="applyFilters()">
+          <option value="NEWEST">Plus récentes</option>
+          <option value="PRIORITY">Priorité haute</option>
+          <option value="UPDATED">Mise à jour</option>
+        </select>
+        <button class="btn btn-sm btn-light border rounded-pill px-3 fw-bold" (click)="resetToMocks()">Réinitialiser</button>
+      </div>
+    </div>
+
+    <!-- Complaint List -->
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead>
+          <tr class="tiny text-muted text-uppercase">
+            <th>Réclamation</th>
+            <th>Parties Concernées</th>
+            <th class="text-center">Catégorie / Priorité</th>
+            <th class="text-center">Statut</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of filteredComplaints" class="pointer" (click)="openDetails(c)">
+            <td>
+              <span class="fw-bold text-dark d-block mb-1">{{ c.title }}</span>
+              <span class="tiny text-muted d-block">{{ c.id }} • {{ c.createdAt | date:'short' }}</span>
+              <span class="small text-muted text-truncate d-block" style="max-width: 250px;">{{ c.description }}</span>
+            </td>
+            <td>
+              <div class="d-flex flex-column gap-1">
+                 <span class="small fw-bold text-dark"><span class="text-muted tiny fw-normal">De:</span> {{ c.complainantName }}</span>
+                 <span class="small fw-bold text-danger"><span class="text-muted tiny fw-normal">Contre:</span> {{ c.accusedName }}</span>
+              </div>
+            </td>
+            <td class="text-center">
+              <span class="badge bg-light text-muted tiny border d-block mb-1">{{ getCategoryLabel(c.category) }}</span>
+              <span class="badge rounded-pill tiny" [ngClass]="getPriorityClass(c.priority)">{{ getPriorityLabel(c.priority) }}</span>
+            </td>
+            <td class="text-center">
+              <span class="badge rounded-pill px-3 py-2 tiny" [ngClass]="getStatusClass(c.status)">{{ getStatusLabel(c.status) }}</span>
+              <span class="tiny text-muted d-block mt-1" *ngIf="c.assignedTo">Par: {{ c.assignedTo }}</span>
+            </td>
+            <td class="text-end">
+              <div class="d-flex justify-content-end gap-2" (click)="$event.stopPropagation()">
+                <button class="btn btn-sm btn-primary rounded-pill px-3 fw-bold shadow-sm" (click)="openDetails(c)">Détails</button>
+                <button class="btn btn-sm btn-light border rounded-pill px-2" *ngIf="!c.assignedTo" (click)="takeCharge(c)">Prendre en charge</button>
+                <div class="dropdown" *ngIf="c.status !== 'RESOLVED' && c.status !== 'CLOSED'">
+                   <button class="btn btn-sm btn-light border rounded-pill px-2" data-bs-toggle="dropdown">
+                      <span class="ion-ios-more"></span>
+                   </button>
+                   <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 p-2 animate__animated animate__fadeIn">
+                      <li><a class="dropdown-item rounded-3 small fw-bold" (click)="openRequest(c)"><span class="ion-ios-mail me-2"></span>Demander réponse</a></li>
+                      <li><a class="dropdown-item rounded-3 small fw-bold text-success" (click)="openResolve(c)"><span class="ion-ios-checkmark-circle me-2"></span>Résoudre</a></li>
+                      <li><a class="dropdown-item rounded-3 small fw-bold text-danger" (click)="openReject(c)"><span class="ion-ios-close-circle me-2"></span>Rejeter</a></li>
+                   </ul>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div *ngIf="filteredComplaints.length === 0" class="text-center py-5">
+       <span class="ion-ios-alert fs-1 text-muted opacity-25 d-block mb-3"></span>
+       <h5 class="fw-bold text-muted">Aucune réclamation trouvée</h5>
+    </div>
+  </div>
+
+</div>
+
+<!-- Details Modal -->
+<div class="modal-overlay animate__animated animate__fadeIn" *ngIf="showDetailsModal" (click)="closeDetails()">
+  <div class="modal-content-wrapper shadow-lg bg-white p-4" style="max-width: 700px; z-index: 10000;" (click)="$event.stopPropagation()">
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+      <h5 class="fw-bold text-dark mb-0">Réclamation {{ selectedComplaint?.id }}</h5>
+      <button class="btn btn-light rounded-circle" (click)="closeDetails()">
+        <span class="ion-ios-close fs-4"></span>
+      </button>
+    </div>
+    
+    <div class="modal-body" *ngIf="selectedComplaint">
+      <div class="row g-4">
+         <div class="col-12 mb-2">
+            <h4 class="fw-bold text-dark mb-1">{{ selectedComplaint.title }}</h4>
+            <div class="d-flex gap-2">
+               <span class="badge rounded-pill" [ngClass]="getStatusClass(selectedComplaint.status)">{{ getStatusLabel(selectedComplaint.status) }}</span>
+               <span class="badge rounded-pill" [ngClass]="getPriorityClass(selectedComplaint.priority)">{{ getPriorityLabel(selectedComplaint.priority) }}</span>
+               <span class="badge bg-light text-muted border tiny">{{ getCategoryLabel(selectedComplaint.category) }}</span>
+            </div>
+         </div>
+
+         <div class="col-md-6">
+            <div class="p-3 bg-light rounded-4 h-100">
+               <span class="tiny text-muted text-uppercase d-block mb-2">Plaignant</span>
+               <h6 class="fw-bold mb-1 text-dark">{{ selectedComplaint.complainantName }}</h6>
+               <span class="small text-muted">{{ getRoleLabel(selectedComplaint.complainantRole) }}</span>
+            </div>
+         </div>
+         <div class="col-md-6">
+            <div class="p-3 bg-danger-soft rounded-4 h-100">
+               <span class="tiny text-danger text-uppercase d-block mb-2">Personne concernée</span>
+               <h6 class="fw-bold mb-1 text-dark">{{ selectedComplaint.accusedName }}</h6>
+               <span class="small text-muted">{{ getRoleLabel(selectedComplaint.accusedRole) }}</span>
+            </div>
+         </div>
+
+         <div class="col-12">
+            <div class="p-3 border rounded-4 bg-white">
+               <span class="tiny text-muted text-uppercase d-block mb-2">Description des faits</span>
+               <p class="small text-dark mb-0">{{ selectedComplaint.description }}</p>
+            </div>
+         </div>
+
+         <div class="col-12" *ngIf="selectedComplaint.resolution">
+            <div class="p-3 bg-success-soft rounded-4 border border-success border-opacity-10">
+               <span class="tiny text-success text-uppercase d-block mb-2 fw-bold">Résolution du litige</span>
+               <p class="small text-dark fw-bold mb-0">{{ selectedComplaint.resolution }}</p>
+            </div>
+         </div>
+
+         <div class="col-md-4">
+            <span class="tiny text-muted d-block">Créé le</span>
+            <span class="fw-bold small">{{ selectedComplaint.createdAt | date:'medium' }}</span>
+         </div>
+         <div class="col-md-4">
+            <span class="tiny text-muted d-block">Mise à jour</span>
+            <span class="fw-bold small">{{ selectedComplaint.updatedAt | date:'medium' }}</span>
+         </div>
+         <div class="col-md-4">
+            <span class="tiny text-muted d-block">Assigné à</span>
+            <span class="fw-bold small">{{ selectedComplaint.assignedTo || 'Non assigné' }}</span>
+         </div>
+      </div>
+
+      <div class="d-flex gap-2 mt-4 pt-4 border-top">
+        <button class="btn btn-primary rounded-pill flex-grow-1 fw-bold shadow-sm" *ngIf="!selectedComplaint.assignedTo" (click)="takeCharge(selectedComplaint)">Prendre en charge</button>
+        <button class="btn btn-outline-primary rounded-pill flex-grow-1 fw-bold" *ngIf="selectedComplaint.relatedServiceId" (click)="goToService(selectedComplaint.relatedServiceId)">Voir service lié</button>
+        <button class="btn btn-outline-info rounded-pill flex-grow-1 fw-bold" *ngIf="selectedComplaint.relatedPaymentId" (click)="goToPayment(selectedComplaint.relatedPaymentId)">Voir paiement lié</button>
+        <button class="btn btn-success rounded-pill px-4 fw-bold" *ngIf="selectedComplaint.status !== 'RESOLVED' && selectedComplaint.status !== 'CLOSED'" (click)="openResolve(selectedComplaint)">Résoudre</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Resolve Modal -->
+<div class="modal-overlay animate__animated animate__fadeIn" *ngIf="showResolveModal" (click)="showResolveModal = false">
+  <div class="modal-content-wrapper shadow-lg bg-white p-4" style="max-width: 500px; z-index: 10001;" (click)="$event.stopPropagation()">
+    <h5 class="fw-bold text-dark border-bottom pb-3 mb-4">Résoudre le litige</h5>
+    <div class="mb-3">
+       <label class="form-label small fw-bold">Décision finale / Résolution</label>
+       <textarea class="form-control rounded-4 shadow-none" rows="4" placeholder="Expliquez la décision prise..." [(ngModel)]="resolutionText" [class.is-invalid]="errorMsg"></textarea>
+       <div class="invalid-feedback fw-bold small" *ngIf="errorMsg">{{ errorMsg }}</div>
+    </div>
+    <div class="row g-3 mb-3">
+       <div class="col-6">
+          <label class="form-label small fw-bold">Remboursement (DT)</label>
+          <input type="number" class="form-control rounded-pill shadow-none" [(ngModel)]="resolutionRefund">
+       </div>
+       <div class="col-6">
+          <label class="form-label small fw-bold">Action système</label>
+          <select class="form-select rounded-pill shadow-none" [(ngModel)]="resolutionAction">
+             <option value="NONE">Aucune</option>
+             <option value="REFUND">Remboursement</option>
+             <option value="WARNING">Avertissement</option>
+             <option value="SUSPEND">Suspension</option>
+          </select>
+       </div>
+    </div>
+    <div class="d-flex gap-2 mt-4">
+       <button class="btn btn-light rounded-pill flex-grow-1" (click)="showResolveModal = false">Annuler</button>
+       <button class="btn btn-success rounded-pill flex-grow-1 fw-bold shadow-sm" (click)="confirmResolve()">Valider la résolution</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal-overlay animate__animated animate__fadeIn" *ngIf="showRejectModal" (click)="showRejectModal = false">
+  <div class="modal-content-wrapper shadow-lg bg-white p-4" style="max-width: 500px; z-index: 10001;" (click)="$event.stopPropagation()">
+    <h5 class="fw-bold text-dark border-bottom pb-3 mb-4">Rejeter la réclamation</h5>
+    <div class="mb-3">
+       <label class="form-label small fw-bold">Motif du rejet</label>
+       <textarea class="form-control rounded-4 shadow-none" rows="4" placeholder="Expliquez pourquoi la réclamation est rejetée..." [(ngModel)]="rejectReason" [class.is-invalid]="errorMsg"></textarea>
+       <div class="invalid-feedback fw-bold small" *ngIf="errorMsg">{{ errorMsg }}</div>
+    </div>
+    <div class="d-flex gap-2 mt-4">
+       <button class="btn btn-light rounded-pill flex-grow-1" (click)="showRejectModal = false">Annuler</button>
+       <button class="btn btn-danger rounded-pill flex-grow-1 fw-bold shadow-sm" (click)="confirmReject()">Confirmer le rejet</button>
+    </div>
+  </div>
+</div>
+
+<!-- Request Response Modal -->
+<div class="modal-overlay animate__animated animate__fadeIn" *ngIf="showRequestModal" (click)="showRequestModal = false">
+  <div class="modal-content-wrapper shadow-lg bg-white p-4" style="max-width: 500px; z-index: 10001;" (click)="$event.stopPropagation()">
+    <h5 class="fw-bold text-dark border-bottom pb-3 mb-4">Demander des informations</h5>
+    <div class="mb-3">
+       <label class="form-label small fw-bold">Destinataire</label>
+       <select class="form-select rounded-pill shadow-none mb-3" [(ngModel)]="requestTarget">
+          <option value="COMPLAINANT">Plaignant ({{ selectedComplaint?.complainantName }})</option>
+          <option value="ACCUSED">Personne concernée ({{ selectedComplaint?.accusedName }})</option>
+       </select>
+       <label class="form-label small fw-bold">Message / Questions</label>
+       <textarea class="form-control rounded-4 shadow-none" rows="4" placeholder="Quelles informations manquent ?" [(ngModel)]="requestMessage" [class.is-invalid]="errorMsg"></textarea>
+       <div class="invalid-feedback fw-bold small" *ngIf="errorMsg">{{ errorMsg }}</div>
+    </div>
+    <div class="d-flex gap-2 mt-4">
+       <button class="btn btn-light rounded-pill flex-grow-1" (click)="showRequestModal = false">Annuler</button>
+       <button class="btn btn-primary rounded-pill flex-grow-1 fw-bold shadow-sm" (click)="sendRequest()">Envoyer la demande</button>
+    </div>
+  </div>
+</div>

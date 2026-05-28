@@ -1,0 +1,509 @@
+<div class="explore-container">
+
+  <!-- TOAST NOTIFICATION -->
+  <div class="toast-container" *ngIf="toastMessage">
+    <div class="toast-message animate__animated animate__fadeInUp">
+      <span class="ion-md-information-circle me-2"></span>
+      {{ toastMessage }}
+    </div>
+  </div>
+
+  <!-- MODAL: DÉTAILS DU VÉHICULE -->
+  <div class="app-modal-overlay" *ngIf="showDetailsModal" (click)="closeDetailsModal()">
+    <div class="modal-content-custom" (click)="$event.stopPropagation()">
+      <button class="btn-close-modal" (click)="closeDetailsModal()"><span class="ion-md-close"></span></button>
+      
+      <div class="modal-body">
+        <div class="modal-image-placeholder" style="position: relative; overflow: hidden;">
+          <button
+            *ngIf="vehicleDetails"
+            type="button"
+            class="favorite-btn modal-favorite-btn"
+            [class.active]="vehicleDetails.isFavorite"
+            (click)="toggleFavorite(vehicleDetails, $event)">
+            <span [class]="vehicleDetails.isFavorite ? 'ion-ios-heart' : 'ion-ios-heart-empty'"></span>
+          </button>
+          <img *ngIf="vehicleDetails?.image"
+               [src]="vehicleDetails?.image"
+               [alt]="vehicleDetails?.name"
+               class="vehicle-image"
+               (error)="onVehicleImageError(vehicleDetails!, $event)">
+          <span *ngIf="!vehicleDetails?.image" class="ion-md-car"></span>
+        </div>
+        <div class="modal-info">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h2 class="modal-title">{{ vehicleDetails?.name }}</h2>
+            <div class="modal-rating">
+              <span class="ion-md-star"></span> {{ vehicleDetails?.rating }}
+            </div>
+          </div>
+          <p class="modal-meta">{{ vehicleDetails?.category }} • {{ vehicleDetails?.city }}</p>
+          
+          <div class="modal-specs">
+            <div class="spec-item"><span class="ion-md-settings"></span> {{ vehicleDetails?.transmission }}</div>
+            <div class="spec-item"><span class="ion-md-water"></span> {{ vehicleDetails?.fuel }}</div>
+            <div class="spec-item"><span class="ion-md-people"></span> {{ vehicleDetails?.seats }} places</div>
+          </div>
+
+          <p class="modal-description">
+            {{ vehicleDetails?.description }}
+          </p>
+
+          <div class="modal-owner">
+            <span class="ion-md-person me-2 text-primary"></span>
+            Propriétaire : <strong>{{ vehicleDetails?.owner }}</strong>
+          </div>
+
+          <div class="modal-footer-custom">
+            <div class="modal-price">
+              <span class="price-val">{{ vehicleDetails?.price }} DT</span>
+              <span class="price-unit">/ jour</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: DEMANDE DE LOCATION -->
+  <div class="app-modal-overlay" *ngIf="showRentModal" (click)="closeRentModal()">
+    <div class="modal-content-custom" style="max-width: 500px;" (click)="$event.stopPropagation()">
+      <div class="modal-header-custom p-4 border-bottom d-flex justify-content-between align-items-center">
+        <h3 class="mb-0">Demande de location</h3>
+        <button class="btn-close-modal" style="position: static;" (click)="closeRentModal()"><span class="ion-md-close"></span></button>
+      </div>
+      
+      <div class="modal-body p-4 d-block">
+        <div class="selected-vehicle-summary d-flex gap-3 mb-4 align-items-center">
+          <div class="mini-img-placeholder" style="position: relative; overflow: hidden; width: 60px; height: 60px; min-width: 60px; border-radius: 12px; background: #f8fafc; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #cbd5e1;">
+            <img *ngIf="vehicleToRent?.image"
+                 [src]="vehicleToRent?.image"
+                 [alt]="vehicleToRent?.name"
+                 class="vehicle-image"
+                 (error)="onVehicleImageError(vehicleToRent!, $event)">
+            <span *ngIf="!vehicleToRent?.image" class="ion-md-car"></span>
+          </div>
+          <div>
+            <h4 class="mb-1">{{ vehicleToRent?.name }}</h4>
+            <p class="text-muted small mb-0">{{ vehicleToRent?.category }} • {{ vehicleToRent?.price }} DT/jour</p>
+          </div>
+        </div>
+
+        <div class="booking-form">
+          <div class="row g-3">
+            <div class="col-6">
+              <label class="form-label small fw-bold">Date de début</label>
+              <input type="date" class="form-control" [(ngModel)]="startDate">
+            </div>
+            <div class="col-6">
+              <label class="form-label small fw-bold">Date de retour</label>
+              <input type="date" class="form-control" [(ngModel)]="endDate">
+            </div>
+            <div class="col-12 mt-3">
+              <label class="form-label small fw-bold">Lieu de prise en charge</label>
+              <div class="input-group">
+                <span class="input-group-text bg-white"><span class="ion-md-pin"></span></span>
+                <input type="text" class="form-control" [(ngModel)]="pickupLocation" placeholder="Ex: Aéroport Tunis-Carthage">
+              </div>
+            </div>
+            <div class="col-12 mt-2">
+              <label class="form-label small fw-bold">Lieu de retour</label>
+              <div class="input-group">
+                <span class="input-group-text bg-white"><span class="ion-md-pin"></span></span>
+                <input type="text" class="form-control" [(ngModel)]="returnLocation" placeholder="Ex: Agence Centre-Ville">
+              </div>
+            </div>
+            <div class="col-12 mt-2">
+              <label class="form-label small fw-bold">Message (Optionnel)</label>
+              <textarea class="form-control" [(ngModel)]="reservationMessage" rows="2" placeholder="Ex: J'aurai besoin d'un siège auto."></textarea>
+            </div>
+          </div>
+
+          <div class="price-summary mt-4 p-3 bg-soft-primary border-radius-12" *ngIf="startDate && endDate && calculateTotal() > 0">
+            <div class="d-flex justify-content-between mb-2">
+              <span class="text-muted">Total estimé :</span>
+              <span class="fw-bold text-primary" style="font-size: 1.2rem;">{{ calculateTotal() }} DT</span>
+            </div>
+            <p class="x-small text-muted mb-0">* Basé sur {{ calculateTotal() / (vehicleToRent?.price || 1) }} jours de location.</p>
+          </div>
+
+          <div class="alert alert-warning mt-3 small" *ngIf="errorMessage">
+            <span class="ion-md-warning me-2"></span>
+            {{ errorMessage }}
+          </div>
+          <div class="alert alert-info mt-3 small" *ngIf="!startDate || !endDate">
+            <span class="ion-md-information-circle me-2"></span>
+            Veuillez choisir une date de début et une date de retour.
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer-custom p-4 border-top bg-light mt-0">
+        <button class="btn btn-light me-2" (click)="closeRentModal()" [disabled]="isSubmitting">Annuler</button>
+        <button class="btn-primary-glow flex-grow-1" (click)="confirmBooking()" [disabled]="isSubmitting">
+          <span *ngIf="!isSubmitting">Confirmer la demande</span>
+          <span *ngIf="isSubmitting"><i class="ion-md-refresh spin"></i> Envoi...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header Section -->
+  <header class="explore-header">
+    <div class="header-text">
+      <h1>Explorer les véhicules</h1>
+      <p>Trouvez la voiture idéale selon votre destination, vos dates et votre budget.</p>
+    </div>
+  </header>
+
+  <!-- Search Bar Section -->
+  <section class="search-bar-card">
+    <div class="search-grid">
+      <div class="search-field">
+        <label><span class="ion-md-search"></span> Quoi ?</label>
+        <input type="text" [(ngModel)]="searchQuery" (input)="applyFilters()" placeholder="Marque, modèle ou ville">
+      </div>
+      <div class="search-field">
+        <label><span class="ion-md-pin"></span> Où ?</label>
+        <input type="text" [(ngModel)]="searchLocation" (input)="applyFilters()" placeholder="Lieu de prise en charge">
+      </div>
+      <div class="search-field">
+        <label><span class="ion-md-calendar"></span> Début</label>
+        <input type="date" [(ngModel)]="startDate">
+      </div>
+      <div class="search-field">
+        <label><span class="ion-md-calendar"></span> Retour</label>
+        <input type="date" [(ngModel)]="endDate">
+      </div>
+      <button class="btn-search" (click)="applyFilters()">Rechercher</button>
+    </div>
+  </section>
+
+  <section class="mb-4">
+    <app-ai-insight-panel
+      mode="vehicles"
+      title="Recommandation IA — véhicules"
+      subtitle="Confort, économique, famille ou long trajet : nous vous suggérons le meilleur véhicule de la liste."
+      [location]="searchLocation || searchQuery"
+      [startDate]="startDate"
+      [endDate]="endDate"
+      [passengers]="2"
+      [vehicleIds]="aiVehicleIds"
+      (recommended)="onAiRecommended($event)">
+    </app-ai-insight-panel>
+  </section>
+
+  <div class="view-toggle">
+  <button class="btn-toggle" [class.active]="viewMode==='list'" (click)="toggleView('list')">Vue liste</button>
+  <button class="btn-toggle" [class.active]="viewMode==='map'" (click)="toggleView('map')">Vue carte</button>
+</div>
+<div class="content-layout" *ngIf="viewMode==='list'">
+    <!-- Sidebar Filters -->
+    <aside class="filters-sidebar">
+      <div class="filter-card">
+        <div class="filter-header">
+          <h3>Filtres</h3>
+          <button class="btn-reset" (click)="resetFilters()">Réinitialiser</button>
+        </div>
+
+        <!-- Favoris Filter -->
+        <div class="filter-group filter-favoris-group">
+          <label>Mes favoris</label>
+          <button
+            type="button"
+            class="btn-favoris-filter"
+            [class.active]="showFavoritesOnly"
+            (click)="toggleFavoritesFilter()">
+            <span [class]="showFavoritesOnly ? 'ion-ios-heart' : 'ion-ios-heart-empty'"></span>
+            Afficher mes favoris
+            <span class="favoris-count-badge" *ngIf="favoritesCount > 0">{{ favoritesCount }}</span>
+          </button>
+        </div>
+
+        <!-- Price Filter -->
+        <div class="filter-group">
+          <label>Prix max : <span>{{ maxPrice }} DT/jour</span></label>
+          <input type="range" min="50" max="500" step="10" [(ngModel)]="maxPrice" (change)="applyFilters()">
+        </div>
+
+        <!-- Category Filter -->
+        <div class="filter-group">
+          <label>Catégorie</label>
+          <select [(ngModel)]="selectedCategory" (change)="applyFilters()">
+            <option value="Toutes">Toutes les catégories</option>
+            <option value="Économique">Économique</option>
+            <option value="Compacte">Compacte</option>
+            <option value="SUV">SUV</option>
+            <option value="Luxe">Luxe</option>
+            <option value="Utilitaire">Utilitaire</option>
+          </select>
+        </div>
+
+        <!-- Transmission Filter -->
+        <div class="filter-group">
+          <label>Transmission</label>
+          <div class="radio-group">
+            <label><input type="radio" name="transmission" value="Toutes" [(ngModel)]="selectedTransmission" (change)="onClientFilterChange()"> Toutes</label>
+            <label><input type="radio" name="transmission" value="Automatique" [(ngModel)]="selectedTransmission" (change)="onClientFilterChange()"> Auto</label>
+            <label><input type="radio" name="transmission" value="Manuelle" [(ngModel)]="selectedTransmission" (change)="onClientFilterChange()"> Manuel</label>
+          </div>
+        </div>
+
+        <!-- Fuel Filter -->
+        <div class="filter-group">
+          <label>Carburant</label>
+          <select [(ngModel)]="selectedFuel" (change)="onClientFilterChange()">
+            <option value="Tous">Tous</option>
+            <option value="Essence">Essence</option>
+            <option value="Diesel">Diesel</option>
+            <option value="Hybride">Hybride</option>
+            <option value="Électrique">Électrique</option>
+          </select>
+        </div>
+
+        <!-- Rating Filter -->
+        <div class="filter-group">
+          <label>Note minimum : <span>{{ minRating }}+</span></label>
+          <input type="range" min="0" max="5" step="0.5" [(ngModel)]="minRating" (change)="onClientFilterChange()">
+        </div>
+      </div>
+    </aside>
+
+    <!-- Results Section -->
+    <main class="results-main">
+      <div class="results-header">
+        <p class="results-count"><span>{{ filteredVehicles.length }}</span> véhicules trouvés</p>
+        <div class="sort-box">
+          <label>Trier par :</label>
+          <select [(ngModel)]="sortBy" (change)="applySort()">
+            <option value="default">Pertinence</option>
+            <option value="price-asc">Prix croissant</option>
+            <option value="price-desc">Prix décroissant</option>
+            <option value="rating">Mieux notés</option>
+            <option value="recent">Plus récents</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Vehicle Grid -->
+      <div class="vehicles-grid" *ngIf="filteredVehicles.length > 0; else emptyState">
+        <div class="vehicle-card" *ngFor="let v of filteredVehicles" [attr.id]="'ai-target-' + v.id">
+          <div class="card-image">
+            <div class="badge-available">Disponible</div>
+            <button
+              type="button"
+              class="favorite-btn"
+              [class.active]="v.isFavorite"
+              [attr.aria-label]="v.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'"
+              [attr.aria-pressed]="v.isFavorite"
+              (click)="toggleFavorite(v, $event)">
+              <span [class]="v.isFavorite ? 'ion-ios-heart' : 'ion-ios-heart-empty'"></span>
+            </button>
+            <img *ngIf="v.image"
+                 [src]="v.image"
+                 [alt]="v.name"
+                 class="vehicle-image"
+                 (error)="onVehicleImageError(v, $event)">
+            <div *ngIf="!v.image" class="img-placeholder">
+              <span class="ion-ios-car"></span>
+            </div>
+          </div>
+          
+          <div class="card-content">
+            <div class="title-row">
+              <h4>{{ v.name }}</h4>
+              <div class="rating">
+                <span class="ion-md-star"></span> {{ v.rating }}
+              </div>
+            </div>
+            
+            <p class="category-city">{{ v.category }} • {{ v.city }}</p>
+            <p class="owner-text"><span class="ion-md-person"></span> {{ v.owner }}</p>
+
+            <div class="specs-grid">
+              <span><span class="ion-md-settings"></span> {{ v.transmission }}</span>
+              <span><span class="ion-md-water"></span> {{ v.fuel }}</span>
+              <span><span class="ion-md-people"></span> {{ v.seats }} places</span>
+            </div>
+
+            <div class="card-footer">
+              <div class="price-info">
+                <span class="price-val">{{ v.price }} DT</span>
+                <span class="price-unit">/ jour</span>
+              </div>
+              <div class="action-btns">
+                <button class="btn-details" (click)="openDetails(v)">Détails</button>
+                <button class="btn-rent" (click)="openRentModal(v)">Louer</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <ng-template #emptyState>
+        <div class="empty-results">
+          <div class="empty-icon">
+            <span class="ion-md-search"></span>
+          </div>
+          <h3>{{ showFavoritesOnly ? 'Aucun favori pour le moment' : 'Aucun véhicule trouvé' }}</h3>
+          <p *ngIf="showFavoritesOnly">Ajoutez des véhicules avec le cœur sur la carte, puis activez le filtre « Mes favoris ».</p>
+          <p *ngIf="!showFavoritesOnly">Essayez de modifier vos filtres ou de réinitialiser votre recherche.</p>
+          <button class="btn-primary-glow" (click)="showFavoritesOnly ? toggleFavoritesFilter() : resetFilters()">
+            {{ showFavoritesOnly ? 'Voir tous les véhicules' : 'Réinitialiser les filtres' }}
+          </button>
+        </div>
+      </ng-template>
+    </main>
+  </div>
+<div class="map-view-container" *ngIf="viewMode==='map'">
+<div class="map-page-container">
+  <!-- Header Section -->
+  <header class="page-header">
+    <div class="header-content">
+      <h1>Carte</h1>
+      <p>Trouvez les véhicules disponibles autour de vous ou dans la zone de votre choix.</p>
+    </div>
+  </header>
+
+  <!-- Search & Filters Bar -->
+  <section class="controls-bar">
+    <div class="search-box">
+      <div class="input-with-icon">
+        <span class="ion-md-search"></span>
+        <input type="text" placeholder="Rechercher une ville, une adresse ou une agence" [(ngModel)]="searchQuery">
+      </div>
+      <div class="date-inputs">
+        <input type="date" placeholder="Début" [(ngModel)]="startDate">
+        <input type="date" placeholder="Retour" [(ngModel)]="endDate">
+      </div>
+      <button class="btn-primary" (click)="applyFilters()">Rechercher</button>
+      <button class="btn-location"><span class="ion-md-locate"></span></button>
+    </div>
+
+    <div class="quick-filters">
+      <div class="filter-item">
+        <button
+          type="button"
+          class="btn-favoris-filter btn-favoris-filter--compact"
+          [class.active]="showFavoritesOnly"
+          (click)="toggleFavoritesFilter()">
+          <span [class]="showFavoritesOnly ? 'ion-ios-heart' : 'ion-ios-heart-empty'"></span>
+          Favoris
+          <span class="favoris-count-badge" *ngIf="favoritesCount > 0">{{ favoritesCount }}</span>
+        </button>
+      </div>
+      <div class="filter-item">
+        <label>Prix max</label>
+        <input type="range" min="50" max="500" [(ngModel)]="maxPrice">
+        <span class="val">{{ maxPrice }} DT</span>
+      </div>
+      <div class="filter-item">
+        <select [(ngModel)]="selectedCategory">
+          <option value="Toutes">Toutes catégories</option>
+          <option value="Économique">Économique</option>
+          <option value="Compacte">Compacte</option>
+          <option value="SUV">SUV</option>
+          <option value="Luxe">Luxe</option>
+          <option value="Utilitaire">Utilitaire</option>
+        </select>
+      </div>
+      <div class="filter-item mobile-hide">
+        <select [(ngModel)]="selectedTransmission">
+          <option>Toutes transmissions</option>
+          <option>Automatique</option>
+          <option>Manuelle</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content: Map + List -->
+  <div class="main-content-split">
+    <!-- Map Area -->
+    <div class="map-section">
+      <div class="map-placeholder">
+        <!-- Map Overlay Info -->
+        <div class="map-overlay-top">
+          <span class="badge-results">{{ filteredVehicles.length }} véhicules trouvés</span>
+          <span class="zone-label">{{ mapZoneLabel }}</span>
+        </div>
+
+        <div #exploreMap id="exploreMap" style="width: 100%; height: 100%; min-height: 420px; z-index: 1;"></div>
+
+        <!-- Marker Popup -->
+        <div class="marker-popup" *ngIf="selectedVehicle">
+          <button class="close-popup" (click)="closePopup()"><span class="ion-md-close"></span></button>
+          <div class="popup-info">
+            <button
+              *ngIf="selectedVehicle"
+              type="button"
+              class="favorite-btn popup-favorite-btn"
+              [class.active]="selectedVehicle.isFavorite"
+              (click)="toggleFavorite(selectedVehicle, $event)">
+              <span [class]="selectedVehicle.isFavorite ? 'ion-ios-heart' : 'ion-ios-heart-empty'"></span>
+            </button>
+            <h4>{{ selectedVehicle?.name }}</h4>
+            <p>{{ selectedVehicle?.city }}</p>
+            <div class="popup-meta">
+              <span class="price">{{ selectedVehicle?.price }} DT</span>
+              <span class="rating"><span class="ion-md-star"></span> {{ selectedVehicle?.rating }}</span>
+            </div>
+            <div class="popup-actions">
+              <button class="btn-sm-outline" (click)="openDetails(selectedVehicle)">Détails</button>
+              <button class="btn-sm-primary" (click)="openRentModal(selectedVehicle)">Louer</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vehicles Panel -->
+    <aside class="vehicles-panel">
+      <div class="panel-header">
+        <h3>Véhicules disponibles</h3>
+      </div>
+      <div class="panel-list">
+        <div class="compact-card" *ngFor="let v of filteredVehicles" (click)="selectVehicle(v)">
+          <div class="card-img" style="position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+            <button
+              type="button"
+              class="favorite-btn compact-favorite-btn"
+              [class.active]="v.isFavorite"
+              [attr.aria-label]="v.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'"
+              (click)="toggleFavorite(v, $event)">
+              <span [class]="v.isFavorite ? 'ion-ios-heart' : 'ion-ios-heart-empty'"></span>
+            </button>
+            <img *ngIf="v.image"
+                 [src]="v.image"
+                 [alt]="v.name"
+                 class="vehicle-image"
+                 (error)="onVehicleImageError(v, $event)">
+            <span *ngIf="!v.image" class="ion-ios-car"></span>
+            <div class="badge-card">Disponible</div>
+          </div>
+          <div class="card-info">
+            <div class="card-title-row">
+              <h4>{{ v.name }}</h4>
+              <span class="rating"><span class="ion-md-star"></span> {{ v.rating }}</span>
+            </div>
+            <p class="meta">{{ v.category }} • {{ v.city }}</p>
+            <div class="specs">
+              <span>{{ v.transmission }}</span> • <span>{{ v.fuel }}</span>
+            </div>
+            <div class="card-footer">
+              <span class="price"><strong>{{ v.price }} DT</strong> / jour</span>
+              <div class="btns">
+                <button class="btn-mini" (click)="openDetails(v)">Détails</button>
+                <button class="btn-mini-primary" (click)="openRentModal(v)">Louer</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+</div>
+</div>
+

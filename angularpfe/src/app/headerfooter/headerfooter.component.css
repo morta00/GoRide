@@ -1,0 +1,21 @@
+/* =============================================
+   HEADERFOOTER LAYOUT — STICKY FOOTER PATTERN
+   Style: Uber / Airbnb / Stripe
+   ============================================= */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Le contenu principal (composant injecté via router-outlet) grandit pour remplir l'espace */
+:host > router-outlet + * {
+  flex: 1 0 auto;
+}
+
+/* app-footer ne grandit jamais — il s'attache naturellement au bas du contenu */
+app-footer {
+  flex-shrink: 0;
+  margin-top: auto;
+}

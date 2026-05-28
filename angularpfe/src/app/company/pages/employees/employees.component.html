@@ -1,0 +1,90 @@
+<div class="employees-page">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0">Collaborateurs</h4>
+    <button class="btn btn-indigo rounded-pill px-4 text-white fw-bold shadow-sm" (click)="toggleModal()">
+      <span class="ion-ios-person-add me-2"></span> Ajouter un collaborateur
+    </button>
+  </div>
+
+  <div class="content-card shadow-sm bg-white rounded-4 overflow-hidden">
+    <div class="table-responsive" *ngIf="employees.length > 0; else emptyEmployees">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="bg-light">
+          <tr>
+            <th class="ps-4">Collaborateur</th>
+            <th>Email</th>
+            <th>Service</th>
+            <th>Budget</th>
+            <th>Statut</th>
+            <th class="text-end pe-4">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let emp of employees">
+            <td class="ps-4">
+              <div class="d-flex align-items-center gap-3">
+                <img [src]="emp.avatar" class="rounded-circle" width="35" height="35" style="object-fit: cover;">
+                <span class="fw-bold small">{{ emp.name }}</span>
+              </div>
+            </td>
+            <td><span class="small text-muted">{{ emp.email }}</span></td>
+            <td><span class="small">{{ emp.department }}</span></td>
+            <td>
+              <span class="small fw-bold">{{ emp.budget }} DT</span>
+            </td>
+            <td><span class="badge bg-success-soft text-success">{{ emp.status }}</span></td>
+            <td class="text-end pe-4">
+              <button class="btn btn-icon-only text-danger" (click)="deleteEmployee(emp.id)"><span class="ion-ios-trash"></span></button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <ng-template #emptyEmployees>
+      <div class="text-center py-5">
+        <p class="text-muted">Aucun collaborateur enregistré.</p>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- Modal Invitation -->
+  <div class="custom-modal-overlay" *ngIf="showModal">
+    <div class="custom-modal bg-white p-4 rounded-4 shadow-lg">
+      <h5 class="fw-bold mb-4">Inviter un collaborateur</h5>
+      <div class="mb-3">
+        <label class="form-label small fw-bold">Nom Complet</label>
+        <input type="text" class="form-control rounded-3" [(ngModel)]="newEmployee.name" placeholder="Ex: Jean Dupont">
+      </div>
+      <div class="mb-3">
+        <label class="form-label small fw-bold">Email professionnel</label>
+        <div class="input-with-icon">
+          <span class="ion-ios-mail input-icon" style="top: 50%; transform: translateY(-50%); font-size: 1.1rem; left: 15px;"></span>
+          <input type="email" 
+                 class="custom-input" 
+                 style="height: 48px !important; padding-left: 45px !important;"
+                 [(ngModel)]="newEmployee.email" 
+                 #empEmail="ngModel" 
+                 required 
+                 pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$"
+                 (blur)="newEmployee.email = newEmployee.email?.trim()?.toLowerCase() ?? ''"
+                 [class.is-invalid]="empEmail.invalid && (empEmail.dirty || empEmail.touched)"
+                 [class.is-valid]="empEmail.valid && (empEmail.dirty || empEmail.touched)"
+                 placeholder="email@entreprise.tn">
+          <span class="ion-md-checkmark-circle valid-check-icon" *ngIf="empEmail.valid && empEmail.dirty"></span>
+        </div>
+        <div class="text-danger small mt-1" *ngIf="empEmail.invalid && (empEmail.dirty || empEmail.touched)" style="font-size: 0.75rem;">
+          <span *ngIf="empEmail.errors?.['required']">Email requis.</span>
+          <span *ngIf="empEmail.errors?.['pattern']">Format email professionnel invalide.</span>
+        </div>
+      </div>
+      <div class="mb-4">
+        <label class="form-label small fw-bold">Département</label>
+        <input type="text" class="form-control rounded-3" [(ngModel)]="newEmployee.department" placeholder="Ex: RH, Ventes...">
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-light w-100 rounded-pill" (click)="toggleModal()">Annuler</button>
+        <button class="btn btn-indigo w-100 text-white rounded-pill" (click)="addEmployee()">Inviter</button>
+      </div>
+    </div>
+  </div>
+</div>

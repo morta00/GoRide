@@ -1,0 +1,419 @@
+<div class="admin-management animate__animated animate__fadeIn">
+  
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold text-dark mb-1">Gestion plateforme</h2>
+      <p class="text-muted">Gérez les utilisateurs, véhicules et validations depuis un seul espace.</p>
+    </div>
+  </div>
+
+  <!-- Main Tabs Navigation -->
+  <div class="management-tabs d-flex gap-3 mb-4 border-bottom pb-2">
+    <button class="tab-btn" [class.active]="activeTab === 'users'" (click)="switchTab('users')">
+      <span class="ion-ios-people me-2"></span>Utilisateurs
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'vehicles'" (click)="switchTab('vehicles')">
+      <span class="ion-ios-car me-2"></span>Véhicules
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'validations'" (click)="switchTab('validations')">
+      <span class="ion-ios-checkmark-circle me-2"></span>Validations
+      <span class="badge bg-danger ms-2" *ngIf="validationsStats.pendingTotal > 0">{{ validationsStats.pendingTotal }}</span>
+    </button>
+  </div>
+
+  <!-- ================================================================================= -->
+  <!-- TAB: USERS -->
+  <!-- ================================================================================= -->
+  <div *ngIf="activeTab === 'users'" class="tab-content animate__animated animate__fadeIn">
+    <div class="row g-3 mb-4">
+      <div class="col-md-3">
+        <div class="metric-card bg-white shadow-sm p-3 rounded-4 border-start border-primary border-4">
+          <p class="text-muted small fw-bold text-uppercase mb-1">Total Utilisateurs</p>
+          <h3 class="fw-bold mb-0">{{ usersStats.total }}</h3>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="metric-card bg-white shadow-sm p-3 rounded-4 border-start border-warning border-4">
+          <p class="text-muted small fw-bold text-uppercase mb-1">À vérifier</p>
+          <h3 class="fw-bold mb-0 text-warning">{{ usersStats.pending }}</h3>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="metric-card bg-white shadow-sm p-3 rounded-4 border-start border-info border-4">
+          <p class="text-muted small fw-bold text-uppercase mb-1">Passagers / Locataires</p>
+          <h3 class="fw-bold mb-0">{{ usersStats.passengers + usersStats.tenants }}</h3>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="metric-card bg-white shadow-sm p-3 rounded-4 border-start border-dark border-4">
+          <p class="text-muted small fw-bold text-uppercase mb-1">Partenaires PRO</p>
+          <h3 class="fw-bold mb-0">{{ usersStats.drivers + usersStats.owners + usersStats.companies }}</h3>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-card shadow-sm bg-white rounded-4 p-4">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div class="d-flex flex-wrap gap-2">
+          <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="currentFilterUsers === 'ALL' ? 'btn-primary' : 'btn-light border'" (click)="applyUsersFilter('ALL')">Tous</button>
+          <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="currentFilterUsers === 'DRIVER' ? 'btn-primary' : 'btn-light border'" (click)="applyUsersFilter('DRIVER')">Chauffeurs</button>
+          <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="currentFilterUsers === 'OWNER' ? 'btn-primary' : 'btn-light border'" (click)="applyUsersFilter('OWNER')">Propriétaires</button>
+          <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="currentFilterUsers === 'COMPANY' ? 'btn-primary' : 'btn-light border'" (click)="applyUsersFilter('COMPANY')">Entreprises</button>
+          <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="currentFilterUsers === 'PENDING' ? 'btn-warning text-dark' : 'btn-light border'" (click)="applyUsersFilter('PENDING')">À vérifier</button>
+        </div>
+        <div class="search-box">
+          <input type="text" class="form-control form-control-sm rounded-pill" placeholder="Rechercher utilisateur..." [(ngModel)]="searchTermUsers" (ngModelChange)="applyUsersFilter(currentFilterUsers)">
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead>
+            <tr>
+              <th>Utilisateur</th>
+              <th>Rôle</th>
+              <th>Ville</th>
+              <th>Statut</th>
+              <th>Vérification</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let user of filteredUsers">
+              <td>
+                <div class="d-flex align-items-center gap-3">
+                  <div class="avatar-circle shadow-sm">{{ user.name.charAt(0) }}</div>
+                  <div>
+                    <span class="fw-bold d-block">{{ user.name }}</span>
+                    <span class="text-muted tiny">{{ user.email }}</span>
+                  </div>
+                </div>
+              </td>
+              <td><span class="badge bg-light text-dark border">{{ getRoleLabel(user) }}</span></td>
+              <td><span class="small">{{ user.city }}</span></td>
+              <td>
+                <span class="badge rounded-pill" [ngClass]="user.status === 'ACTIVE' ? 'bg-success-soft text-success' : 'bg-danger-soft text-danger'">
+                  {{ user.status === 'ACTIVE' ? 'Actif' : 'Suspendu' }}
+                </span>
+              </td>
+              <td>
+                <span class="badge rounded-pill" [ngClass]="user.verificationStatus === 'VERIFIED' ? 'bg-info-soft text-info' : (user.verificationStatus === 'PENDING' ? 'bg-warning-soft text-warning' : 'bg-danger-soft text-danger')">
+                  {{ user.verificationStatus === 'VERIFIED' ? 'Vérifié' : (user.verificationStatus === 'PENDING' ? 'À vérifier' : 'Refusé') }}
+                </span>
+              </td>
+              <td class="text-end">
+                <div class="d-flex justify-content-end gap-1">
+                  <button class="btn btn-sm btn-light border rounded-pill px-3 fw-bold" (click)="openModal('user-details', user)">Détails</button>
+                  <ng-container *ngIf="!user.protected">
+                    <button class="btn btn-sm btn-outline-primary rounded-pill fw-bold" *ngIf="user.verificationStatus === 'PENDING'" (click)="switchTab('validations')">Aller aux validations</button>
+                    <button class="btn btn-sm btn-light border rounded-pill" (click)="openModal('suspend-user', user)">
+                      <span [class]="user.status === 'ACTIVE' ? 'ion-ios-pause text-warning' : 'ion-ios-play text-success'"></span>
+                    </button>
+                    <button class="btn btn-sm btn-light border rounded-pill text-danger" *ngIf="user.role !== 'ROLE_ADMIN'" (click)="openModal('delete-confirm', user)">
+                      <span class="ion-ios-trash"></span>
+                    </button>
+                  </ng-container>
+                  <span class="badge bg-dark text-white rounded-pill px-3 py-2" *ngIf="user.protected">Protégé</span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================================= -->
+  <!-- TAB: VEHICLES -->
+  <!-- ================================================================================= -->
+  <div *ngIf="activeTab === 'vehicles'" class="tab-content animate__animated animate__fadeIn">
+    <div class="row g-3 mb-4">
+      <div class="col-md-3">
+        <div class="metric-card bg-white shadow-sm p-3 rounded-4 border-start border-primary border-4">
+          <p class="text-muted small fw-bold text-uppercase mb-1">Total Flotte</p>
+          <h3 class="fw-bold mb-0">{{ vehiclesStats.total }}</h3>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="metric-card bg-white shadow-sm p-3 rounded-4 border-start border-success border-4">
+          <p class="text-muted small fw-bold text-uppercase mb-1">Disponibles</p>
+          <h3 class="fw-bold mb-0 text-success">{{ vehiclesStats.available }}</h3>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="metric-card bg-white shadow-sm p-3 rounded-4 border-start border-warning border-4">
+          <p class="text-muted small fw-bold text-uppercase mb-1">En attente</p>
+          <h3 class="fw-bold mb-0 text-warning">{{ vehiclesStats.pending }}</h3>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="metric-card bg-white shadow-sm p-3 rounded-4 border-start border-info border-4">
+          <p class="text-muted small fw-bold text-uppercase mb-1">Revenus cumulés</p>
+          <h3 class="fw-bold mb-0">{{ vehiclesStats.totalRevenue | number }} DT</h3>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-card shadow-sm bg-white rounded-4 p-4">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div class="d-flex flex-wrap gap-2">
+          <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="currentFilterVehicles === 'ALL' ? 'btn-primary' : 'btn-light border'" (click)="applyVehiclesFilter('ALL')">Tous</button>
+          <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="currentFilterVehicles === 'AVAILABLE' ? 'btn-success' : 'btn-light border text-success'" (click)="applyVehiclesFilter('AVAILABLE')">Disponibles</button>
+          <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="currentFilterVehicles === 'MAINTENANCE' ? 'btn-warning text-dark' : 'btn-light border text-warning'" (click)="applyVehiclesFilter('MAINTENANCE')">Maintenance</button>
+          <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="currentFilterVehicles === 'SUSPENDED' ? 'btn-danger' : 'btn-light border text-danger'" (click)="applyVehiclesFilter('SUSPENDED')">Suspendus</button>
+        </div>
+        <div class="d-flex gap-2">
+          <input type="text" class="form-control form-control-sm rounded-pill" placeholder="Marque, plaque..." [(ngModel)]="searchTermVehicles" (ngModelChange)="applyVehiclesFilter(currentFilterVehicles)">
+          <select class="form-select form-select-sm rounded-pill" [(ngModel)]="currentSortVehicles" (change)="applyVehiclesFilter(currentFilterVehicles)">
+            <option value="NEWEST">Plus récents</option>
+            <option value="REVENUE_DESC">Plus rentables</option>
+            <option value="RATING_DESC">Mieux notés</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead>
+            <tr>
+              <th>Véhicule</th>
+              <th>Propriétaire</th>
+              <th class="text-center">Validation</th>
+              <th class="text-center">Disponibilité</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let v of filteredVehicles">
+              <td>
+                <div class="d-flex align-items-center gap-3">
+                  <div class="icon-box-small shadow-sm rounded-3"><span class="ion-ios-car"></span></div>
+                  <div>
+                    <span class="fw-bold d-block">{{ v.brand }} {{ v.model }}</span>
+                    <span class="badge bg-light text-dark tiny border">{{ v.plateNumber }}</span>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="fw-bold small d-block">{{ v.ownerName }}</span>
+                <span class="tiny text-muted">{{ v.ownerRole }}</span>
+              </td>
+              <td class="text-center">
+                <span class="badge rounded-pill" [ngClass]="v.validationStatus === 'APPROVED' ? 'bg-success-soft text-success' : (v.validationStatus === 'PENDING' ? 'bg-warning-soft text-warning' : 'bg-danger-soft text-danger')">
+                  {{ v.validationStatus === 'APPROVED' ? 'Validé' : (v.validationStatus === 'PENDING' ? 'En attente' : 'Refusé') }}
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="badge rounded-pill px-3" [ngClass]="v.availabilityStatus === 'AVAILABLE' ? 'bg-success' : (v.availabilityStatus === 'MAINTENANCE' ? 'bg-warning text-dark' : (v.availabilityStatus === 'SUSPENDED' ? 'bg-danger' : 'bg-primary'))">
+                  {{ v.availabilityStatus }}
+                </span>
+              </td>
+              <td class="text-end">
+                <div class="d-flex justify-content-end gap-1">
+                  <button class="btn btn-sm btn-light border rounded-pill px-3 fw-bold" (click)="openModal('vehicle-details', v)">Détails</button>
+                  <ng-container *ngIf="v.validationStatus === 'PENDING'">
+                    <button class="btn btn-sm btn-outline-primary rounded-pill fw-bold" (click)="switchTab('validations')">Aller aux validations</button>
+                  </ng-container>
+                  <ng-container *ngIf="v.validationStatus === 'APPROVED'">
+                    <button class="btn btn-sm btn-light border rounded-pill" (click)="toggleMaintenance(v)" title="Maintenance">
+                      <span class="ion-ios-construct text-warning"></span>
+                    </button>
+                    <button class="btn btn-sm btn-light border rounded-pill" (click)="openModal('suspend-vehicle', v)" title="Suspendre">
+                      <span class="ion-ios-pause text-danger"></span>
+                    </button>
+                  </ng-container>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================================= -->
+  <!-- TAB: VALIDATIONS -->
+  <!-- ================================================================================= -->
+  <div *ngIf="activeTab === 'validations'" class="tab-content animate__animated animate__fadeIn">
+    <div class="row g-3 mb-4">
+      <div class="col-md-4">
+        <div class="metric-card bg-white shadow-sm p-3 rounded-4 border-start border-warning border-4">
+          <p class="text-muted small fw-bold text-uppercase mb-1">Demandes en attente</p>
+          <h3 class="fw-bold mb-0 text-warning">{{ validationsStats.pendingTotal }}</h3>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="metric-card bg-white shadow-sm p-3 rounded-4 border-start border-success border-4">
+          <p class="text-muted small fw-bold text-uppercase mb-1">Traitées (Approuvées)</p>
+          <h3 class="fw-bold mb-0 text-success">{{ validationsStats.validated }}</h3>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="metric-card bg-white shadow-sm p-3 rounded-4 border-start border-danger border-4">
+          <p class="text-muted small fw-bold text-uppercase mb-1">Refusées</p>
+          <h3 class="fw-bold mb-0 text-danger">{{ validationsStats.rejected }}</h3>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-card shadow-sm bg-white rounded-4 p-4">
+      <div class="d-flex flex-wrap gap-2 mb-4">
+        <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="currentFilterValidations === 'ALL' ? 'btn-primary' : 'btn-light border'" (click)="applyValidationsFilter('ALL')">Tous</button>
+        <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="currentFilterValidations === 'ACCOUNTS' ? 'btn-primary' : 'btn-light border'" (click)="applyValidationsFilter('ACCOUNTS')">Comptes</button>
+        <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="currentFilterValidations === 'DOCUMENTS' ? 'btn-primary' : 'btn-light border'" (click)="applyValidationsFilter('DOCUMENTS')">Documents</button>
+        <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="currentFilterValidations === 'VEHICLES' ? 'btn-primary' : 'btn-light border'" (click)="applyValidationsFilter('VEHICLES')">Véhicules</button>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead>
+            <tr>
+              <th>Élément</th>
+              <th>Type</th>
+              <th>Date</th>
+              <th>Priorité</th>
+              <th>Statut</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of filteredValidations">
+              <td>
+                <span class="fw-bold d-block">{{ item.entityName }}</span>
+                <span class="tiny text-muted">{{ item.subEntity || item.email }}</span>
+              </td>
+              <td><span class="badge bg-light text-dark border">{{ getTypeLabel(item.type) }}</span></td>
+              <td><span class="small">{{ item.date }}</span></td>
+              <td><span class="badge" [ngClass]="item.priority === 'Haute' ? 'bg-danger' : 'bg-secondary'">{{ item.priority }}</span></td>
+              <td>
+                <span class="badge rounded-pill" [ngClass]="item.status === 'PENDING' ? 'bg-warning-soft text-warning' : (item.status === 'APPROVED' ? 'bg-success-soft text-success' : 'bg-danger-soft text-danger')">
+                  {{ item.status === 'PENDING' ? 'En attente' : (item.status === 'APPROVED' ? 'Validé' : 'Refusé') }}
+                </span>
+              </td>
+              <td class="text-end">
+                <div class="d-flex justify-content-end gap-1">
+                  <button class="btn btn-sm btn-light border rounded-pill px-3 fw-bold" (click)="openModal('validation-details', item)">Détails</button>
+                  <ng-container *ngIf="item.status === 'PENDING'">
+                    <button class="btn btn-sm btn-success rounded-pill px-3 fw-bold" (click)="openModal('validate-confirm', item)">Valider</button>
+                    <button class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold" (click)="openModal('reject', item)">Refuser</button>
+                  </ng-container>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================================= -->
+  <!-- CENTRALIZED MODALS -->
+  <!-- ================================================================================= -->
+  
+  <div class="modal-overlay animate__animated animate__fadeIn" *ngIf="activeModal" (click)="closeModal()">
+    <div class="modal-content-wrapper shadow-lg" [style.max-width]="activeModal.includes('details') ? '600px' : '450px'" (click)="$event.stopPropagation()">
+      
+      <!-- Close Header -->
+      <div class="modal-header d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+        <h5 class="fw-bold text-dark mb-0">
+          {{ activeModal === 'user-details' ? 'Détails Utilisateur' : 
+             activeModal === 'vehicle-details' ? 'Détails Véhicule' : 
+             activeModal === 'validation-details' ? 'Détails Validation' : 
+             activeModal === 'reject' ? 'Motif de refus' : 
+             activeModal === 'suspend-user' ? 'Action sur utilisateur' :
+             activeModal === 'suspend-vehicle' ? 'Action sur véhicule' : 'Confirmation' }}
+        </h5>
+        <button class="btn btn-light rounded-circle p-2 d-flex" (click)="closeModal()">
+          <span class="ion-ios-close fs-4 text-dark" style="line-height: 1;"></span>
+        </button>
+      </div>
+
+      <!-- User Details -->
+      <div *ngIf="activeModal === 'user-details' && selectedItem">
+        <div class="row g-3">
+          <div class="col-6"><span class="tiny text-muted d-block">Nom complet</span><span class="fw-bold">{{ selectedItem.name }}</span></div>
+          <div class="col-6"><span class="tiny text-muted d-block">Email</span><span class="fw-bold">{{ selectedItem.email }}</span></div>
+          <div class="col-6"><span class="tiny text-muted d-block">Rôle</span><span class="badge bg-light text-dark">{{ getRoleLabel(selectedItem) }}</span></div>
+          <div class="col-6"><span class="tiny text-muted d-block">Ville</span><span class="fw-bold">{{ selectedItem.city }}</span></div>
+          <div class="col-12 p-3 bg-light rounded-3">
+             <span class="tiny text-muted d-block mb-1">Résumé activité</span>
+             <p class="small mb-0">Membre depuis le {{ selectedItem.joined }}. Dernier accès: {{ selectedItem.lastLogin }}.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vehicle Details -->
+      <div *ngIf="activeModal === 'vehicle-details' && selectedItem">
+        <div class="row g-3">
+          <div class="col-6"><span class="tiny text-muted d-block">Modèle</span><span class="fw-bold">{{ selectedItem.brand }} {{ selectedItem.model }}</span></div>
+          <div class="col-6"><span class="tiny text-muted d-block">Plaque</span><span class="fw-bold">{{ selectedItem.plateNumber }}</span></div>
+          <div class="col-6"><span class="tiny text-muted d-block">Propriétaire</span><span class="fw-bold">{{ selectedItem.ownerName }}</span></div>
+          <div class="col-6"><span class="tiny text-muted d-block">Ville</span><span class="fw-bold">{{ selectedItem.city }}</span></div>
+          <div class="col-12 border-top pt-3 text-center">
+            <div class="row">
+              <div class="col-6"><span class="tiny text-muted">Revenus</span><h5 class="fw-bold">{{ selectedItem.totalRevenue }} DT</h5></div>
+              <div class="col-6"><span class="tiny text-muted">Courses/Réservations</span><h5 class="fw-bold">{{ selectedItem.totalBookings }}</h5></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reject Modal -->
+      <div *ngIf="activeModal === 'reject'">
+        <p class="text-muted small mb-3">Veuillez indiquer le motif du refus pour <strong>{{ selectedItem?.entityName }}</strong>.</p>
+        <textarea class="form-control rounded-4 p-3 bg-light border-0" [class.is-invalid]="rejectionError" rows="4" placeholder="Expliquez pourquoi..." [(ngModel)]="rejectionReason"></textarea>
+        <div class="invalid-feedback d-block mt-2" *ngIf="rejectionError">{{ rejectionError }}</div>
+        <div class="modal-footer d-flex gap-2 mt-4 px-0 pb-0 border-0">
+          <button class="btn btn-light fw-bold flex-grow-1 rounded-pill" (click)="closeModal()">Annuler</button>
+          <button class="btn btn-danger fw-bold flex-grow-1 rounded-pill" (click)="confirmReject()">Confirmer le refus</button>
+        </div>
+      </div>
+
+      <!-- Suspend User Modal -->
+      <div *ngIf="activeModal === 'suspend-user'">
+        <p class="mb-4">Êtes-vous sûr de vouloir {{ selectedItem.status === 'ACTIVE' ? 'suspendre' : 'réactiver' }} <strong>{{ selectedItem.name }}</strong> ?</p>
+        <div class="modal-footer d-flex gap-2 px-0 pb-0 border-0">
+          <button class="btn btn-light fw-bold flex-grow-1 rounded-pill" (click)="closeModal()">Annuler</button>
+          <button class="btn fw-bold flex-grow-1 rounded-pill" [ngClass]="selectedItem.status === 'ACTIVE' ? 'btn-warning' : 'btn-success'" (click)="confirmToggleSuspendUser()">Confirmer</button>
+        </div>
+      </div>
+
+      <!-- Suspend Vehicle Modal -->
+      <div *ngIf="activeModal === 'suspend-vehicle'">
+        <p class="text-muted small mb-3">Motif de suspension pour <strong>{{ selectedItem?.brand }} {{ selectedItem?.model }}</strong>.</p>
+        <textarea class="form-control rounded-4 p-3 bg-light border-0" [class.is-invalid]="suspensionError" rows="3" placeholder="Raison de la suspension..." [(ngModel)]="suspensionReason"></textarea>
+        <div class="invalid-feedback d-block mt-2" *ngIf="suspensionError">{{ suspensionError }}</div>
+        <div class="modal-footer d-flex gap-2 mt-4 px-0 pb-0 border-0">
+          <button class="btn btn-light fw-bold flex-grow-1 rounded-pill" (click)="closeModal()">Annuler</button>
+          <button class="btn btn-danger fw-bold flex-grow-1 rounded-pill" (click)="confirmSuspendVehicle()">Suspendre</button>
+        </div>
+      </div>
+
+      <!-- Validate Confirm Modal -->
+      <div *ngIf="activeModal === 'validate-confirm'">
+        <p class="mb-4">Confirmer la validation de <strong>{{ selectedItem?.entityName }}</strong> ?</p>
+        <div class="modal-footer d-flex gap-2 px-0 pb-0 border-0">
+          <button class="btn btn-light fw-bold flex-grow-1 rounded-pill" (click)="closeModal()">Annuler</button>
+          <button class="btn btn-success fw-bold flex-grow-1 rounded-pill" (click)="confirmValidation()">Confirmer</button>
+        </div>
+      </div>
+
+      <!-- Delete Confirm Modal -->
+      <div *ngIf="activeModal === 'delete-confirm'">
+        <div class="alert alert-danger mb-4 small fw-bold">ATTENTION: Cette action est irréversible.</div>
+        <p>Supprimer définitivement l'utilisateur <strong>{{ selectedItem?.name }}</strong> ?</p>
+        <div class="modal-footer d-flex gap-2 px-0 pb-0 border-0 mt-4">
+          <button class="btn btn-light fw-bold flex-grow-1 rounded-pill" (click)="closeModal()">Annuler</button>
+          <button class="btn btn-danger fw-bold flex-grow-1 rounded-pill" (click)="confirmDeleteUser()">Supprimer</button>
+        </div>
+      </div>
+
+      <!-- Footer for details only -->
+      <div class="modal-footer px-0 pb-0 border-0 mt-4" *ngIf="activeModal.includes('details')">
+        <button class="btn btn-light fw-bold w-100 rounded-pill" (click)="closeModal()">Fermer</button>
+      </div>
+
+    </div>
+  </div>
+
+</div>

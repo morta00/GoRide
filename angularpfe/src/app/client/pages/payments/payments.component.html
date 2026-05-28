@@ -1,0 +1,356 @@
+<div class="payments-page animate__animated animate__fadeIn">
+  <!-- En-tête -->
+  <header class="payments-header">
+    <div>
+      <span class="payments-kicker">Portefeuille GoRide</span>
+      <h1 class="payments-title">Paiements</h1>
+      <p class="payments-subtitle">
+        Gérez votre solde, vos recharges et l'historique de vos paiements de trajets.
+      </p>
+    </div>
+  </header>
+
+  <!-- Hero solde -->
+  <section class="wallet-hero">
+    <div class="wallet-hero-bg" aria-hidden="true"></div>
+    <div class="wallet-hero-content">
+      <div class="wallet-hero-main">
+        <div class="wallet-hero-badge">
+          <i class="ion-md-wallet"></i>
+          <span>Solde disponible</span>
+        </div>
+        <div class="wallet-hero-amount">
+          <span class="amount-value">{{ walletBalance | number:'1.2-2' }}</span>
+          <span class="amount-currency">DT</span>
+        </div>
+        <p class="wallet-hero-meta" *ngIf="walletRechargesCount > 0">
+          {{ walletRechargesCount }} recharge{{ walletRechargesCount > 1 ? 's' : '' }} enregistrée{{ walletRechargesCount > 1 ? 's' : '' }}
+        </p>
+        <p class="wallet-hero-meta" *ngIf="walletRechargesCount === 0">
+          Rechargez votre portefeuille pour payer vos courses plus vite.
+        </p>
+      </div>
+      <div class="wallet-hero-actions">
+        <button type="button" class="btn-hero-primary" (click)="showRechargeModal = true">
+          <i class="ion-md-add-circle"></i>
+          Recharger mon solde
+        </button>
+        <button type="button" class="btn-hero-secondary" (click)="showBenefitsModal = true">
+          <i class="ion-md-gift"></i>
+          Mes avantages
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Métriques secondaires -->
+  <section class="metrics-row">
+    <article class="metric-card">
+      <div class="metric-icon metric-icon--spend">
+        <i class="ion-md-cash"></i>
+      </div>
+      <div class="metric-body">
+        <span class="metric-label">Total dépensé</span>
+        <span class="metric-value">{{ totalSpent | number:'1.2-2' }} <small>DT</small></span>
+      </div>
+    </article>
+    <article class="metric-card">
+      <div class="metric-icon metric-icon--trips">
+        <i class="ion-md-car"></i>
+      </div>
+      <div class="metric-body">
+        <span class="metric-label">Paiements trajets</span>
+        <span class="metric-value">{{ totalPayments }}</span>
+        <span class="metric-hint">Hors recharges solde</span>
+      </div>
+    </article>
+    <article class="metric-card">
+      <div class="metric-icon metric-icon--refund">
+        <i class="ion-md-refresh"></i>
+      </div>
+      <div class="metric-body">
+        <span class="metric-label">Remboursements</span>
+        <span class="metric-value">{{ totalRefunds | number:'1.2-2' }} <small>DT</small></span>
+      </div>
+    </article>
+  </section>
+
+  <!-- Fidélité -->
+  <section class="perks-row">
+    <article class="perk-card">
+      <div class="perk-icon perk-icon--gold"><i class="ion-md-trophy"></i></div>
+      <div>
+        <span class="perk-value">{{ loyaltyPoints }} <small>pts</small></span>
+        <span class="perk-label">Points fidélité · Membre Gold</span>
+      </div>
+    </article>
+    <article class="perk-card">
+      <div class="perk-icon perk-icon--green"><i class="ion-md-pricetags"></i></div>
+      <div>
+        <span class="perk-value">{{ couponsAvailable }}</span>
+        <span class="perk-label">Coupons disponibles</span>
+      </div>
+    </article>
+  </section>
+
+  <!-- Historique -->
+  <section class="history-section">
+    <div class="history-header">
+      <h2 class="history-title">Historique des opérations</h2>
+      <span class="history-count">{{ filteredTransactions.length }} opération{{ filteredTransactions.length !== 1 ? 's' : '' }}</span>
+    </div>
+
+    <div class="toolbar-card">
+      <div class="toolbar-search">
+        <i class="ion-md-search" aria-hidden="true"></i>
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          (input)="applyFilters()"
+          placeholder="Rechercher par libellé, montant, méthode…"
+          aria-label="Rechercher dans les transactions"
+        />
+      </div>
+      <div class="toolbar-filters">
+        <select [(ngModel)]="activeTypeFilter" (change)="applyFilters()" class="toolbar-select" aria-label="Type">
+          <option value="ALL">Tous les types</option>
+          <option value="WALLET_TOPUP">Recharges solde</option>
+          <option value="PAYMENT">Paiements trajets</option>
+          <option value="REFUND">Remboursements</option>
+          <option value="SHARED_RIDE_PAYMENT">Trajets partagés</option>
+        </select>
+        <select [(ngModel)]="activeStatusFilter" (change)="applyFilters()" class="toolbar-select" aria-label="Statut">
+          <option value="ALL">Tous les statuts</option>
+          <option value="PAID">Payés</option>
+          <option value="PENDING">En attente</option>
+          <option value="REFUNDED">Remboursés</option>
+          <option value="FAILED">Échoués</option>
+        </select>
+        <select [(ngModel)]="sortOrder" (change)="applyFilters()" class="toolbar-select" aria-label="Tri">
+          <option value="RECENT">Plus récents</option>
+          <option value="OLDEST">Plus anciens</option>
+          <option value="AMOUNT_DESC">Montant ↓</option>
+          <option value="AMOUNT_ASC">Montant ↑</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="transactions-list">
+      <article
+        class="tx-card"
+        *ngFor="let t of filteredTransactions; let i = index"
+        [class.tx-card--topup]="t.type === 'WALLET_TOPUP'"
+        [style.animation-delay.ms]="i * 60"
+      >
+        <div class="tx-icon" [ngClass]="'tx-icon--' + t.type.toLowerCase()">
+          <i [class]="getIcon(t.type)"></i>
+        </div>
+        <div class="tx-body">
+          <div class="tx-top">
+            <div class="tx-info">
+              <h3 class="tx-title">{{ t.title }}</h3>
+              <p class="tx-desc">{{ t.description }}</p>
+            </div>
+            <div class="tx-amount-wrap">
+              <span
+                class="tx-amount"
+                [class.tx-amount--credit]="t.type === 'REFUND' || t.type === 'WALLET_TOPUP'"
+                [class.tx-amount--debit]="t.type === 'PAYMENT' || t.type === 'SHARED_RIDE_PAYMENT'"
+              >
+                {{ (t.type === 'REFUND' || t.type === 'WALLET_TOPUP' ? '+' : '−') }}{{ t.amount | number:'1.2-2' }} DT
+              </span>
+              <time class="tx-date">{{ t.date }}</time>
+            </div>
+          </div>
+          <div class="tx-bottom">
+            <div class="tx-tags">
+              <span class="tx-tag tx-tag--type" *ngIf="t.type === 'WALLET_TOPUP'">Recharge solde</span>
+              <span class="tx-tag tx-tag--type" *ngIf="t.type === 'PAYMENT'">Paiement trajet</span>
+              <span class="tx-tag tx-tag--type" *ngIf="t.type === 'SHARED_RIDE_PAYMENT'">Trajet partagé</span>
+              <span class="tx-tag tx-tag--type" *ngIf="t.type === 'REFUND'">Remboursement</span>
+              <span class="tx-tag tx-tag--status" [ngClass]="'tx-tag--' + t.status.toLowerCase()">
+                {{ getStatusLabel(t.status) }}
+              </span>
+            </div>
+            <div class="tx-actions">
+              <button type="button" class="tx-btn tx-btn--ghost" (click)="openDetails(t)">Détails</button>
+              <button type="button" class="tx-btn tx-btn--primary" *ngIf="t.status === 'PAID'" (click)="openReceipt(t)">
+                Reçu
+              </button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <div class="empty-state" *ngIf="filteredTransactions.length === 0">
+        <div class="empty-icon"><i class="ion-md-wallet"></i></div>
+        <h3>Aucune opération</h3>
+        <p>Vos recharges et paiements apparaîtront ici.</p>
+        <button type="button" class="btn-hero-primary btn-hero-primary--sm" (click)="showRechargeModal = true">
+          Recharger mon solde
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Modals (inchangés fonctionnellement) -->
+  <div class="modal-overlay" *ngIf="showDetailsModal" (click)="showDetailsModal = false">
+    <div class="modal-card-premium animate__animated animate__zoomIn" (click)="$event.stopPropagation()">
+      <div class="modal-header-p p-4 border-bottom">
+        <h5 class="fw-bold mb-0">Détails de la transaction</h5>
+        <button type="button" class="btn-close-custom" (click)="showDetailsModal = false">&times;</button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="info-grid row g-3">
+          <div class="col-6"><label class="text-muted small d-block">TYPE</label><span class="fw-bold">{{ selectedTransaction?.type }}</span></div>
+          <div class="col-6"><label class="text-muted small d-block">STATUT</label><span class="badge-status" [ngClass]="selectedTransaction?.status?.toLowerCase() || ''">{{ getStatusLabel(selectedTransaction?.status || '') }}</span></div>
+          <div class="col-12"><label class="text-muted small d-block">DESCRIPTION</label><span class="fw-bold">{{ selectedTransaction?.description }}</span></div>
+          <div class="col-6" *ngIf="selectedTransaction?.route"><label class="text-muted small d-block">TRAJET</label><span class="fw-bold">{{ selectedTransaction?.route }}</span></div>
+          <div class="col-6" *ngIf="selectedTransaction?.driverName"><label class="text-muted small d-block">CHAUFFEUR</label><span class="fw-bold">{{ selectedTransaction?.driverName }}</span></div>
+          <div class="col-6"><label class="text-muted small d-block">MONTANT</label><h4 class="fw-bold text-primary mb-0">{{ selectedTransaction?.amount }} DT</h4></div>
+          <div class="col-6"><label class="text-muted small d-block">MÉTHODE</label><span class="fw-bold">{{ selectedTransaction?.method }}</span></div>
+          <div class="col-6"><label class="text-muted small d-block">DATE</label><span class="fw-bold">{{ selectedTransaction?.date }}</span></div>
+          <div class="col-6"><label class="text-muted small d-block">N° REÇU</label><span class="fw-bold">{{ selectedTransaction?.receiptNumber }}</span></div>
+        </div>
+        <button type="button" class="btn btn-primary w-100 mt-4 py-3 rounded-pill fw-bold" (click)="showDetailsModal = false">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" *ngIf="showReceiptModal" (click)="showReceiptModal = false">
+    <div class="modal-card-receipt animate__animated animate__slideInUp" (click)="$event.stopPropagation()">
+      <div class="receipt-container p-5 bg-white text-center">
+        <div class="receipt-logo mb-4">
+          <h2 class="fw-bold text-primary">GoRide</h2>
+          <span class="text-muted small">REÇU OFFICIEL</span>
+        </div>
+        <div class="receipt-divider my-4"></div>
+        <div class="receipt-details text-start">
+          <div class="d-flex justify-content-between mb-2"><span>N° Reçu:</span><span class="fw-bold">{{ selectedTransaction?.receiptNumber }}</span></div>
+          <div class="d-flex justify-content-between mb-2"><span>Date:</span><span class="fw-bold">{{ selectedTransaction?.date }}</span></div>
+          <div class="d-flex justify-content-between mb-2"><span>Passager:</span><span class="fw-bold">{{ userName }}</span></div>
+          <div class="d-flex justify-content-between mb-2" *ngIf="selectedTransaction?.route"><span>Trajet:</span><span class="fw-bold text-end">{{ selectedTransaction?.route }}</span></div>
+          <div class="receipt-divider my-4"></div>
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="mb-0">TOTAL</h4>
+            <h3 class="mb-0 fw-bold text-primary">{{ selectedTransaction?.amount }} DT</h3>
+          </div>
+          <div class="p-3 bg-light rounded-3 text-center">
+            <span class="text-muted small">Méthode: <strong>{{ selectedTransaction?.method }}</strong></span>
+          </div>
+        </div>
+        <div class="receipt-actions d-flex gap-2 mt-5">
+          <button type="button" class="btn btn-outline-dark flex-grow-1" (click)="printReceipt()"><i class="ion-md-print me-2"></i>Imprimer</button>
+          <button type="button" class="btn btn-primary flex-grow-1" (click)="downloadReceipt()"><i class="ion-md-download me-2"></i>PDF</button>
+        </div>
+        <button type="button" class="btn btn-link text-muted mt-3" (click)="showReceiptModal = false">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" *ngIf="showRechargeModal" (click)="showRechargeModal = false">
+    <div class="modal-card-premium modal-recharge animate__animated animate__zoomIn" (click)="$event.stopPropagation()">
+      <div class="modal-recharge-header">
+        <div class="modal-recharge-icon"><i class="ion-md-wallet"></i></div>
+        <div>
+          <h5 class="fw-bold mb-0">Recharger mon solde</h5>
+          <p class="text-muted small mb-0">Crédit portefeuille GoRide (pas un paiement trajet)</p>
+        </div>
+        <button type="button" class="btn-close-custom" (click)="showRechargeModal = false">&times;</button>
+      </div>
+      <div class="p-4">
+        <div class="recharge-presets mb-3">
+          <button type="button" class="preset-chip" [class.active]="rechargeAmount === 20" (click)="rechargeAmount = 20">20 DT</button>
+          <button type="button" class="preset-chip" [class.active]="rechargeAmount === 50" (click)="rechargeAmount = 50">50 DT</button>
+          <button type="button" class="preset-chip" [class.active]="rechargeAmount === 100" (click)="rechargeAmount = 100">100 DT</button>
+        </div>
+        <label class="form-label fw-semibold">Montant (DT)</label>
+        <input type="number" [(ngModel)]="rechargeAmount" min="1" max="10000" step="1"
+               class="form-control form-control-lg recharge-input mb-2" placeholder="Ex: 20" />
+        <small class="text-muted d-block mb-3">Entre 1 et 10 000 DT</small>
+        <label class="form-label fw-semibold">Méthode</label>
+        <select [(ngModel)]="rechargeMethod" class="form-select form-select-lg recharge-input mb-4">
+          <option value="Carte bancaire">Carte bancaire</option>
+          <option value="Virement">Virement</option>
+          <option value="Coupon Recharge">Coupon recharge</option>
+        </select>
+        <div class="d-flex gap-3">
+          <button type="button" class="btn btn-light flex-grow-1 py-3 rounded-pill fw-bold" (click)="showRechargeModal = false">Annuler</button>
+          <button type="button" class="btn btn-primary flex-grow-1 py-3 rounded-pill fw-bold" [disabled]="rechargeAmount <= 0" (click)="confirmRecharge()">
+            Confirmer
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" *ngIf="showBenefitsModal" (click)="showBenefitsModal = false">
+    <div class="modal-card-premium benefits-modal animate__animated animate__zoomIn" (click)="$event.stopPropagation()">
+      <div class="benefits-modal-header">
+        <div>
+          <p class="benefits-modal-kicker mb-1">Programme fidélité</p>
+          <h5 class="fw-bold mb-0">Mes avantages GoRide</h5>
+        </div>
+        <button type="button" class="btn-close-custom" aria-label="Fermer" (click)="showBenefitsModal = false">&times;</button>
+      </div>
+      <div class="benefits-modal-body">
+        <div class="benefits-grid">
+          <article class="benefit-card benefit-card--coupons">
+            <div class="benefit-card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                <path d="M4 9h16M4 15h16"/><path d="M9 9v6M15 9v6"/><rect x="3" y="5" width="18" height="14" rx="2"/>
+              </svg>
+            </div>
+            <div class="benefit-card-content">
+              <span class="benefit-card-value">{{ couponsAvailable }}</span>
+              <h6 class="benefit-card-title">Coupons disponibles</h6>
+              <p class="benefit-card-desc">−20% sur votre prochaine course</p>
+            </div>
+            <span class="benefit-card-chip benefit-card-chip--green">Promo</span>
+          </article>
+          <article class="benefit-card benefit-card--loyalty">
+            <div class="benefit-card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                <path d="M8 21h8M12 17v4"/><path d="M7 4h10l1 5H6l1-5z"/><path d="M6 9h12v3a6 6 0 0 1-12 0V9z"/>
+              </svg>
+            </div>
+            <div class="benefit-card-content">
+              <span class="benefit-card-value">{{ loyaltyPoints }}</span>
+              <h6 class="benefit-card-title">Points fidélité</h6>
+              <p class="benefit-card-desc">Échangeables contre des courses gratuites</p>
+            </div>
+            <span class="benefit-card-chip benefit-card-chip--gold">Points</span>
+          </article>
+          <article class="benefit-card benefit-card--shared">
+            <div class="benefit-card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                <circle cx="9" cy="8" r="3"/><circle cx="15" cy="8" r="3"/>
+                <path d="M4 20v-1a4 4 0 0 1 4-4h0M16 15a4 4 0 0 1 4 4v1"/>
+              </svg>
+            </div>
+            <div class="benefit-card-content">
+              <span class="benefit-card-value">−50%</span>
+              <h6 class="benefit-card-title">Réductions collaboratives</h6>
+              <p class="benefit-card-desc">Sur les trajets partagés réservés</p>
+            </div>
+            <span class="benefit-card-chip benefit-card-chip--blue">Covoiturage</span>
+          </article>
+          <article class="benefit-card benefit-card--gold benefit-card--featured">
+            <div class="benefit-card-icon benefit-card-icon--gold" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                <rect x="2" y="5" width="20" height="14" rx="2"/>
+                <path d="M2 10h20"/><path d="M6 15h4"/>
+              </svg>
+            </div>
+            <div class="benefit-card-content">
+              <span class="benefit-card-value benefit-card-value--sm">Gold</span>
+              <h6 class="benefit-card-title">Carte GoRide Gold</h6>
+              <p class="benefit-card-desc">Priorité support &amp; offres exclusives</p>
+            </div>
+            <span class="benefit-card-status">Active</span>
+          </article>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

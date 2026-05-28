@@ -1,0 +1,286 @@
+<div class="company-reviews p-4 animate__animated animate__fadeIn">
+  <!-- Header -->
+  <header class="mb-5 d-flex justify-content-between align-items-center">
+    <div>
+      <h1 class="fw-bold text-dark mb-1">Avis à laisser</h1>
+      <p class="text-muted mb-0">Évaluez les chauffeurs, propriétaires et véhicules après vos services terminés.</p>
+    </div>
+    <div *ngIf="successMessage" class="alert alert-success rounded-pill px-4 animate__animated animate__bounceIn">
+      <i class="ion-md-checkmark-circle me-2"></i> {{ successMessage }}
+    </div>
+  </header>
+
+  <!-- Statistics Cards -->
+  <div class="stats-grid mb-5">
+    <div class="stat-card">
+      <div class="stat-icon bg-soft-warning text-warning"><i class="ion-md-time"></i></div>
+      <div class="stat-info">
+        <span class="label">Avis à laisser</span>
+        <h3 class="value">{{ stats.toLeave }}</h3>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon bg-soft-success text-success"><i class="ion-md-checkmark-circle"></i></div>
+      <div class="stat-info">
+        <span class="label">Avis envoyés</span>
+        <h3 class="value">{{ stats.sent }}</h3>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon bg-soft-primary text-primary"><i class="ion-md-star"></i></div>
+      <div class="stat-info">
+        <span class="label">Note moyenne donnée</span>
+        <h3 class="value">{{ stats.avgRating }}/5</h3>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon bg-soft-info text-info"><i class="ion-md-people"></i></div>
+      <div class="stat-info">
+        <span class="label">Cibles</span>
+        <h3 class="value text-truncate" style="font-size: 1.2rem;">{{ stats.targets }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- A. Avis à laisser -->
+    <div class="col-lg-12 mb-4">
+      <h4 class="fw-bold mb-4 d-flex align-items-center gap-2">
+        <i class="ion-md-alert text-warning"></i> Services en attente d'avis
+      </h4>
+      <div class="row g-3">
+        <div class="col-md-6" *ngFor="let s of pendingReviews">
+          <div class="card border-0 shadow-sm rounded-4 p-4 h-100 review-card">
+            <div class="d-flex justify-content-between mb-3">
+              <span class="badge bg-primary-light text-primary rounded-pill">{{ getTypeText(s.type) }}</span>
+              <span class="text-muted small">{{ s.date | date:'dd MMM yyyy' }}</span>
+            </div>
+            <h5 class="fw-bold mb-2">{{ s.title }}</h5>
+            <div class="service-details mb-4">
+              <div class="detail-item" *ngIf="s.driverName"><i class="ion-md-person"></i> <span>{{ s.driverName }}</span></div>
+              <div class="detail-item" *ngIf="s.ownerName"><i class="ion-md-business"></i> <span>{{ s.ownerName }}</span></div>
+              <div class="detail-item" *ngIf="s.vehicleName"><i class="ion-md-car"></i> <span>{{ s.vehicleName }}</span></div>
+              <div class="detail-item"><i class="ion-md-pin"></i> <span>{{ s.city }}</span></div>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-auto">
+              <span class="fw-bold text-dark fs-5">{{ s.amount }} DT</span>
+              <button class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" (click)="openReviewModal(s)">
+                Laisser un avis
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="col-12" *ngIf="pendingReviews.length === 0">
+          <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white">
+            <i class="ion-md-checkmark-circle-outline display-1 text-light mb-3"></i>
+            <h5 class="text-muted">Tous vos services ont été évalués !</h5>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- B. Avis envoyés -->
+    <div class="col-lg-12">
+      <h4 class="fw-bold mb-4 d-flex align-items-center gap-2">
+        <i class="ion-md-checkmark-circle text-success"></i> Avis envoyés
+      </h4>
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+        <div class="list-group list-group-flush">
+          <div class="list-group-item p-4 border-0 border-bottom" *ngFor="let r of sentReviews">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+              <div class="d-flex align-items-center gap-3">
+                <div class="target-badge rounded-pill bg-light p-2 px-3">
+                  <span class="text-muted small fw-bold text-uppercase">{{ r.reviewTargetType }}</span>
+                </div>
+                <div>
+                  <h6 class="fw-bold mb-0">{{ r.driverName || r.ownerName || r.vehicleName }}</h6>
+                  <p class="text-muted small mb-0">{{ r.createdAt | date:'dd/MM/yyyy HH:mm' }}</p>
+                </div>
+              </div>
+              <div class="text-warning fs-5">
+                <i class="ion-md-star" *ngFor="let i of [1,2,3,4,5]" [class.opacity-25]="i > r.rating"></i>
+              </div>
+            </div>
+            <p class="mb-3 text-dark">"{{ r.comment }}"</p>
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="d-flex gap-2">
+                <span class="badge bg-light text-dark border rounded-pill px-3" *ngFor="let tag of r.tags">{{ tag }}</span>
+              </div>
+              <button class="btn btn-link text-primary fw-bold text-decoration-none p-0" (click)="openDetails(r)">Détails</button>
+            </div>
+          </div>
+        </div>
+        <div class="p-5 text-center" *ngIf="sentReviews.length === 0">
+          <p class="text-muted">Aucun avis envoyé pour le moment.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Review Modal -->
+  <div class="modal-overlay" *ngIf="showReviewModal" (click)="closeModals()">
+    <div class="modal-card-premium animate__animated animate__zoomIn" (click)="$event.stopPropagation()">
+      <div class="modal-header-p p-4 border-bottom">
+        <h5 class="fw-bold mb-0">Laisser un avis</h5>
+        <p class="text-muted small mb-0">{{ selectedService?.title }}</p>
+      </div>
+      <div class="modal-body p-4">
+        <!-- Errors -->
+        <div *ngIf="errors.length > 0" class="alert alert-danger rounded-4 p-3 mb-4">
+          <ul class="mb-0 small">
+            <li *ngFor="let err of errors">{{ err }}</li>
+          </ul>
+        </div>
+
+        <div class="review-form">
+          <!-- TYPE DRIVER_WITH_CAR -->
+          <ng-container *ngIf="selectedService?.type === 'DRIVER_WITH_CAR'">
+            <div class="mb-4">
+              <label class="form-label d-block text-center mb-3">Note du chauffeur <strong>{{ selectedService.driverName }}</strong></label>
+              <div class="rating-selector d-flex justify-content-center gap-3 fs-1 text-warning">
+                <i class="ion-md-star clickable" *ngFor="let i of [1,2,3,4,5]" 
+                   [ngClass]="{'ion-md-star-outline opacity-50': i > reviewForm.driverRating}"
+                   (click)="reviewForm.driverRating = i"></i>
+              </div>
+            </div>
+            <div class="row g-3 mb-4">
+              <div class="col-6">
+                <div class="form-check form-switch card p-3 border-0 bg-light">
+                  <input class="form-check-input" type="checkbox" [(ngModel)]="reviewForm.punctuality">
+                  <label class="form-check-label">Ponctualité</label>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="form-check form-switch card p-3 border-0 bg-light">
+                  <input class="form-check-input" type="checkbox" [(ngModel)]="reviewForm.professionalism">
+                  <label class="form-check-label">Professionnalisme</label>
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="form-check form-switch card p-3 border-0 bg-light">
+                  <input class="form-check-input" type="checkbox" [(ngModel)]="reviewForm.cleanliness">
+                  <label class="form-check-label">Véhicule propre</label>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+
+          <!-- TYPE VEHICLE_RENTAL -->
+          <ng-container *ngIf="selectedService?.type === 'VEHICLE_RENTAL'">
+            <div class="row mb-4">
+              <div class="col-6 text-center">
+                <label class="form-label small d-block">Note Propriétaire</label>
+                <div class="fs-3 text-warning">
+                  <i class="ion-md-star clickable" *ngFor="let i of [1,2,3,4,5]" 
+                     [ngClass]="{'ion-md-star-outline opacity-50': i > reviewForm.ownerRating}"
+                     (click)="reviewForm.ownerRating = i"></i>
+                </div>
+              </div>
+              <div class="col-6 text-center">
+                <label class="form-label small d-block">Note Véhicule</label>
+                <div class="fs-3 text-warning">
+                  <i class="ion-md-star clickable" *ngFor="let i of [1,2,3,4,5]" 
+                     [ngClass]="{'ion-md-star-outline opacity-50': i > reviewForm.vehicleRating}"
+                     (click)="reviewForm.vehicleRating = i"></i>
+                </div>
+              </div>
+            </div>
+            <div class="row g-3 mb-4">
+              <div class="col-6">
+                <div class="form-check form-switch card p-3 border-0 bg-light">
+                  <input class="form-check-input" type="checkbox" [(ngModel)]="reviewForm.communication">
+                  <label class="form-check-label">Communication</label>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="form-check form-switch card p-3 border-0 bg-light">
+                  <input class="form-check-input" type="checkbox" [(ngModel)]="reviewForm.vehicleState">
+                  <label class="form-check-label">État véhicule</label>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+
+          <!-- MIXED OR OTHER -->
+          <ng-container *ngIf="selectedService?.type !== 'DRIVER_WITH_CAR' && selectedService?.type !== 'VEHICLE_RENTAL'">
+            <div class="mb-4 text-center">
+              <label class="form-label d-block mb-3">Note globale du service</label>
+              <div class="rating-selector d-flex justify-content-center gap-3 fs-1 text-warning">
+                <i class="ion-md-star clickable" *ngFor="let i of [1,2,3,4,5]" 
+                   [ngClass]="{'ion-md-star-outline opacity-50': i > reviewForm.rating}"
+                   (click)="reviewForm.rating = i"></i>
+              </div>
+            </div>
+          </ng-container>
+
+          <!-- COMMON FIELDS -->
+          <div class="mb-4">
+            <label class="form-label fw-bold">Votre commentaire professionnel</label>
+            <textarea class="form-control rounded-4 border-light-subtle bg-light" rows="4" 
+                      placeholder="Comment s'est passé le service ? (Minimum 10 caractères)" 
+                      [(ngModel)]="reviewForm.comment"></textarea>
+          </div>
+
+          <div class="form-check form-switch mb-4">
+            <input class="form-check-input" type="checkbox" [(ngModel)]="reviewForm.recommend">
+            <label class="form-check-label fw-bold">Recommanderiez-vous ce partenaire ?</label>
+          </div>
+
+          <button class="btn btn-primary w-100 rounded-pill py-3 fw-bold shadow-lg" (click)="submitReview()">
+            Envoyer l'évaluation
+          </button>
+          <button class="btn btn-light w-100 rounded-pill py-3 fw-bold mt-2" (click)="closeModals()">
+            Annuler
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Details Modal -->
+  <div class="modal-overlay" *ngIf="showDetailsModal" (click)="closeModals()">
+    <div class="modal-card-premium animate__animated animate__zoomIn" (click)="$event.stopPropagation()">
+      <div class="modal-header-p p-4 border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0">Détails de l'avis</h5>
+        <button class="btn-close-custom" (click)="closeModals()">&times;</button>
+      </div>
+      <div class="modal-body p-4" *ngIf="selectedReview">
+        <div class="text-center mb-4">
+          <h4 class="fw-bold mb-1">{{ selectedReview.driverName || selectedReview.ownerName }}</h4>
+          <p class="text-muted">{{ getTypeText(selectedReview.serviceType) }}</p>
+          <div class="text-warning fs-1 mb-2">
+            <i class="ion-md-star" *ngFor="let i of [1,2,3,4,5]" [class.opacity-25]="i > selectedReview.rating"></i>
+          </div>
+          <span class="badge bg-success-light text-success rounded-pill px-3 py-2">AVIS ENVOYÉ</span>
+        </div>
+
+        <div class="p-4 bg-light rounded-4 mb-4">
+          <p class="mb-0 fs-5">"{{ selectedReview.comment }}"</p>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-6">
+            <label class="text-muted small d-block">DATE D'ENVOI</label>
+            <span class="fw-bold">{{ selectedReview.createdAt | date:'dd MMMM yyyy HH:mm' }}</span>
+          </div>
+          <div class="col-6">
+            <label class="text-muted small d-block">ENTREPRISE</label>
+            <span class="fw-bold">{{ selectedReview.companyName }}</span>
+          </div>
+          <div class="col-6" *ngIf="selectedReview.vehicleName">
+            <label class="text-muted small d-block">VÉHICULE</label>
+            <span class="fw-bold">{{ selectedReview.vehicleName }}</span>
+          </div>
+          <div class="col-6" *ngIf="selectedReview.city">
+            <label class="text-muted small d-block">VILLE</label>
+            <span class="fw-bold">{{ selectedReview.city }}</span>
+          </div>
+        </div>
+
+        <button class="btn btn-primary w-100 rounded-pill py-3 fw-bold mt-5" (click)="closeModals()">
+          Fermer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

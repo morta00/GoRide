@@ -1,0 +1,219 @@
+<div class="admin-validations animate__animated animate__fadeIn">
+  
+  <div class="mb-4">
+    <h2 class="fw-bold text-dark mb-1">Validations professionnelles</h2>
+    <p class="text-muted">Gérez les comptes, documents et véhicules des partenaires GoRide.</p>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-2 col-sm-4 col-6">
+      <div class="metric-card bg-white shadow-sm p-3 rounded-4 h-100 border-start border-primary border-4">
+        <p class="text-muted small fw-bold text-uppercase mb-1">En attente</p>
+        <h3 class="fw-bold mb-0 text-dark">{{ stats.pendingTotal }}</h3>
+      </div>
+    </div>
+    <div class="col-md-2 col-sm-4 col-6">
+      <div class="metric-card bg-white shadow-sm p-3 rounded-4 h-100">
+        <p class="text-muted small fw-bold text-uppercase mb-1">Comptes</p>
+        <h3 class="fw-bold mb-0 text-dark">{{ stats.accounts }}</h3>
+      </div>
+    </div>
+    <div class="col-md-2 col-sm-4 col-6">
+      <div class="metric-card bg-white shadow-sm p-3 rounded-4 h-100">
+        <p class="text-muted small fw-bold text-uppercase mb-1">Documents</p>
+        <h3 class="fw-bold mb-0 text-dark">{{ stats.documents }}</h3>
+      </div>
+    </div>
+    <div class="col-md-2 col-sm-4 col-6">
+      <div class="metric-card bg-white shadow-sm p-3 rounded-4 h-100">
+        <p class="text-muted small fw-bold text-uppercase mb-1">Véhicules</p>
+        <h3 class="fw-bold mb-0 text-dark">{{ stats.vehicles }}</h3>
+      </div>
+    </div>
+    <div class="col-md-2 col-sm-4 col-6">
+      <div class="metric-card bg-white shadow-sm p-3 rounded-4 h-100">
+        <p class="text-muted small fw-bold text-uppercase mb-1 text-success">Validés</p>
+        <h3 class="fw-bold mb-0 text-success">{{ stats.validated }}</h3>
+      </div>
+    </div>
+    <div class="col-md-2 col-sm-4 col-6">
+      <div class="metric-card bg-white shadow-sm p-3 rounded-4 h-100">
+        <p class="text-muted small fw-bold text-uppercase mb-1 text-danger">Refusés</p>
+        <h3 class="fw-bold mb-0 text-danger">{{ stats.rejected }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-card shadow-sm bg-white rounded-4 p-4">
+    <!-- Filters -->
+    <div class="d-flex flex-wrap gap-2 mb-4">
+      <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="currentFilter === 'ALL' ? 'btn-primary' : 'btn-light border text-muted'" (click)="applyFilter('ALL')">Tous</button>
+      <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="currentFilter === 'ACCOUNTS' ? 'btn-primary' : 'btn-light border text-muted'" (click)="applyFilter('ACCOUNTS')">Comptes</button>
+      <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="currentFilter === 'DOCUMENTS' ? 'btn-primary' : 'btn-light border text-muted'" (click)="applyFilter('DOCUMENTS')">Documents</button>
+      <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="currentFilter === 'VEHICLES' ? 'btn-primary' : 'btn-light border text-muted'" (click)="applyFilter('VEHICLES')">Véhicules</button>
+      
+      <div class="vr mx-2 text-muted opacity-25"></div>
+      
+      <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="currentFilter === 'DRIVER' ? 'btn-outline-primary' : 'btn-light border text-muted'" (click)="applyFilter('DRIVER')">Chauffeurs</button>
+      <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="currentFilter === 'OWNER' ? 'btn-outline-primary' : 'btn-light border text-muted'" (click)="applyFilter('OWNER')">Propriétaires</button>
+      <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="currentFilter === 'COMPANY' ? 'btn-outline-primary' : 'btn-light border text-muted'" (click)="applyFilter('COMPANY')">Entreprises</button>
+    </div>
+
+    <!-- Validations Table -->
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead>
+          <tr>
+            <th class="text-muted small text-uppercase">Entité / Objet</th>
+            <th class="text-muted small text-uppercase">Type de validation</th>
+            <th class="text-muted small text-uppercase">Date</th>
+            <th class="text-muted small text-uppercase">Priorité</th>
+            <th class="text-muted small text-uppercase">Statut</th>
+            <th class="text-muted small text-uppercase text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of filteredValidations">
+            <td>
+              <div class="d-flex align-items-center gap-3">
+                <div class="icon-circle shadow-sm" [ngClass]="getCategory(item.type) === 'Compte' ? 'bg-primary-soft text-primary' : (getCategory(item.type) === 'Véhicule' ? 'bg-success-soft text-success' : 'bg-warning-soft text-warning')">
+                  <span [class]="getCategory(item.type) === 'Compte' ? 'ion-ios-person' : (getCategory(item.type) === 'Véhicule' ? 'ion-ios-car' : 'ion-ios-document')"></span>
+                </div>
+                <div>
+                  <span class="fw-bold d-block">{{ item.entityName }}</span>
+                  <span class="text-muted tiny" *ngIf="item.subEntity">{{ item.subEntity }}</span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="badge bg-light text-dark border rounded-pill small">{{ getTypeLabel(item.type) }}</span>
+            </td>
+            <td><span class="text-muted small">{{ item.date }}</span></td>
+            <td>
+              <span class="badge" [ngClass]="item.priority === 'Haute' ? 'bg-danger' : (item.priority === 'Moyenne' ? 'bg-warning text-dark' : 'bg-secondary')">{{ item.priority }}</span>
+            </td>
+            <td>
+              <span class="badge rounded-pill" [ngClass]="item.status === 'PENDING' ? 'bg-warning-soft text-warning' : (item.status === 'APPROVED' ? 'bg-success-soft text-success' : 'bg-danger-soft text-danger')">
+                {{ item.status === 'PENDING' ? 'En attente' : (item.status === 'APPROVED' ? 'Validé' : 'Refusé') }}
+              </span>
+            </td>
+            <td class="text-end">
+              <div class="d-flex justify-content-end gap-1">
+                <button class="btn btn-sm btn-light border text-primary rounded-pill px-3 fw-bold" (click)="openDetails(item)">Détails</button>
+                
+                <ng-container *ngIf="item.status === 'PENDING'">
+                  <button class="btn btn-sm btn-success rounded-pill px-3 fw-bold" (click)="openValidateConfirm(item, $event)" title="Valider">
+                    Valider
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold" (click)="openRejectModal(item, $event)" title="Refuser">
+                    Refuser
+                  </button>
+                </ng-container>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <div *ngIf="filteredValidations.length === 0" class="text-center py-5">
+        <span class="ion-ios-checkmark-circle fs-1 text-muted mb-2 d-block"></span>
+        <p class="text-muted">Aucune demande de validation trouvée.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Details Modal -->
+<div class="modal-overlay animate__animated animate__fadeIn" *ngIf="isDetailsModalOpen" (click)="closeDetails()">
+  <div class="modal-content-wrapper shadow-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+      <h5 class="fw-bold text-dark mb-0">Détails de la validation</h5>
+      <button class="btn btn-light rounded-circle p-2 d-flex" (click)="closeDetails()">
+        <span class="ion-ios-close fs-4 text-dark" style="line-height: 1;"></span>
+      </button>
+    </div>
+    
+    <div class="modal-body mb-4" *ngIf="selectedItem">
+      <div class="mb-4 text-center">
+        <div class="icon-circle bg-light mx-auto mb-3 shadow-sm" style="width: 64px; height: 64px; font-size: 28px;">
+           <span [class]="getCategory(selectedItem.type) === 'Compte' ? 'ion-ios-person' : (getCategory(selectedItem.type) === 'Véhicule' ? 'ion-ios-car' : 'ion-ios-document')"></span>
+        </div>
+        <h4 class="fw-bold text-dark mb-0">{{ selectedItem.entityName }}</h4>
+        <span class="badge bg-primary-soft text-primary rounded-pill mt-1">{{ getTypeLabel(selectedItem.type) }}</span>
+      </div>
+
+      <div class="bg-light p-3 rounded-4 mb-4">
+        <span class="tiny text-muted text-uppercase fw-bold d-block mb-2">Description / Observation</span>
+        <p class="text-dark mb-0">{{ selectedItem.details }}</p>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-6">
+          <span class="tiny text-muted text-uppercase fw-bold d-block mb-1">Date de demande</span>
+          <span class="text-dark fw-bold">{{ selectedItem.date }}</span>
+        </div>
+        <div class="col-6">
+          <span class="tiny text-muted text-uppercase fw-bold d-block mb-1">Priorité</span>
+          <span class="badge" [ngClass]="selectedItem.priority === 'Haute' ? 'bg-danger' : (selectedItem.priority === 'Moyenne' ? 'bg-warning text-dark' : 'bg-secondary')">{{ selectedItem.priority }}</span>
+        </div>
+        <div class="col-12" *ngIf="selectedItem.status === 'REJECTED' && selectedItem.reason">
+          <span class="tiny text-danger text-uppercase fw-bold d-block mb-1">Motif du refus</span>
+          <div class="alert alert-danger mb-0 small py-2 px-3 fw-bold">{{ selectedItem.reason }}</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="modal-footer d-flex gap-2" *ngIf="selectedItem?.status === 'PENDING'">
+      <button class="btn btn-outline-danger fw-bold flex-grow-1 rounded-pill" (click)="openRejectModal(selectedItem)">Refuser</button>
+      <button class="btn btn-success fw-bold flex-grow-1 rounded-pill" (click)="openValidateConfirm(selectedItem)">Valider l'élément</button>
+    </div>
+    <div class="modal-footer" *ngIf="selectedItem?.status !== 'PENDING'">
+      <button class="btn btn-light fw-bold w-100 rounded-pill" (click)="closeDetails()">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reject Reason Modal -->
+<div class="modal-overlay animate__animated animate__fadeIn" *ngIf="isRejectModalOpen" (click)="closeRejectModal()">
+  <div class="modal-content-wrapper shadow-lg" style="max-width: 400px;" (click)="$event.stopPropagation()">
+    <div class="modal-header d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+      <h5 class="fw-bold text-dark mb-0">Motif du refus</h5>
+      <button class="btn btn-light rounded-circle p-2 d-flex" (click)="closeRejectModal()">
+        <span class="ion-ios-close fs-4 text-dark" style="line-height: 1;"></span>
+      </button>
+    </div>
+    
+    <div class="modal-body mb-4">
+      <textarea class="form-control rounded-4 p-3 bg-light border-0" [class.is-invalid]="rejectionError" rows="4" placeholder="Expliquez pourquoi cet élément est refusé..." [(ngModel)]="rejectionReason"></textarea>
+      <div class="invalid-feedback d-block mt-2" *ngIf="rejectionError">{{ rejectionError }}</div>
+    </div>
+    
+    <div class="modal-footer d-flex gap-2">
+      <button class="btn btn-light fw-bold flex-grow-1 rounded-pill" (click)="closeRejectModal()">Annuler</button>
+      <button class="btn btn-danger fw-bold flex-grow-1 rounded-pill" (click)="confirmReject()">Confirmer le refus</button>
+    </div>
+  </div>
+</div>
+
+<!-- Validation Confirmation Modal -->
+<div class="modal-overlay animate__animated animate__fadeIn" *ngIf="isValidateConfirmOpen" (click)="closeValidateConfirm()">
+  <div class="modal-content-wrapper shadow-lg" style="max-width: 400px;" (click)="$event.stopPropagation()">
+    <div class="modal-header d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+      <h5 class="fw-bold text-dark mb-0">Confirmer la validation</h5>
+      <button class="btn btn-light rounded-circle p-2 d-flex" (click)="closeValidateConfirm()">
+        <span class="ion-ios-close fs-4 text-dark" style="line-height: 1;"></span>
+      </button>
+    </div>
+    
+    <div class="modal-body mb-4">
+      <p class="text-muted">Êtes-vous sûr de vouloir confirmer la validation de <strong>{{ selectedItem?.entityName }}</strong> ?</p>
+    </div>
+    
+    <div class="modal-footer d-flex gap-2">
+      <button class="btn btn-light fw-bold flex-grow-1 rounded-pill" (click)="closeValidateConfirm()">Annuler</button>
+      <button class="btn btn-success fw-bold flex-grow-1 rounded-pill" (click)="confirmValidation()">Confirmer</button>
+    </div>
+  </div>
+</div>

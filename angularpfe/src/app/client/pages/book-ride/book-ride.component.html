@@ -1,0 +1,341 @@
+<div class="available-rides-page">
+  <div class="page-header mb-5 animate__animated animate__fadeInDown">
+    <h1 class="display-5 fw-bold text-dark">Explorer les trajets</h1>
+    <p class="lead text-muted">Parcourez les trajets collaboratifs propos&eacute;s par les chauffeurs et r&eacute;servez votre place.</p>
+  </div>
+
+  <div class="alert alert-success border-0 shadow-sm rounded-4 p-4 mb-4 animate__animated animate__bounceIn" *ngIf="successMessage">
+    <div class="d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center">
+        <div class="icon-circle bg-success text-white me-3">
+          <i class="ion-md-checkmark"></i>
+        </div>
+        <div>
+          <h5 class="mb-0 fw-bold">R&eacute;servation confirm&eacute;e !</h5>
+          <p class="mb-0 opacity-75">Votre place a &eacute;t&eacute; r&eacute;serv&eacute;e avec succ&egrave;s.</p>
+        </div>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-dark rounded-pill px-4" routerLink="/client/reservations">Mes trajets</button>
+        <button class="btn btn-outline-dark rounded-pill" (click)="successMessage = false">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <section class="filters-card card border-0 shadow-sm rounded-4 p-4 mb-5">
+    <div class="row g-4">
+      <div class="col-12">
+        <div class="search-box">
+          <i class="ion-md-search"></i>
+          <input
+            type="text"
+            [(ngModel)]="searchQuery"
+            (input)="applyFilters()"
+            placeholder="Rechercher par ville, adresse, chauffeur ou v&eacute;hicule..."
+            class="form-control-lg border-0 bg-light w-100 ps-5 rounded-4">
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label fw-bold text-muted small text-uppercase">P&eacute;riode</label>
+        <select class="form-select border-0 bg-light rounded-4 p-3 fw-bold" [(ngModel)]="filters.date" (change)="applyFilters()">
+          <option value="all">Tous les trajets</option>
+          <option value="today">Aujourd'hui</option>
+          <option value="tomorrow">Demain</option>
+          <option value="week">Cette semaine</option>
+        </select>
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label fw-bold text-muted small text-uppercase">Prix Max</label>
+        <select class="form-select border-0 bg-light rounded-4 p-3 fw-bold" [(ngModel)]="filters.price" (change)="applyFilters()">
+          <option value="all">Tous les prix</option>
+          <option value="under10">Moins de 10 DT</option>
+          <option value="10to20">10 &agrave; 20 DT</option>
+          <option value="above20">Plus de 20 DT</option>
+        </select>
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label fw-bold text-muted small text-uppercase">Places</label>
+        <select class="form-select border-0 bg-light rounded-4 p-3 fw-bold" [(ngModel)]="filters.seats" (change)="applyFilters()">
+          <option value="1">1 place mini</option>
+          <option value="2">2 places mini</option>
+          <option value="3">3 places mini</option>
+        </select>
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label fw-bold text-muted small text-uppercase">Tri</label>
+        <select class="form-select border-0 bg-light rounded-4 p-3 fw-bold" [(ngModel)]="sortBy" (change)="applyFilters()">
+          <option value="recent">Plus r&eacute;cents</option>
+          <option value="price-asc">Prix croissant</option>
+          <option value="price-desc">Prix d&eacute;croissant</option>
+          <option value="rating">Meilleure note</option>
+        </select>
+      </div>
+
+      <div class="col-12 d-flex gap-3 mt-2">
+        <button class="btn btn-light rounded-pill px-4 py-2 fw-bold"
+                [class.btn-primary]="filters.luggage"
+                (click)="toggleFilter('luggage')">
+          <i class="ion-md-briefcase me-2"></i>Bagages autoris&eacute;s
+        </button>
+        <button class="btn btn-light rounded-pill px-4 py-2 fw-bold"
+                [class.btn-primary]="filters.pets"
+                (click)="toggleFilter('pets')">
+          <i class="ion-md-paw me-2"></i>Animaux autoris&eacute;s
+        </button>
+        <button class="btn btn-link text-muted ms-auto" (click)="resetFilters()">R&eacute;initialiser</button>
+      </div>
+    </div>
+  </section>
+
+  <app-ai-insight-panel
+    class="d-block mb-5"
+    mode="trips"
+    title="Recommandation IA — covoiturage"
+    subtitle="Économique, confort ou groupe : le meilleur trajet partagé pour vous."
+    [departure]="searchQuery"
+    [passengers]="filters.seats ? +filters.seats : 1"
+    (recommended)="onAiTripRecommended($event)">
+  </app-ai-insight-panel>
+
+  <main class="row g-4" *ngIf="filteredTrips.length > 0; else emptyState">
+    <div class="col-xl-4 col-md-6 animate__animated animate__fadeInUp" *ngFor="let t of filteredTrips; let i = index" [style.animation-delay]="i * 0.1 + 's'">
+      <div class="trip-card card h-100 border-0 shadow-sm rounded-5 overflow-hidden" [attr.id]="'ai-target-' + t.id">
+        <div class="card-header bg-white p-4 border-0 pb-0">
+          <div class="d-flex justify-content-between align-items-start">
+            <div class="d-flex align-items-center">
+              <div class="driver-avatar rounded-4 shadow-sm me-3 text-white fw-bold d-flex align-items-center justify-content-center">
+                {{ t.driverName?.charAt(0) }}
+              </div>
+              <div>
+                <h6 class="mb-0 fw-bold text-dark">{{ t.driverName }}</h6>
+                <div class="small text-warning">
+                  <i class="ion-md-star"></i> {{ t.driverRating }}
+                  <span class="text-muted ms-1">({{ t.driverTripsCount }} courses)</span>
+                </div>
+              </div>
+            </div>
+            <div class="price-tag bg-primary-soft text-primary px-3 py-2 rounded-4 fw-bold">
+              {{ t.pricePerSeat }} DT <small class="text-muted">/place</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body p-4">
+          <div class="route-display mb-4">
+            <div class="route-step mb-3">
+              <span class="dot-start"></span>
+              <div>
+                <div class="city-name fw-bold text-dark">{{ t.departureCity }}</div>
+                <div class="address-name small text-muted">{{ t.departureAddress }}</div>
+              </div>
+            </div>
+            <div class="route-line"></div>
+            <div class="route-step">
+              <span class="dot-end"></span>
+              <div>
+                <div class="city-name fw-bold text-dark">{{ t.arrivalCity }}</div>
+                <div class="address-name small text-muted">{{ t.arrivalAddress }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex flex-wrap gap-2 mb-4">
+            <div class="meta-pill">
+              <i class="ion-md-calendar"></i> {{ formatDate(t.date) }} {{ t.time }}
+            </div>
+            <div class="meta-pill">
+              <i class="ion-md-car"></i> {{ t.vehicleName }}
+            </div>
+            <div class="meta-pill" [class.text-danger]="t.availableSeats === 1">
+              <i class="ion-md-people"></i> {{ t.availableSeats }} / {{ t.totalSeats }} places
+            </div>
+          </div>
+
+          <p class="text-muted small italic mb-4" *ngIf="t.comment">
+            &ldquo;{{ t.comment }}&rdquo;
+          </p>
+        </div>
+
+        <div class="card-footer bg-white p-4 pt-0 border-0">
+          <div class="row g-2">
+            <div class="col-5">
+              <button class="btn btn-light w-100 py-3 rounded-4 fw-bold" (click)="openDetails(t)">D&eacute;tails</button>
+            </div>
+            <div class="col-7">
+              <button *ngIf="hasActiveBooking(t)"
+                      class="btn btn-success w-100 py-3 rounded-4 fw-bold"
+                      (click)="goToMyReservation(t)">
+                {{ isPendingDriverApproval(t) ? 'En attente' : 'Inscrit' }}
+              </button>
+              <button *ngIf="!hasActiveBooking(t)"
+                      class="btn btn-primary w-100 py-3 rounded-4 fw-bold shadow"
+                      (click)="openBooking(t)"
+                      [disabled]="t.availableSeats < 1">
+                <span *ngIf="t.availableSeats < 1">Complet</span>
+                <span *ngIf="t.availableSeats >= 1">R&eacute;server</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <ng-template #emptyState>
+    <div class="text-center py-5 mt-5">
+      <div class="mb-4 opacity-25">
+        <i class="ion-md-car-outline" style="font-size: 8rem;"></i>
+      </div>
+      <h2 class="fw-bold text-dark">Aucun trajet disponible</h2>
+      <p class="text-muted">Nous n'avons trouv&eacute; aucun trajet correspondant &agrave; vos crit&egrave;res.</p>
+      <button class="btn btn-primary rounded-pill px-5 mt-3" (click)="resetFilters()">R&eacute;initialiser les filtres</button>
+    </div>
+  </ng-template>
+
+  <div class="app-modal-overlay" *ngIf="showDetailsModal && selectedTrip" (click)="closeDetails()">
+    <div class="modal-card trip-details-modal animate__animated animate__zoomIn" (click)="$event.stopPropagation()">
+      <div class="modal-details-header border-bottom d-flex justify-content-between align-items-center">
+        <h4 class="mb-0 fw-bold modal-title">D&eacute;tails du trajet</h4>
+        <button class="btn-close-circle btn-close-sm" (click)="closeDetails()"><i class="ion-md-close"></i></button>
+      </div>
+      <div class="modal-body modal-body-compact">
+        <div class="d-flex align-items-center driver-snippet p-2 bg-light rounded-3 mb-3">
+          <div class="driver-avatar large rounded-3 me-2 text-white fw-bold d-flex align-items-center justify-content-center">
+            {{ selectedTrip?.driverName?.charAt(0) }}
+          </div>
+          <div>
+            <h6 class="mb-0 fw-bold">{{ selectedTrip?.driverName }}</h6>
+            <div class="text-warning small mb-0"><i class="ion-md-star"></i> {{ selectedTrip?.driverRating }} ({{ selectedTrip?.driverTripsCount }} trajets)</div>
+          </div>
+        </div>
+
+        <div class="row g-2 mb-3">
+          <div class="col-12">
+            <div class="route-block p-2 border rounded-3 bg-light">
+              <div class="mb-2">
+                <span class="badge bg-success mb-1">D&Eacute;PART</span>
+                <div class="fw-bold trip-city">{{ selectedTrip?.departureCity }}</div>
+                <div class="text-muted small trip-address">{{ selectedTrip?.departureAddress }}</div>
+              </div>
+              <div>
+                <span class="badge bg-danger mb-1">ARRIV&Eacute;E</span>
+                <div class="fw-bold trip-city">{{ selectedTrip?.arrivalCity }}</div>
+                <div class="text-muted small trip-address">{{ selectedTrip?.arrivalAddress }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <label class="text-muted small d-block mb-1">DATE &amp; HEURE</label>
+            <div class="fw-bold small"><i class="ion-md-time me-1 text-primary"></i>{{ formatDate(selectedTrip?.date || '') }} &agrave; {{ selectedTrip?.time }}</div>
+          </div>
+          <div class="col-6">
+            <label class="text-muted small d-block mb-1">V&Eacute;HICULE</label>
+            <div class="fw-bold small"><i class="ion-md-car me-1 text-primary"></i>{{ selectedTrip?.vehicleName }}</div>
+          </div>
+          <div class="col-6">
+            <label class="text-muted small d-block mb-1">PLACES RESTANTES</label>
+            <div class="fw-bold small"><i class="ion-md-people me-1 text-primary"></i>{{ selectedTrip?.availableSeats }} places</div>
+          </div>
+          <div class="col-6">
+            <label class="text-muted small d-block mb-1">PRIX UNITAIRE</label>
+            <div class="fw-bold text-primary trip-price">{{ selectedTrip?.pricePerSeat }} DT</div>
+          </div>
+        </div>
+
+        <div class="options-grid options-grid-compact mb-2">
+          <div class="option-pill" [class.active]="selectedTrip?.luggageAllowed">
+            <i class="ion-md-briefcase"></i> Bagages
+          </div>
+          <div class="option-pill" [class.active]="selectedTrip?.petsAllowed">
+            <i class="ion-md-paw"></i> Animaux
+          </div>
+        </div>
+
+        <div class="p-2 bg-warning-soft rounded-3 border-start border-warning border-3 small italic mb-0" *ngIf="selectedTrip?.comment">
+          &ldquo;{{ selectedTrip?.comment }}&rdquo;
+        </div>
+
+        <div class="alert alert-success py-2 px-3 small mb-0 mt-2" *ngIf="hasActiveBooking(selectedTrip) && !isPendingDriverApproval(selectedTrip)">
+          <i class="ion-md-checkmark-circle me-1"></i> Vous &ecirc;tes d&eacute;j&agrave; inscrit &agrave; ce trajet.
+        </div>
+        <div class="alert alert-warning py-2 px-3 small mb-0 mt-2" *ngIf="isPendingDriverApproval(selectedTrip)">
+          <i class="ion-md-time me-1"></i> Demande envoy&eacute;e — le chauffeur doit encore l'accepter.
+        </div>
+      </div>
+      <div class="modal-footer modal-footer-compact border-top">
+        <button *ngIf="hasActiveBooking(selectedTrip)"
+                class="btn btn-success w-100 rounded-3 fw-bold btn-reserve"
+                (click)="goToMyReservation(selectedTrip)">
+          Voir ma r&eacute;servation
+        </button>
+        <button *ngIf="!hasActiveBooking(selectedTrip)"
+                class="btn btn-primary w-100 rounded-3 fw-bold shadow btn-reserve"
+                (click)="openBooking(selectedTrip!)">
+          R&eacute;server maintenant
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-modal-overlay" *ngIf="showBookingModal && selectedTrip" (click)="closeBooking()">
+    <div class="modal-card mini animate__animated animate__fadeInUp" (click)="$event.stopPropagation()">
+      <div class="p-4 border-bottom text-center">
+        <h4 class="mb-0 fw-bold">R&eacute;server votre place</h4>
+      </div>
+      <div class="modal-body p-4 text-center">
+        <div class="mb-4">
+          <p class="text-muted mb-1">{{ selectedTrip?.departureCity }} &rarr; {{ selectedTrip?.arrivalCity }}</p>
+          <div class="fw-bold fs-5 text-dark">{{ formatDate(selectedTrip?.date || '') }} &agrave; {{ selectedTrip?.time }}</div>
+        </div>
+
+        <div class="seat-selector mb-4 p-3 bg-light rounded-5 d-inline-flex align-items-center gap-4">
+          <button class="btn-circle-action" (click)="changeSeats(-1)" [disabled]="bookingSeats <= 1">
+            <i class="ion-md-remove"></i>
+          </button>
+          <div class="text-center">
+            <div class="fs-2 fw-bold text-dark">{{ bookingSeats }}</div>
+            <div class="small text-muted">places</div>
+          </div>
+          <button class="btn-circle-action" (click)="changeSeats(1)" [disabled]="bookingSeats >= (selectedTrip?.availableSeats || 1)">
+            <i class="ion-md-add"></i>
+          </button>
+        </div>
+
+        <div class="form-group mb-4 text-start">
+          <label class="fw-bold small text-muted text-uppercase mb-2">M&eacute;thode de paiement</label>
+          <div class="d-flex flex-column gap-2">
+            <div class="payment-option p-3 rounded-4 border d-flex align-items-center cursor-pointer"
+                 [class.active]="paymentMethod === paymentCash"
+                 (click)="paymentMethod = paymentCash">
+              <i class="ion-md-cash fs-4 me-3"></i>
+              <div class="fw-bold">Esp&egrave;ces au chauffeur</div>
+              <i class="ion-md-checkmark-circle ms-auto fs-4" *ngIf="paymentMethod === paymentCash"></i>
+            </div>
+            <div class="payment-option p-3 rounded-4 border d-flex align-items-center cursor-pointer"
+                 [class.active]="paymentMethod === paymentCard"
+                 (click)="paymentMethod = paymentCard">
+              <i class="ion-md-card fs-4 me-3"></i>
+              <div class="fw-bold">Carte bancaire / GoRide Pay</div>
+              <i class="ion-md-checkmark-circle ms-auto fs-4" *ngIf="paymentMethod === paymentCard"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="total-bar p-3 rounded-4 bg-primary text-white d-flex justify-content-between align-items-center">
+          <span class="fw-bold">TOTAL &Agrave; PAYER</span>
+          <span class="fs-3 fw-bold">{{ (selectedTrip?.pricePerSeat || 0) * bookingSeats }} DT</span>
+        </div>
+      </div>
+      <div class="modal-footer p-4 border-top">
+        <div class="d-flex gap-2 w-100">
+          <button class="btn btn-light flex-grow-1 py-3 rounded-4 fw-bold" (click)="closeBooking()">Annuler</button>
+          <button class="btn btn-primary flex-grow-1 py-3 rounded-4 fw-bold shadow" (click)="confirmBooking()">Confirmer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

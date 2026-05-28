@@ -1,0 +1,90 @@
+<div class="role-selection-wrapper">
+
+  <!-- Background decorative elements -->
+  <div class="bg-decoration">
+    <div class="bg-circle bg-circle-1"></div>
+    <div class="bg-circle bg-circle-2"></div>
+    <div class="bg-circle bg-circle-3"></div>
+  </div>
+
+  <div class="role-selection-container">
+
+    <!-- Header -->
+    <div class="rs-header">
+      <div class="rs-header-left">
+        <div class="goride-logo">
+          <svg viewBox="0 0 100 100" width="35" height="35" xmlns="http://www.w3.org/2000/svg">
+            <path d="M 65 15 A 35 35 0 0 0 15 50" stroke="#2563eb" stroke-width="12" fill="none"/>
+            <path d="M 18 68 A 35 35 0 0 0 50 85" stroke="#2563eb" stroke-width="12" fill="none"/>
+            <path fill-rule="evenodd" clip-rule="evenodd"
+              d="M 50 45 C 50 25, 80 25, 80 45 C 80 65, 65 95, 65 95 C 65 95, 50 65, 50 45 Z
+                 M 65 35 A 10 10 0 1 0 65 55 A 10 10 0 1 0 65 35 Z" fill="#2563eb"/>
+          </svg>
+          <span class="logo-text">GoRide</span>
+        </div>
+      </div>
+
+      <div class="rs-header-center">
+        <h1 class="rs-title">
+          Bienvenue, <span class="user-name">{{ formattedFirstName }}</span>
+        </h1>
+        <p class="rs-subtitle">
+          Choisissez l’espace que vous souhaitez utiliser aujourd’hui.
+        </p>
+      </div>
+
+      <div class="rs-header-right">
+        <button class="logout-btn" (click)="logout()">
+          <span class="ion-ios-log-out"></span>
+          Déconnexion
+        </button>
+      </div>
+    </div>
+
+    <!-- Séparateur -->
+    <div class="rs-divider">
+      <span>Choisissez votre espace GoRide</span>
+    </div>
+
+    <!-- Role Cards Grid -->
+    <div class="roles-grid" [class.single-role]="availableRoles.length === 1"
+         [class.two-roles]="availableRoles.length === 2"
+         [class.many-roles]="availableRoles.length >= 3">
+
+      <div class="role-card"
+           *ngFor="let card of availableRoles; let i = index"
+           (click)="selectRole(card)"
+           [style.animation-delay]="(i * 0.1) + 's'"
+           [style.--card-color]="'#2563eb'">
+
+        <!-- Card top gradient bar -->
+        <div class="card-accent" [style.background]="card.gradient"></div>
+
+        <!-- Card content -->
+        <div class="card-body">
+          <div class="card-icon-wrapper" [style.background]="card.imageUrl ? 'none' : card.gradient">
+            <img *ngIf="card.imageUrl" [src]="card.imageUrl" class="card-role-image" alt="Role">
+            <span *ngIf="!card.imageUrl" class="card-emoji">{{ card.emoji }}</span>
+          </div>
+
+          <div class="card-info">
+            <h3 class="card-title">{{ card.label }}</h3>
+            <p class="card-desc">{{ card.description }}</p>
+          </div>
+
+          <div class="card-action">
+            <span>Accéder à mon espace</span>
+            <span class="ion-ios-arrow-forward arrow-icon"></span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Footer hint -->
+    <p class="rs-footer-hint">
+      Vous pourrez changer d'espace à tout moment depuis la barre de navigation.
+    </p>
+
+  </div>
+</div>

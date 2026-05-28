@@ -1,0 +1,42 @@
+# =============================================================================
+# GoRide — local secrets (COPY this file, do not commit the copy)
+# =============================================================================
+#   cp application-local.properties.example application-local.properties
+#   Then fill YOUR keys. File application-local.properties is in .gitignore.
+# =============================================================================
+
+# --- Resend (welcome + password reset + notifications) ---
+# 1) Create key: https://resend.com/api-keys
+# 2) Without a verified domain, use sandbox + redirect (below)
+goride.mail.enabled=true
+goride.mail.provider=resend
+resend.api-key=re_YOUR_KEY_HERE
+resend.from=GoRide <onboarding@resend.dev>
+# Mode test (no domain): all emails go to YOUR inbox (must match your Resend login email)
+goride.mail.dev-redirect-all=true
+goride.mail.dev-redirect-to=your.email@gmail.com
+
+# Collaborator: replace resend.api-key + dev-redirect-to with her key and her Resend account email.
+
+# Production (verified domain at https://resend.com/domains):
+# resend.from=GoRide <noreply@yourdomain.com>
+# goride.mail.dev-redirect-all=false
+# goride.mail.dev-redirect-to=
+
+# Or Gmail SMTP (any recipient):
+# goride.mail.provider=smtp
+# spring.mail.username=you@gmail.com
+# spring.mail.password=your_16_char_app_password
+
+goride.dev.expose-reset-link=false
+
+# App URL in emails (change if frontend not on 4200)
+app.base-url=http://localhost:4200
+
+# --- Google Gemini (chatbot only, optional) ---
+goride.ai.provider=gemini
+goride.ai.gemini-api-key=YOUR_GEMINI_KEY
+
+# --- MySQL (if not using profile h2) ---
+spring.datasource.username=root
+spring.datasource.password=

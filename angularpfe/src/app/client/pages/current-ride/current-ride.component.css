@@ -1,0 +1,91 @@
+.current-ride-page { padding: 20px; max-width: 1200px; margin: 0 auto; }
+
+.radar-animation { position: relative; width: 150px; height: 150px; margin: 0 auto; }
+.circle {
+  position: absolute; width: 100%; height: 100%; border: 3px solid #2563eb;
+  border-radius: 50%; animation: radar 2s infinite linear; opacity: 0;
+}
+.circle.delay-1 { animation-delay: 0.6s; }
+.circle.delay-2 { animation-delay: 1.2s; }
+.car-icon {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  font-size: 3rem; background: white; z-index: 10; padding: 10px; border-radius: 50%;
+}
+@keyframes radar {
+  0% { transform: scale(0.2); opacity: 0.8; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+.map-sim-container { position: relative; background: #f1f5f9; }
+.map-overlay { position: absolute; top: 0; left: 0; right: 0; z-index: 500; pointer-events: none; }
+.map-overlay .badge { pointer-events: auto; }
+.ride-leaflet-map { height: 380px; width: 100%; z-index: 1; }
+.map-footer { background: #f8fafc; border-top: 1px solid #e2e8f0; }
+
+.trip-stats .stat-chip {
+  background: white; border: 1px solid #e2e8f0; border-radius: 12px;
+  padding: 12px; text-align: center; height: 100%;
+}
+.trip-stats .stat-chip .label { display: block; font-size: 0.7rem; color: #94a3b8; font-weight: 600; text-transform: uppercase; }
+.trip-stats .stat-chip .value { display: block; font-size: 1.1rem; font-weight: 800; color: #1e293b; }
+.trip-stats .stat-chip.highlight { background: #eff6ff; border-color: #93c5fd; }
+.trip-stats .stat-chip.highlight .value { color: #2563eb; }
+
+.route-timeline { position: relative; padding-left: 30px; }
+.route-timeline::before {
+  content: ''; position: absolute; left: 7px; top: 10px; bottom: 10px;
+  width: 2px; background: #e2e8f0; border-radius: 2px;
+}
+.timeline-item { position: relative; margin-bottom: 25px; }
+.timeline-item:last-child { margin-bottom: 0; }
+.timeline-icon {
+  position: absolute; left: -30px; width: 16px; height: 16px;
+  border-radius: 50%; border: 3px solid white; z-index: 2;
+}
+.timeline-icon.start { background: #10b981; top: 4px; }
+.timeline-icon.end { background: #ef4444; bottom: 4px; }
+.timeline-content .label { display: block; font-size: 0.75rem; color: #94a3b8; font-weight: 600; }
+.timeline-content .val { font-size: 1rem; font-weight: 700; color: #1e293b; }
+
+.driver-avatar-large {
+  width: 80px; height: 80px; background: #2563eb; color: white; border-radius: 24px;
+  display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 800;
+}
+.driver-avatar-medium {
+  width: 60px; height: 60px; background: #2563eb; color: white; border-radius: 18px;
+  display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 800;
+}
+.icon-circle { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+.driver-contact-actions {
+  gap: 1.25rem;
+}
+
+.modal-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px;
+}
+.modal-card { background: white; border-radius: 32px; width: 100%; max-width: 400px; box-shadow: 0 30px 60px rgba(0,0,0,0.2); }
+
+:host ::ng-deep .marker-pin {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  border: 3px solid white;
+}
+:host ::ng-deep .marker-pin.pickup-route { background: #64748b; }
+:host ::ng-deep .marker-pin.me-live {
+  background: #10b981;
+  animation: pulse-me 2s ease-in-out infinite;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.35);
+}
+:host ::ng-deep .marker-pin.driver { background: #2563eb; animation: pulse-driver 1.5s infinite; }
+:host ::ng-deep .marker-pin.dropoff { background: #ef4444; }
+@keyframes pulse-me {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.35); }
+  50% { box-shadow: 0 0 0 12px rgba(16, 185, 129, 0.1); }
+}
+@keyframes pulse-driver {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.5); }
+  50% { box-shadow: 0 0 0 12px rgba(37, 99, 235, 0); }
+}

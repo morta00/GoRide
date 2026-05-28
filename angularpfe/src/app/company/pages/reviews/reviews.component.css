@@ -1,0 +1,167 @@
+.company-reviews {
+  min-height: 100vh;
+  background-color: #f8fafc;
+}
+
+/* Stats Cards */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+.stat-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 1.25rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.stat-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.stat-info .label {
+  display: block;
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-bottom: 0.1rem;
+}
+
+.stat-info .value {
+  margin: 0;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+/* Review Cards (Pending) */
+.review-card {
+  transition: all 0.3s ease;
+}
+
+.review-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+}
+
+.service-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.detail-item i {
+  color: #3b82f6;
+  width: 16px;
+}
+
+/* Badge Targets */
+.target-badge {
+  color: #64748b;
+}
+
+/* List Group */
+.list-group-item {
+  background-color: transparent;
+  transition: background-color 0.2s;
+}
+
+.list-group-item:hover {
+  background-color: #f8fafc;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+}
+
+.modal-card-premium {
+  background: white;
+  width: 100%;
+  max-width: 550px;
+  border-radius: 2rem;
+  overflow-y: auto;
+  max-height: 90vh;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.btn-close-custom {
+  background: #f1f5f9;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: #64748b;
+  transition: all 0.2s;
+}
+
+.btn-close-custom:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+/* Star Rating */
+.clickable {
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.clickable:hover {
+  transform: scale(1.1);
+}
+
+/* Colors */
+.bg-soft-warning { background-color: #fffbeb; }
+.bg-soft-success { background-color: #f0fdf4; }
+.bg-soft-primary { background-color: #eff6ff; }
+.bg-soft-info { background-color: #ecfeff; }
+
+.bg-primary-light { background-color: #eff6ff; }
+.bg-success-light { background-color: #f0fdf4; }
+
+.text-warning { color: #f59e0b; }
+.text-success { color: #22c55e; }
+.text-primary { color: #3b82f6; }
+.text-info { color: #06b6d4; }
+
+/* Switch Toggle Styling */
+.form-check-input:checked {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+}
+
+/* Animations */
+.animate__animated {
+  animation-duration: 0.5s;
+}

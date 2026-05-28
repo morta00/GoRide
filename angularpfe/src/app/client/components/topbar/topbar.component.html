@@ -1,0 +1,135 @@
+<header class="topbar">
+  <div class="topbar-left">
+    <h1 class="page-title">{{ pageTitle }}</h1>
+  </div>
+
+  <div class="topbar-right">
+    <div class="search-box d-none d-md-flex" style="position: relative;">
+      <span class="ion-ios-search icon"></span>
+      <input
+        type="text"
+        [placeholder]="'CLIENT.TOPBAR.SEARCH' | translate"
+        [(ngModel)]="searchQuery"
+        (input)="onSearchInput()"
+        (keydown.enter)="onSearchSubmit()"
+        (blur)="closeSearchDropdown()">
+
+      <div *ngIf="showSearchDropdown" class="search-dropdown-menu" (mousedown)="$event.preventDefault()">
+        <div *ngIf="isSearching" class="search-dropdown-loading">{{ 'CLIENT.TOPBAR.SEARCH_LOADING' | translate }}</div>
+        <div *ngIf="!isSearching && !hasSearchResults()" class="search-dropdown-empty">{{ 'CLIENT.TOPBAR.SEARCH_EMPTY' | translate }}</div>
+
+        <div *ngIf="!isSearching && hasSearchResults()" class="search-dropdown-results">
+          <div *ngIf="searchResults?.rentals?.length && isTenantMode" class="search-results-section">
+            <div class="section-title"><span class="ion-ios-car"></span> {{ 'CLIENT.TOPBAR.SEARCH_RENTALS' | translate }}</div>
+            <div *ngFor="let r of searchResults!.rentals" class="search-item" (mousedown)="openRental(r)">
+              <span class="item-name">{{ r.label }}</span>
+              <span class="item-meta">{{ r.meta }}</span>
+            </div>
+          </div>
+          <div *ngIf="searchResults?.trips?.length && !isTenantMode" class="search-results-section">
+            <div class="section-title"><span class="ion-ios-navigate"></span> {{ 'CLIENT.TOPBAR.SEARCH_TRIPS' | translate }}</div>
+            <div *ngFor="let t of searchResults!.trips" class="search-item" (mousedown)="openTrip(t)">
+              <span class="item-name">{{ t.label }}</span>
+              <span class="item-meta">{{ t.meta }}</span>
+            </div>
+          </div>
+          <div *ngIf="searchResults?.conversations?.length" class="search-results-section">
+            <div class="section-title"><span class="ion-ios-chatbubbles"></span> {{ 'CLIENT.TOPBAR.SEARCH_MESSAGES' | translate }}</div>
+            <div *ngFor="let c of searchResults!.conversations" class="search-item" (mousedown)="openConversation(c)">
+              <span class="item-name">{{ c.label }}</span>
+              <span class="item-meta">{{ c.meta }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notification-container position-relative">
+      <button class="icon-btn" (click)="toggleNotifications()">
+        <span class="ion-ios-notifications-outline"></span>
+        <span class="notification-badge" *ngIf="unreadCount > 0" style="position: absolute; top: 0; right: 0; background: #ef4444; color: white; font-size: 0.65rem; font-weight: bold; padding: 2px 5px; border-radius: 10px; border: 2px solid white; transform: translate(25%, -25%); line-height: 1;">{{ unreadCount }}</span>
+      </button>
+
+      <div class="dropdown-menu-custom shadow-lg" *ngIf="isNotificationDropdownOpen" style="width: 350px; right: -10px; left: auto; padding: 0; overflow: hidden; top: calc(100% + 10px);">
+        <div class="dropdown-header px-3 py-3 border-bottom d-flex justify-content-between align-items-center bg-white">
+           <span class="text-dark fw-bold m-0" style="font-size: 1rem;">{{ 'CLIENT.TOPBAR.NOTIFICATIONS' | translate }}</span>
+           <button class="btn btn-link text-primary p-0 m-0 small text-decoration-none fw-bold" style="font-size: 0.8rem;" (click)="markAllAsRead()" *ngIf="unreadCount > 0">{{ 'CLIENT.TOPBAR.MARK_ALL_READ' | translate }}</button>
+        </div>
+        
+        <div class="notification-list p-0 bg-white" style="max-height: 350px; overflow-y: auto;">
+          <div *ngIf="recentNotifications.length === 0" class="p-4 text-center text-muted small">
+            {{ 'CLIENT.TOPBAR.NO_NOTIFICATIONS' | translate }}
+          </div>
+          
+          <div *ngFor="let notif of recentNotifications"
+               class="notif-item d-flex gap-3 align-items-start p-3 border-bottom"
+               style="cursor: pointer; transition: background-color 0.2s;"
+               (click)="onNotificationClick(notif, $event)"
+               [style.background-color]="notif.isRead ? 'transparent' : '#f0f9ff'">
+            <div class="notif-icon-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; border-radius: 50%; background-color: rgba(0,0,0,0.05);" [ngClass]="'bg-soft-' + notif.color">
+              <span [class]="notif.icon" [ngClass]="'text-' + notif.color" style="font-size: 1.2rem;"></span>
+            </div>
+            <div class="notif-content flex-grow-1">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="notif-label small fw-bold" [class.text-dark]="!notif.isRead" [class.text-muted]="notif.isRead">{{ notif.label }}</span>
+                <span class="notif-time text-muted" style="font-size: 0.7rem; white-space: nowrap;">{{ notif.time }}</span>
+              </div>
+              <p class="notif-description mb-0 text-muted" style="font-size: 0.8rem; line-height: 1.4;">{{ notif.description }}</p>
+            </div>
+            <div class="notif-dot flex-shrink-0" *ngIf="!notif.isRead" style="width:8px; height:8px; background-color:#3b82f6; border-radius:50%; margin-top:6px;"></div>
+          </div>
+        </div>
+        
+        <div class="dropdown-footer px-3 py-2 text-center border-top bg-light" style="cursor: pointer;" routerLink="/client/notifications">
+          <span class="text-primary small fw-bold text-decoration-none">{{ 'CLIENT.TOPBAR.VIEW_ALL_NOTIFICATIONS' | translate }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="user-profile-container">
+      <div class="user-profile" (click)="toggleDropdown()">
+        <div class="avatar-wrapper position-relative">
+          <app-profile-avatar [firstName]="currentUser?.firstName" [lastName]="currentUser?.lastName" [photoUrl]="currentUser?.photoUrl" [size]="40" [showStatus]="true"></app-profile-avatar>
+          <div class="status-online" style="position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; background-color: #10b981; border-radius: 50%; border: 2px solid white; z-index: 10;"></div>
+        </div>
+        <div class="user-info d-none d-md-block">
+          <span class="user-name">{{ currentUserFullName }}</span>
+          <span class="user-role">{{ 'CLIENT.TOPBAR.PREMIUM' | translate }}</span>
+        </div>
+        <span class="ion-ios-arrow-down arrow-icon"></span>
+      </div>
+
+      <div class="dropdown-menu-custom shadow-lg" *ngIf="isUserDropdownOpen">
+        <div class="dropdown-header px-3 py-2 border-bottom">
+           <span class="text-muted small fw-bold">{{ 'CLIENT.TOPBAR.SWITCH_SPACE' | translate }}</span>
+        </div>
+        <div class="role-list p-1">
+          <button 
+            *ngFor="let role of availableRoles" 
+            class="dropdown-item role-item-custom d-flex align-items-center gap-2"
+            [class.active-role-item]="role.id === authService.getActiveRole()"
+            (click)="switchRole(role.id, role.route)"
+          >
+            <span [class]="role.icon" [style.color]="role.color"></span>
+            <span>{{ role.labelKey ? (role.labelKey | translate) : role.label }}</span>
+            <span class="ms-auto ion-ios-checkmark-circle text-primary" *ngIf="role.id === authService.getActiveRole()"></span>
+          </button>
+        </div>
+        <div class="dropdown-divider"></div>
+        <a class="dropdown-item" (click)="goToHome($event)" style="cursor: pointer;">
+          <span class="ion-ios-home-outline"></span> {{ 'CLIENT.TOPBAR.HOME' | translate }}
+        </a>
+        <a class="dropdown-item" (click)="goToProfile($event)" style="cursor: pointer;">
+          <span class="ion-ios-person-outline"></span> {{ 'CLIENT.MENU.PROFILE' | translate }}
+        </a>
+        <a class="dropdown-item" (click)="goToSettings($event)" style="cursor: pointer;">
+          <span class="ion-ios-settings-outline"></span> {{ 'CLIENT.MENU.SETTINGS' | translate }}
+        </a>
+        <div class="dropdown-divider"></div>
+        <a class="dropdown-item text-danger" (click)="authService.logout()">
+          <span class="ion-ios-log-out text-danger"></span> {{ 'CLIENT.TOPBAR.LOGOUT' | translate }}
+        </a>
+      </div>
+    </div>
+  </div>
+</header>

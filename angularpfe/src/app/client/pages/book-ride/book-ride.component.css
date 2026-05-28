@@ -1,0 +1,286 @@
+/* Explorer les trajets (available rides) */
+.available-rides-page { padding: 30px; background-color: #f8fafc; min-height: 100vh; }
+.driver-avatar { width: 45px; height: 45px; background: linear-gradient(135deg, #2563eb, #3b82f6); font-size: 1.2rem; }
+.driver-avatar.large { width: 70px; height: 70px; font-size: 2rem; }
+.bg-primary-soft { background-color: #eff6ff; }
+.bg-warning-soft { background-color: #fffbeb; }
+.price-tag { font-size: 1.1rem; }
+.route-display { position: relative; padding-left: 20px; }
+.route-step { position: relative; z-index: 2; padding-left: 15px; }
+.dot-start { position: absolute; left: -2px; top: 8px; width: 12px; height: 12px; background: #10b981; border: 3px solid #fff; border-radius: 50%; box-shadow: 0 0 0 4px rgba(16,185,129,0.1); }
+.dot-end { position: absolute; left: -2px; top: 8px; width: 12px; height: 12px; background: #ef4444; border: 3px solid #fff; border-radius: 50%; box-shadow: 0 0 0 4px rgba(239,68,68,0.1); }
+.route-line { position: absolute; left: 3px; top: 20px; bottom: 20px; width: 2px; background: #e2e8f0; }
+.meta-pill { background: #fff; border: 1px solid #e2e8f0; padding: 6px 12px; border-radius: 50px; font-size: 0.8rem; font-weight: 600; color: #475569; display: flex; align-items: center; gap: 6px; }
+.meta-pill i { color: #2563eb; }
+.italic { font-style: italic; }
+.trip-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid #f1f5f9 !important; }
+.trip-card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important; }
+.search-box { position: relative; }
+.search-box i { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 1.3rem; }
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 16px; }
+.modal-card { background: #fff; border-radius: 24px; width: 100%; max-width: 520px; box-shadow: 0 24px 48px rgba(0,0,0,0.2); overflow: hidden; max-height: 88vh; display: flex; flex-direction: column; }
+.modal-card.mini { max-width: 400px; }
+
+/* Détails du trajet — modal plus compact */
+.modal-card.trip-details-modal {
+  max-width: 420px;
+  border-radius: 20px;
+}
+.modal-card.trip-details-modal .modal-details-header {
+  padding: 0.75rem 1rem;
+  flex-shrink: 0;
+}
+.modal-card.trip-details-modal .modal-title {
+  font-size: 1.05rem;
+}
+.modal-card.trip-details-modal .modal-body-compact {
+  padding: 0.75rem 1rem;
+  overflow-y: auto;
+}
+.modal-card.trip-details-modal .modal-footer-compact {
+  padding: 0.75rem 1rem;
+  flex-shrink: 0;
+}
+.modal-card.trip-details-modal .driver-avatar.large {
+  width: 48px;
+  height: 48px;
+  font-size: 1.15rem;
+}
+.modal-card.trip-details-modal .trip-city {
+  font-size: 1rem;
+  line-height: 1.25;
+}
+.modal-card.trip-details-modal .trip-address {
+  font-size: 0.8rem;
+  line-height: 1.3;
+}
+.modal-card.trip-details-modal .trip-price {
+  font-size: 1.1rem;
+}
+.modal-card.trip-details-modal .options-grid-compact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.modal-card.trip-details-modal .btn-close-sm {
+  width: 32px;
+  height: 32px;
+  font-size: 1.1rem;
+}
+.modal-card.trip-details-modal .btn-reserve {
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+}
+.modal-card.trip-details-modal .alert {
+  border-radius: 10px;
+}
+
+.btn-close-circle { width: 40px; height: 40px; border-radius: 50%; border: none; background: #f1f5f9; color: #475569; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+.btn-close-circle:hover { background: #e2e8f0; color: #000; }
+.option-pill { padding: 8px 14px; border-radius: 12px; background: #f1f5f9; color: #94a3b8; font-weight: 700; font-size: 0.75rem; display: flex; align-items: center; gap: 6px; }
+.option-pill.active { background: #dcfce7; color: #166534; }
+.btn-circle-action { width: 50px; height: 50px; border-radius: 50%; border: 2px solid #e2e8f0; background: #fff; color: #2563eb; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+.btn-circle-action:hover:not(:disabled) { border-color: #2563eb; background: #2563eb; color: #fff; }
+.btn-circle-action:disabled { opacity: 0.5; cursor: not-allowed; }
+.payment-option { cursor: pointer; border: 2px solid #f1f5f9; transition: 0.2s; }
+.payment-option:hover { border-color: #2563eb; }
+.payment-option.active { border-color: #2563eb; background-color: #eff6ff; }
+.payment-option.active i.ion-md-checkmark-circle { color: #2563eb; }
+.icon-circle { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+
+/* --- BOOKING PAGE LAYOUT --- */
+.book-ride {
+  position: relative;
+  min-height: calc(100vh - 100px);
+  margin: -20px; /* Offset parent padding if any */
+}
+
+/* --- MAP BACKGROUND --- */
+.map-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.map-bg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.9);
+}
+
+/* --- FLOATING BOOKING PANEL --- */
+.booking-panel-glass {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 420px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  margin: 20px;
+}
+
+/* --- INPUTS --- */
+.location-inputs-v2 {
+  position: relative;
+  padding-left: 20px;
+}
+
+.input-line {
+  position: absolute;
+  left: 7px;
+  top: 30px;
+  bottom: 30px;
+  width: 2px;
+  background: repeating-linear-gradient(to bottom, #e2e8f0 0, #e2e8f0 4px, transparent 4px, transparent 8px);
+}
+
+.input-box-premium {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 15px;
+  border: 1px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.3s ease;
+}
+
+.input-box-premium:focus-within {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+.input-box-premium input {
+  border: none;
+  background: transparent;
+  width: 100%;
+  font-weight: 600;
+  color: #1e293b;
+  outline: none;
+}
+
+/* --- RIDE OPTIONS --- */
+.ride-item-v2 {
+  cursor: pointer;
+  padding: 16px;
+  border: 2px solid transparent;
+  border-radius: 18px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 12px;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+}
+
+.ride-item-v2:hover {
+  transform: translateX(5px);
+  background: #f8fafc;
+}
+
+.ride-item-v2.active {
+  border-color: #2563eb;
+  background: #eff6ff;
+  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.1);
+}
+
+.ride-icon-v2 {
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: #ffffff;
+}
+
+.bg-economy { background: linear-gradient(135deg, #60a5fa, #2563eb); }
+.bg-comfort { background: linear-gradient(135deg, #a78bfa, #7c3aed); }
+.bg-luxury { background: linear-gradient(135deg, #475569, #1e293b); }
+
+.ride-details-v2 { flex: 1; }
+.ride-name-v2 { display: block; font-weight: 800; color: #1e293b; }
+.ride-meta-v2 { font-size: 12px; color: #64748b; }
+.ride-price-v2 { font-weight: 900; font-size: 1.1rem; color: #1e293b; }
+
+/* --- SEARCHING STATE --- */
+.radar-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 100;
+  text-align: center;
+}
+
+.radar {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin: 0 auto 30px;
+}
+
+.radar-circle {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 2px solid rgba(37, 99, 235, 0.3);
+  border-radius: 50%;
+  animation: radar-pulse 2s infinite ease-out;
+}
+
+.radar-circle:nth-child(2) { animation-delay: 0.5s; }
+.radar-circle:nth-child(3) { animation-delay: 1s; }
+
+.radar-car {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #2563eb;
+  color: white;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  box-shadow: 0 0 30px rgba(37, 99, 235, 0.5);
+  z-index: 2;
+}
+
+@keyframes radar-pulse {
+  0% { transform: scale(0.5); opacity: 1; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+/* --- CONFIRMATION CARD --- */
+.driver-card-premium {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 25px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.driver-avatar-v2 {
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+  object-fit: cover;
+  border: 3px solid #f1f5f9;
+}

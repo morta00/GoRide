@@ -1,0 +1,442 @@
+<div class="settings-page animate__animated animate__fadeIn">
+  <div class="page-header mb-4">
+    <h2 class="page-title">Paramètres</h2>
+    <p class="page-subtitle text-muted">Configurez vos préférences de travail, notifications et confidentialité chauffeur.</p>
+  </div>
+
+  <div *ngIf="successMessage" class="alert alert-success animate__animated animate__fadeInDown shadow-sm border-0 rounded-3 mb-4">
+    <span class="ion-md-checkmark-circle me-2"></span> {{ successMessage }}
+  </div>
+
+  <div class="row g-4">
+    <!-- Sidebar / Tabs -->
+    <div class="col-lg-3">
+      <div class="settings-nav card shadow-sm border-0 rounded-4">
+        <button class="nav-btn" [class.active]="activeTab === 'availability'" (click)="setTab('availability')">
+          <span class="ion-md-time nav-icon"></span> Disponibilité
+        </button>
+        <button class="nav-btn" [class.active]="activeTab === 'trips'" (click)="setTab('trips')">
+          <span class="ion-md-car nav-icon"></span> Préférences trajets
+        </button>
+        <button class="nav-btn" [class.active]="activeTab === 'requests'" (click)="setTab('requests')">
+          <span class="ion-md-list-box nav-icon"></span> Demandes
+        </button>
+        <button class="nav-btn" [class.active]="activeTab === 'notifications'" (click)="setTab('notifications')">
+          <span class="ion-md-notifications nav-icon"></span> Notifications
+        </button>
+        <button class="nav-btn" [class.active]="activeTab === 'privacy'" (click)="setTab('privacy')">
+          <span class="ion-md-lock nav-icon"></span> Confidentialité
+        </button>
+        <button class="nav-btn" [class.active]="activeTab === 'app'" (click)="setTab('app')">
+          <span class="ion-md-settings nav-icon"></span> Application
+        </button>
+      </div>
+    </div>
+
+    <!-- Content Area -->
+    <div class="col-lg-9">
+      <div class="settings-content card shadow-sm border-0 rounded-4 p-4">
+        
+        <!-- Availability Tab -->
+        <div *ngIf="activeTab === 'availability'" class="animate__animated animate__fadeIn">
+          <h4 class="section-title mb-4">Paramètres de disponibilité</h4>
+          
+          <div class="form-check form-switch custom-switch mb-4 pb-4 border-bottom">
+            <input class="form-check-input" type="checkbox" id="autoOnline" [(ngModel)]="settings.availability.autoOnline">
+            <label class="form-check-label ms-2" for="autoOnline">
+              <span class="fw-bold d-block text-dark">Mise en ligne automatique</span>
+              <span class="small text-muted">Passer automatiquement en ligne à l'heure de début définie.</span>
+            </label>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-bold mb-3">Jours de travail</label>
+            <div class="d-flex flex-wrap gap-2">
+              <button *ngFor="let dayObj of settings.availability.workingDays" 
+                      class="day-btn" 
+                      [class.active]="dayObj.active"
+                      (click)="dayObj.active = !dayObj.active">
+                {{ dayObj.day.substring(0, 3) }}
+              </button>
+            </div>
+          </div>
+
+          <div class="row g-3 mb-4 pb-4 border-bottom">
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Heure de début</label>
+              <input type="time" class="form-control rounded-3 bg-light border-0" [(ngModel)]="settings.availability.startTime">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Heure de fin</label>
+              <input type="time" class="form-control rounded-3 bg-light border-0" [(ngModel)]="settings.availability.endTime">
+            </div>
+          </div>
+
+          <div class="form-check form-switch custom-switch mb-4 pb-4 border-bottom">
+            <input class="form-check-input" type="checkbox" id="autoBreak" [(ngModel)]="settings.availability.autoBreak">
+            <label class="form-check-label ms-2" for="autoBreak">
+              <span class="fw-bold d-block text-dark">Pause automatique</span>
+              <span class="small text-muted">Se mettre hors ligne temporairement après 4h de conduite.</span>
+            </label>
+          </div>
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Zone principale</label>
+              <select class="form-select rounded-3 bg-light border-0" [(ngModel)]="settings.availability.mainZone">
+                <option value="Tunis">Tunis</option>
+                <option value="Sousse">Sousse</option>
+                <option value="Sfax">Sfax</option>
+                <option value="Hammamet">Hammamet</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Rayon de travail (km)</label>
+              <input type="number" class="form-control rounded-3 bg-light border-0" [(ngModel)]="settings.availability.workRadius" min="1" max="100">
+            </div>
+          </div>
+
+          <div class="text-end mt-4">
+            <button class="btn btn-primary rounded-pill px-4" (click)="saveAvailability()">Enregistrer disponibilité</button>
+          </div>
+        </div>
+
+        <!-- Trip Preferences Tab -->
+        <div *ngIf="activeTab === 'trips'" class="animate__animated animate__fadeIn">
+          <h4 class="section-title mb-4">Préférences de trajets</h4>
+          
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="fw-bold d-block">Accepter les trajets partagés (covoiturage)</span>
+              <span class="small text-muted">Augmente vos revenus en prenant plusieurs passagers.</span>
+            </div>
+            <div class="form-check form-switch custom-switch">
+              <input class="form-check-input" type="checkbox" [(ngModel)]="settings.tripPreferences.sharedTrips">
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="fw-bold d-block">Accepter les missions d'entreprises</span>
+              <span class="small text-muted">Trajets VIP et locations avec chauffeur pour les pros.</span>
+            </div>
+            <div class="form-check form-switch custom-switch">
+              <input class="form-check-input" type="checkbox" [(ngModel)]="settings.tripPreferences.companyMissions">
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="fw-bold d-block">Accepter les longues distances</span>
+              <span class="small text-muted">Trajets interurbains de plus de 50km.</span>
+            </div>
+            <div class="form-check form-switch custom-switch">
+              <input class="form-check-input" type="checkbox" [(ngModel)]="settings.tripPreferences.longDistance">
+            </div>
+          </div>
+
+          <div class="row g-3 mt-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Distance minimale (km)</label>
+              <input type="number" class="form-control rounded-3 bg-light border-0" [(ngModel)]="settings.tripPreferences.minDistance" min="1">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Distance maximale (km)</label>
+              <input type="number" class="form-control rounded-3 bg-light border-0" [(ngModel)]="settings.tripPreferences.maxDistance" min="1">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Prix minimum par trajet (DT)</label>
+              <input type="number" class="form-control rounded-3 bg-light border-0" [(ngModel)]="settings.tripPreferences.minPrice" min="0">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Nombre max de passagers</label>
+              <select class="form-select rounded-3 bg-light border-0" [(ngModel)]="settings.tripPreferences.maxPassengers">
+                <option [value]="1">1</option>
+                <option [value]="2">2</option>
+                <option [value]="3">3</option>
+                <option [value]="4">4</option>
+                <option [value]="5">5+</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="text-end mt-4">
+            <button class="btn btn-primary rounded-pill px-4" (click)="saveTripPreferences()">Enregistrer préférences</button>
+          </div>
+        </div>
+
+        <!-- Requests Settings Tab -->
+        <div *ngIf="activeTab === 'requests'" class="animate__animated animate__fadeIn">
+          <h4 class="section-title mb-4">Paramètres des demandes</h4>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="fw-bold d-block">Acceptation automatique</span>
+              <span class="small text-muted">Accepter automatiquement les demandes correspondant à vos critères.</span>
+            </div>
+            <div class="form-check form-switch custom-switch">
+              <input class="form-check-input" type="checkbox" [(ngModel)]="settings.requestSettings.autoAccept">
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="fw-bold d-block">Refuser les demandes hors zone</span>
+              <span class="small text-muted">Ignorer les demandes en dehors de votre rayon de travail.</span>
+            </div>
+            <div class="form-check form-switch custom-switch">
+              <input class="form-check-input" type="checkbox" [(ngModel)]="settings.requestSettings.rejectOutOfZone">
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="fw-bold d-block">Autoriser les demandes immédiates</span>
+              <span class="small text-muted">Recevoir des requêtes pour des départs "maintenant".</span>
+            </div>
+            <div class="form-check form-switch custom-switch">
+              <input class="form-check-input" type="checkbox" [(ngModel)]="settings.requestSettings.immediateRequests">
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="fw-bold d-block">Autoriser les demandes planifiées</span>
+              <span class="small text-muted">Recevoir des requêtes pour des départs ultérieurs.</span>
+            </div>
+            <div class="form-check form-switch custom-switch">
+              <input class="form-check-input" type="checkbox" [(ngModel)]="settings.requestSettings.scheduledRequests">
+            </div>
+          </div>
+
+          <div class="row g-3 mt-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Note minimale passager</label>
+              <select class="form-select rounded-3 bg-light border-0" [(ngModel)]="settings.requestSettings.minPassengerRating">
+                <option [value]="0">Aucune limite</option>
+                <option [value]="3">3.0 et +</option>
+                <option [value]="4">4.0 et +</option>
+                <option [value]="4.5">4.5 et +</option>
+                <option [value]="4.8">4.8 et +</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Attente max client (min)</label>
+              <input type="number" class="form-control rounded-3 bg-light border-0" [(ngModel)]="settings.requestSettings.maxWaitingTime" min="1" max="30">
+            </div>
+          </div>
+
+          <div class="text-end mt-4">
+            <button class="btn btn-primary rounded-pill px-4" (click)="saveRequestSettings()">Enregistrer paramètres</button>
+          </div>
+        </div>
+
+        <!-- Notifications Tab -->
+        <div *ngIf="activeTab === 'notifications'" class="animate__animated animate__fadeIn">
+          <h4 class="section-title mb-4">Notifications</h4>
+
+          <div class="row g-4 mb-4">
+            <div class="col-md-8">
+              <h6 class="fw-bold text-muted mb-3 text-uppercase small">Événements</h6>
+              
+              <div class="form-check form-switch custom-switch mb-3">
+                <input class="form-check-input" type="checkbox" id="notifReq" [(ngModel)]="settings.notifications.newRequest">
+                <label class="form-check-label ms-2 fw-bold text-dark" for="notifReq">Nouvelle demande reçue</label>
+              </div>
+              <div class="form-check form-switch custom-switch mb-3">
+                <input class="form-check-input" type="checkbox" id="notifMsg" [(ngModel)]="settings.notifications.newMessage">
+                <label class="form-check-label ms-2 fw-bold text-dark" for="notifMsg">Nouveau message</label>
+              </div>
+              <div class="form-check form-switch custom-switch mb-3">
+                <input class="form-check-input" type="checkbox" id="notifPay" [(ngModel)]="settings.notifications.paymentReceived">
+                <label class="form-check-label ms-2 fw-bold text-dark" for="notifPay">Paiement reçu</label>
+              </div>
+              <div class="form-check form-switch custom-switch mb-3">
+                <input class="form-check-input" type="checkbox" id="notifWith" [(ngModel)]="settings.notifications.withdrawalStatus">
+                <label class="form-check-label ms-2 fw-bold text-dark" for="notifWith">Statut de retrait</label>
+              </div>
+              <div class="form-check form-switch custom-switch mb-3">
+                <input class="form-check-input" type="checkbox" id="notifRev" [(ngModel)]="settings.notifications.reviewReceived">
+                <label class="form-check-label ms-2 fw-bold text-dark" for="notifRev">Nouvel avis client</label>
+              </div>
+              <div class="form-check form-switch custom-switch mb-3">
+                <input class="form-check-input" type="checkbox" id="notifOff" [(ngModel)]="settings.notifications.companyOffer">
+                <label class="form-check-label ms-2 fw-bold text-dark" for="notifOff">Offre d'entreprise</label>
+              </div>
+              <div class="form-check form-switch custom-switch mb-3">
+                <input class="form-check-input" type="checkbox" id="notifDoc" [(ngModel)]="settings.notifications.documentStatus">
+                <label class="form-check-label ms-2 fw-bold text-dark" for="notifDoc">Validation de document</label>
+              </div>
+              <div class="form-check form-switch custom-switch mb-3">
+                <input class="form-check-input" type="checkbox" id="notifRem" [(ngModel)]="settings.notifications.availabilityReminder">
+                <label class="form-check-label ms-2 fw-bold text-dark" for="notifRem">Rappel de disponibilité</label>
+              </div>
+            </div>
+            
+            <div class="col-md-4">
+              <h6 class="fw-bold text-muted mb-3 text-uppercase small">Canaux</h6>
+              <div class="card bg-light border-0 rounded-4 p-3">
+                <div class="form-check form-switch custom-switch mb-3">
+                  <input class="form-check-input" type="checkbox" id="chApp" [(ngModel)]="settings.notifications.app">
+                  <label class="form-check-label ms-2 text-dark" for="chApp">Application</label>
+                </div>
+                <div class="form-check form-switch custom-switch mb-3">
+                  <input class="form-check-input" type="checkbox" id="chEmail" [(ngModel)]="settings.notifications.email">
+                  <label class="form-check-label ms-2 text-dark" for="chEmail">Email</label>
+                </div>
+                <div class="form-check form-switch custom-switch">
+                  <input class="form-check-input" type="checkbox" id="chSms" [(ngModel)]="settings.notifications.sms">
+                  <label class="form-check-label ms-2 text-dark" for="chSms">SMS</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="text-end mt-4">
+            <button class="btn btn-primary rounded-pill px-4" (click)="saveNotifications()">Enregistrer notifications</button>
+          </div>
+        </div>
+
+        <!-- Privacy Tab -->
+        <div *ngIf="activeTab === 'privacy'" class="animate__animated animate__fadeIn">
+          <h4 class="section-title mb-4">Confidentialité</h4>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="fw-bold d-block">Afficher mon numéro aux passagers</span>
+              <span class="small text-muted">Permet aux clients de vous appeler directement.</span>
+            </div>
+            <div class="form-check form-switch custom-switch">
+              <input class="form-check-input" type="checkbox" [(ngModel)]="settings.privacy.showPhone">
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="fw-bold d-block">Afficher mon véhicule aux passagers</span>
+              <span class="small text-muted">Affiche les photos et informations de votre voiture.</span>
+            </div>
+            <div class="form-check form-switch custom-switch">
+              <input class="form-check-input" type="checkbox" [(ngModel)]="settings.privacy.showVehicle">
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="fw-bold d-block">Afficher ma note publiquement</span>
+              <span class="small text-muted">Affiche votre note globale sur votre profil public.</span>
+            </div>
+            <div class="form-check form-switch custom-switch">
+              <input class="form-check-input" type="checkbox" [(ngModel)]="settings.privacy.showRating">
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="fw-bold d-block">Autoriser les entreprises à me contacter</span>
+              <span class="small text-muted">Vous permet de recevoir des offres B2B.</span>
+            </div>
+            <div class="form-check form-switch custom-switch">
+              <input class="form-check-input" type="checkbox" [(ngModel)]="settings.privacy.allowCompanyContact">
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="fw-bold d-block">Utiliser mes données pour des recommandations</span>
+              <span class="small text-muted">Autorise GoRide à analyser vos trajets pour vous aider à gagner plus.</span>
+            </div>
+            <div class="form-check form-switch custom-switch">
+              <input class="form-check-input" type="checkbox" [(ngModel)]="settings.privacy.allowPerformanceData">
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="fw-bold d-block">Masquer mon profil lorsque je suis hors ligne</span>
+              <span class="small text-muted">Votre profil n'apparaîtra plus dans les recherches.</span>
+            </div>
+            <div class="form-check form-switch custom-switch">
+              <input class="form-check-input" type="checkbox" [(ngModel)]="settings.privacy.hideProfileOffline">
+            </div>
+          </div>
+
+          <div class="text-end mt-4">
+            <button class="btn btn-primary rounded-pill px-4" (click)="savePrivacy()">Enregistrer confidentialité</button>
+          </div>
+        </div>
+
+        <!-- App Tab -->
+        <div *ngIf="activeTab === 'app'" class="animate__animated animate__fadeIn">
+          <h4 class="section-title mb-4">Application</h4>
+
+          <div class="row g-4 mb-4 pb-4 border-bottom">
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Langue</label>
+              <select class="form-select rounded-3 bg-light border-0" [(ngModel)]="settings.app.language">
+                <option value="Français">Français</option>
+                <option value="Arabe">Arabe</option>
+                <option value="Anglais">Anglais</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Thème</label>
+              <select class="form-select rounded-3 bg-light border-0" [(ngModel)]="settings.app.theme">
+                <option value="Clair">Clair</option>
+                <option value="Sombre">Sombre</option>
+                <option value="Système">Système</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold">Format de l'heure</label>
+              <select class="form-select rounded-3 bg-light border-0" [(ngModel)]="settings.app.timeFormat">
+                <option value="24h">24 Heures</option>
+                <option value="12h">12 Heures (AM/PM)</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold">Unité de distance</label>
+              <select class="form-select rounded-3 bg-light border-0" [(ngModel)]="settings.app.distanceUnit">
+                <option value="km">Kilomètres (km)</option>
+                <option value="mi">Miles (mi)</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold">Devise</label>
+              <select class="form-select rounded-3 bg-light border-0" [(ngModel)]="settings.app.currency">
+                <option value="DT">Dinar Tunisien (DT)</option>
+                <option value="EUR">Euro (€)</option>
+                <option value="USD">Dollar ($)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mt-4">
+            <button class="btn btn-outline-danger rounded-pill px-4" (click)="openResetModal()">
+              <span class="ion-md-refresh me-2"></span> Réinitialiser
+            </button>
+            <button class="btn btn-primary rounded-pill px-4" (click)="saveApp()">Enregistrer application</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Reset Modal -->
+<div class="modal-overlay" *ngIf="showResetModal" (click)="closeResetModal()">
+  <div class="modal-container-centered animate__animated animate__zoomIn" (click)="$event.stopPropagation()">
+    <div class="modal-header border-bottom p-4 d-flex justify-content-between align-items-center">
+      <h4 class="mb-0 fw-bold text-danger"><span class="ion-md-warning me-2"></span>Réinitialiser les paramètres</h4>
+      <button class="btn-close" (click)="closeResetModal()"></button>
+    </div>
+    <div class="modal-body p-4">
+      <p class="text-dark mb-0">Êtes-vous sûr de vouloir réinitialiser tous vos paramètres de chauffeur à leurs valeurs par défaut ? Cette action est irréversible.</p>
+    </div>
+    <div class="modal-footer border-top p-3 d-flex justify-content-end gap-2">
+      <button class="btn btn-light rounded-pill px-4" (click)="closeResetModal()">Annuler</button>
+      <button class="btn btn-danger rounded-pill px-4" (click)="confirmReset()">Confirmer la réinitialisation</button>
+    </div>
+  </div>
+</div>

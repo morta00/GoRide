@@ -1,0 +1,877 @@
+<!-- HERO SECTION V2 (Visiteurs - Non Connectés) -->
+<section class="hero-section-v2" *ngIf="!isLoggedIn">
+  <div class="hero-bg-image"></div>
+  <div class="hero-overlay-dark"></div>
+  <div class="container-custom position-relative z-index-10">
+    <div class="row align-items-center">
+      <div class="col-lg-7 hero-content-v2">
+        <div class="badge-premium mb-3" data-aos="fade-up">
+          <span class="ion-ios-star me-2"></span>
+          {{ 'HOME.BADGE' | translate }}
+        </div>
+        <h1 class="hero-title-v2 mb-4" data-aos="fade-up" data-aos-delay="100" [innerHTML]="'HOME.HERO_TITLE' | translate"></h1>
+        <p class="hero-subtitle-v2 mb-5" data-aos="fade-up" data-aos-delay="200">{{ 'HOME.HERO_SUBTITLE' | translate }}</p>
+        
+        <div class="hero-btns-v2 d-flex flex-wrap align-items-center" style="gap: 20px !important;" data-aos="fade-in" data-aos-delay="400">
+          <button class="btn-premium btn-premium-blue" style="padding: 16px 35px; border-radius: 14px; font-size: 1.1rem; min-width: 250px;" routerLink="/signup">
+            {{ 'HOME.CTA_RESERVE' | translate }}
+            <span class="ion-md-arrow-forward btn-arrow"></span>
+          </button>
+          <button class="btn-outline-v2" style="padding: 16px 35px; border-radius: 14px; font-size: 1.1rem; min-width: 250px;" routerLink="/acceuil/services">
+            {{ 'HOME.CTA_LEARN' | translate }} <span class="ion-ios-arrow-forward ms-2"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HERO SECTION V2 (Utilisateurs Connectés) -->
+<section class="hero-section-v2 hero-logged-in" *ngIf="isLoggedIn">
+  <div class="hero-bg-image hero-bg-city"></div>
+  <div class="hero-overlay-dark"></div>
+  <div class="container-custom position-relative z-index-10">
+    <div class="row align-items-center">
+      
+      <!-- Content (Welcome + Card) -->
+      <div class="col-lg-7 hero-content-v2 text-start">
+        <!-- WELCOME HEADER -->
+        <div class="mb-4 welcome-header" data-aos="fade-up" data-aos-duration="1200" data-aos-easing="ease-out-back">
+          <h1 class="hero-title-premium mb-3">{{ 'HOME.LOGGED_IN.WELCOME' | translate:{ name: currentUser.name } }}</h1>
+          <div class="hero-title-line" data-aos="stretch-right" data-aos-delay="600" data-aos-duration="1000"></div>
+          <p class="hero-subtitle-premium" data-aos="fade-up" data-aos-delay="400" data-aos-duration="1000">{{ 'HOME.LOGGED_IN.SUBTITLE' | translate }}</p>
+        </div>
+
+        <!-- Dynamic Dashboard Card (Glassmorphism) -->
+        <div class="dashboard-access-card glass-card-premium p-4 p-md-4" data-aos="fade-up" data-aos-delay="800" data-aos-duration="1200" data-aos-easing="ease-out-quint">
+          
+          <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-light">
+            <div>
+              <span class="text-muted small fw-bold text-uppercase letter-spacing-1">{{ 'HOME.LOGGED_IN.CURRENT_MODE' | translate }}</span>
+              <div class="d-flex align-items-center mt-1">
+                <span [class]="getActiveRoleData().icon" [style.color]="getActiveRoleData().color" style="font-size: 1.5rem; margin-right: 15px;"></span>
+                <h4 class="mb-0 fw-bold text-goride-dark">{{ getActiveRoleData().labelKey | translate }}</h4>
+              </div>
+            </div>
+
+            <!-- Role Switcher Dropdown -->
+            <div class="position-relative" *ngIf="availableRoles.length > 1">
+              <button class="btn-change-role" (click)="toggleRoleSwitcher()">
+                <span class="ion-ios-swap"></span> {{ 'HOME.LOGGED_IN.CHANGE' | translate }}
+              </button>
+              
+              <!-- Dropdown List -->
+              <div class="position-absolute bg-white rounded-3 shadow-lg border-0 mt-2 py-2" style="right: 0; min-width: 220px; z-index: 100;" *ngIf="isRoleSwitcherOpen">
+                <div class="px-3 py-2 text-muted small fw-bold border-bottom">{{ 'HOME.LOGGED_IN.SWITCH_TO' | translate }}</div>
+                <button *ngFor="let role of availableRoles" 
+                        class="dropdown-item d-flex align-items-center py-2 px-3 border-0 bg-transparent w-100 text-start"
+                        [class.bg-light]="role.id === activeRole"
+                        (click)="switchRole(role.id)">
+                  <span [class]="role.icon" [style.color]="role.color" style="font-size: 1.2rem; width: 25px; text-align: center; margin-right: 10px;"></span>
+                  <span class="fw-bold" [class.text-primary]="role.id === activeRole">{{ role.label }}</span>
+                  <span class="ion-ios-checkmark ms-auto text-primary" *ngIf="role.id === activeRole" style="font-size: 1.2rem;"></span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Area -->
+          <div class="d-flex flex-column flex-sm-row action-buttons-group">
+            <button class="btn-goride-primary flex-grow-1 d-flex align-items-center justify-content-center" 
+                    (click)="goToDashboard()"
+                    data-aos="fade-up" data-aos-delay="1000" data-aos-duration="1000">
+              <span [class]="getActiveRoleData().icon" style="margin-right: 10px; font-size: 1.3rem;"></span>
+              {{ getActiveRoleData().actionKey | translate }}
+              <span class="ion-md-arrow-forward ms-2"></span>
+            </button>
+            <button class="btn-goride-secondary px-4 d-flex align-items-center justify-content-center" 
+                    [routerLink]="profileRoute"
+                    data-aos="fade-up" data-aos-delay="1200" data-aos-duration="1000">
+              <span class="ion-ios-person me-2"></span> {{ 'HOME.LOGGED_IN.MY_PROFILE' | translate }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Visual (Badges only) -->
+      <div class="col-lg-5 d-none d-lg-block">
+        <div class="hero-visual-wrapper position-relative" style="min-height: 400px;">
+          <!-- Floating Badges -->
+          <div class="floating-badge badge-1" data-aos="zoom-in" data-aos-delay="1400" data-aos-duration="1000">
+            <span class="badge-icon">⭐</span>
+            <span class="badge-text">{{ 'HOME.LOGGED_IN.FAST_SERVICE' | translate }}</span>
+          </div>
+          <div class="floating-badge badge-2" data-aos="zoom-in" data-aos-delay="1600" data-aos-duration="1000">
+            <span class="badge-icon">🚘</span>
+            <span class="badge-text">{{ 'HOME.LOGGED_IN.PREMIUM_MOBILITY' | translate }}</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES BAR -->
+<section class="features-section py-5" style="background-color: #f8fbff;">
+  <div class="container-custom" style="margin-top: -30px; position: relative; z-index: 10;">
+    <div class="row g-4">
+      <!-- Feature 1 -->
+      <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="100">
+        <div class="feature-card-premium bg-white p-4 rounded-4 shadow-sm h-100 d-flex align-items-center transition-all">
+          <div class="feat-icon-new accent-blue me-5 flex-shrink-0" style="width: 55px; height: 55px; font-size: 24px;">
+            <span class="ion-ios-flash"></span>
+          </div>
+          <div class="feat-text text-start">
+            <h6 class="fw-bold mb-1 text-dark" style="font-size: 1.05rem;">{{ 'HOME.FEAT_QUICK_TITLE' | translate }}</h6>
+            <p class="small text-muted mb-0 lh-sm">{{ 'HOME.FEAT_QUICK_DESC' | translate }}</p>
+          </div>
+        </div>
+      </div>
+      <!-- Feature 2 -->
+      <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="200">
+        <div class="feature-card-premium bg-white p-4 rounded-4 shadow-sm h-100 d-flex align-items-center transition-all">
+          <div class="feat-icon-new accent-blue me-5 flex-shrink-0" style="width: 55px; height: 55px; font-size: 24px;">
+            <span class="ion-ios-lock"></span>
+          </div>
+          <div class="feat-text text-start">
+            <h6 class="fw-bold mb-1 text-dark" style="font-size: 1.05rem;">{{ 'HOME.FEAT_SECURE_TITLE' | translate }}</h6>
+            <p class="small text-muted mb-0 lh-sm">{{ 'HOME.FEAT_SECURE_DESC' | translate }}</p>
+          </div>
+        </div>
+      </div>
+      <!-- Feature 3 -->
+      <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="300">
+        <div class="feature-card-premium bg-white p-4 rounded-4 shadow-sm h-100 d-flex align-items-center transition-all">
+          <div class="feat-icon-new accent-blue me-5 flex-shrink-0" style="width: 55px; height: 55px; font-size: 24px;">
+            <span class="ion-ios-checkmark-circle"></span>
+          </div>
+          <div class="feat-text text-start">
+            <h6 class="fw-bold mb-1 text-dark" style="font-size: 1.05rem;">{{ 'HOME.FEAT_RELIABLE_TITLE' | translate }}</h6>
+            <p class="small text-muted mb-0 lh-sm">{{ 'HOME.FEAT_RELIABLE_DESC' | translate }}</p>
+          </div>
+        </div>
+      </div>
+      <!-- Feature 4 -->
+      <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="400">
+        <div class="feature-card-premium bg-white p-4 rounded-4 shadow-sm h-100 d-flex align-items-center transition-all">
+          <div class="feat-icon-new accent-blue me-5 flex-shrink-0" style="width: 55px; height: 55px; font-size: 24px;">
+            <span class="ion-ios-time"></span>
+          </div>
+          <div class="feat-text text-start">
+            <h6 class="fw-bold mb-1 text-dark" style="font-size: 1.05rem;">{{ 'HOME.FEAT_AVAILABLE_TITLE' | translate }}</h6>
+            <p class="small text-muted mb-0 lh-sm">{{ 'HOME.FEAT_AVAILABLE_DESC' | translate }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SOLUTIONS SECTION -->
+<section class="solutions-section py-5 bg-light">
+  <div class="container-custom py-5">
+    <div class="text-center mb-5" data-aos="fade-up">
+      <span class="text-primary fw-bold text-uppercase small letter-spacing-1">À vous de décider</span>
+      <h2 class="fw-800 display-5 mt-2">Choisissez votre expérience</h2>
+    </div>
+
+    <div class="solutions-slider-wrapper">
+      <div class="cards-slider-container" #solutionSlider>
+        <!-- Card 1: Clients -->
+        <div class="slider-card-wrapper" data-aos="fade-up" data-aos-delay="100">
+          <div class="solution-card h-100 rounded-4 shadow-sm overflow-hidden d-flex flex-column border border-light position-relative" style="background: linear-gradient(to bottom, #f0f7ff 0%, #ffffff 30%);">
+            <div class="p-5 position-relative z-index-2 flex-grow-1">
+              <div class="d-flex align-items-center mb-4 gap-3 flex-nowrap">
+                <div class="solution-icon-circle shadow-sm d-flex align-items-center justify-content-center text-white flex-shrink-0" style="width: 40px; height: 40px; border-radius: 50%; font-size: 1.4rem; background-color: #2563eb; margin-right: 15px;">
+                  <span class="ion-md-person"></span>
+                </div>
+                <span class="badge fw-bold text-uppercase rounded-pill" style="background-color: rgba(37, 99, 235, 0.1); color: #2563eb; padding: 8px 16px; font-size: 0.75rem; letter-spacing: 0.5px;">POUR LES CLIENTS</span>
+              </div>
+              <h3 class="fw-900 mb-4" style="font-size: 1.6rem; letter-spacing: -0.5px; color: #0f172a;">Réservez votre prochain départ</h3>
+              <ul class="list-unstyled mb-4">
+                <li class="mb-3 d-flex align-items-center">
+                  <span class="ion-ios-checkmark-circle-outline" style="margin-right: 15px;color: #2563eb; font-size: 1.1rem;"></span>
+                  <span class="text-secondary small fw-medium">Trajets avec chauffeur en quelques clics</span>
+                </li>
+                <li class="mb-3 d-flex align-items-center">
+                  <span class="ion-ios-checkmark-circle-outline" style="margin-right: 15px;color: #2563eb; font-size: 1.1rem;"></span>
+                  <span class="text-secondary small fw-medium">Location de voiture courte ou longue durée</span>
+                </li>
+                <li class="mb-3 d-flex align-items-center">
+                  <span class="ion-ios-checkmark-circle-outline" style="margin-right: 15px;color: #2563eb; font-size: 1.1rem;"></span>
+                  <span class="text-secondary small fw-medium">Une flotte variée, de l'économique au premium.</span>
+                </li>
+                <li class="mb-3 d-flex align-items-center">
+                  <span class="ion-ios-checkmark-circle-outline" style="margin-right: 15px;color: #2563eb; font-size: 1.1rem;"></span>
+                  <span class="text-secondary small fw-medium">Transactions garanties et sécurisées.</span>
+                </li>
+              </ul>
+            </div>
+            <div class="mt-auto position-relative d-flex align-items-end p-4 image-container" style="height: 250px;">
+              <img src="assets/images/white-car.png" class="position-absolute top-0 start-0 w-100 h-100" style="object-fit: cover; z-index: 0;" onerror="this.src='assets/images/service-rides.png'">
+              <div class="image-overlay"></div>
+              <button class="btn-premium btn-premium-blue w-100 py-3" *ngIf="!isLoggedIn" routerLink="/signup" style="z-index: 5;">
+                <span>Réserver maintenant</span>
+                <span class="ion-md-arrow-forward btn-arrow"></span>
+              </button>
+              <button class="btn-premium btn-premium-blue w-100 py-3" *ngIf="isLoggedIn" routerLink="/client/dashboard" style="z-index: 5;">
+                <span>Espace Client</span>
+                <span class="ion-md-arrow-forward btn-arrow"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2: Chauffeurs -->
+        <div class="slider-card-wrapper" data-aos="fade-up" data-aos-delay="200">
+          <div class="solution-card h-100 rounded-4 shadow-sm overflow-hidden d-flex flex-column border border-light position-relative" style="background: linear-gradient(to bottom, #ecfdf5 0%, #ffffff 30%);">
+            <div class="p-5 position-relative z-index-2 flex-grow-1">
+              <div class="d-flex align-items-center mb-4 gap-3 flex-nowrap">
+                <div class="solution-icon-circle shadow-sm d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; border-radius: 50%; font-size: 1.4rem; background-color: rgba(16, 185, 129, 0.2); color: #047857; margin-right: 15px;">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                    <path d="M12,2A10,10,0,1,0,22,12,10,10,0,0,0,12,2Zm0,18a8,8,0,1,1,8-8A8,8,0,0,1,12,20ZM12,10a2,2,0,1,0,2,2A2,2,0,0,0,12,10Zm6,2a6,6,0,0,1-1.3,3.75l-2.45-1.42A3.92,3.92,0,0,0,14.25,12ZM6,12a6,6,0,0,1,1.3-3.75l2.45,1.42A3.92,3.92,0,0,0,9.75,12ZM12,6a6,6,0,0,1,3.75,1.3l-1.42,2.45A3.92,3.92,0,0,0,12,9.75Z"/>
+                  </svg>
+                </div>
+                <span class="badge fw-bold text-uppercase rounded-pill" style="background-color: rgba(16, 185, 129, 0.1); color: #047857; padding: 8px 16px; font-size: 0.75rem; letter-spacing: 0.5px;">POUR LES CHAUFFEURS</span>
+              </div>
+              <h3 class="fw-900 mb-4" style="font-size: 1.6rem; letter-spacing: -0.5px; color: #0f172a;">Boostez vos revenus au volant</h3>
+              <ul class="list-unstyled mb-4">
+                <li class="mb-3 d-flex align-items-center">
+                  <span class="ion-ios-checkmark-circle-outline" style="margin-right: 15px;color: #10b981; font-size: 1.1rem;"></span>
+                  <span class="text-secondary small fw-medium">Choisissez vos horaires de travail</span>
+                </li>
+                <li class="mb-3 d-flex align-items-center">
+                  <span class="ion-ios-checkmark-circle-outline" style="margin-right: 15px;color: #10b981; font-size: 1.1rem;"></span>
+                  <span class="text-secondary small fw-medium">Gagnez plus avec des bonus attractifs</span>
+                </li>
+                <li class="mb-3 d-flex align-items-center">
+                  <span class="ion-ios-checkmark-circle-outline" style="margin-right: 15px;color: #10b981; font-size: 1.1rem;"></span>
+                  <span class="text-secondary small fw-medium">Paiements rapides et transparents</span>
+                </li>
+                <li class="mb-3 d-flex align-items-center">
+                  <span class="ion-ios-checkmark-circle-outline" style="margin-right: 15px;color: #10b981; font-size: 1.1rem;"></span>
+                  <span class="text-secondary small fw-medium">Assistance disponible 24/7</span>
+                </li>
+              </ul>
+            </div>
+            <div class="mt-auto position-relative d-flex align-items-end p-4 image-container" style="height: 250px;">
+              <img src="assets/images/person_1.jpg" class="position-absolute top-0 start-0 w-100 h-100" style="object-fit: cover; z-index: 0;">
+              <div class="image-overlay"></div>
+              <button class="btn-premium btn-premium-green w-100 py-3" *ngIf="!isLoggedIn" routerLink="/signup/driver" style="z-index: 5;">
+                <span>Devenir chauffeur</span>
+                <span class="ion-md-arrow-forward btn-arrow"></span>
+              </button>
+              <button class="btn-premium btn-premium-green w-100 py-3" *ngIf="isLoggedIn" routerLink="/driver/home" style="z-index: 5;">
+                <span>Espace Chauffeur</span>
+                <span class="ion-md-arrow-forward btn-arrow"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3: Propriétaires -->
+        <div class="slider-card-wrapper" data-aos="fade-up" data-aos-delay="300">
+          <div class="solution-card h-100 rounded-4 shadow-sm overflow-hidden d-flex flex-column border border-light position-relative" style="background: linear-gradient(to bottom, #fff7ed 0%, #ffffff 30%);">
+            <div class="p-5 position-relative z-index-2 flex-grow-1">
+              <div class="d-flex align-items-center mb-4 gap-3 flex-nowrap">
+                <div class="solution-icon-circle shadow-sm d-flex align-items-center justify-content-center text-white flex-shrink-0" style="width: 40px; height: 40px; border-radius: 50%; font-size: 1.4rem; background-color: #ea580c; margin-right: 15px;">
+                  <span class="ion-md-car"></span>
+                </div>
+                <span class="badge fw-bold text-uppercase rounded-pill" style="background-color: rgba(249, 115, 22, 0.1); color: #ea580c; padding: 8px 16px; font-size: 0.75rem; letter-spacing: 0.5px;">POUR LES PROPRIÉTAIRES</span>
+              </div>
+              <h3 class="fw-900 mb-4" style="font-size: 1.6rem; letter-spacing: -0.5px; color: #0f172a;">Faites de votre voiture un investissement</h3>
+              <ul class="list-unstyled mb-4">
+                <li class="mb-3 d-flex align-items-center">
+                  <span class="ion-ios-checkmark-circle-outline" style="margin-right: 15px;color: #ea580c; font-size: 1.1rem;"></span>
+                  <span class="text-secondary small fw-medium">Rentabilité accrue de véhicule</span>
+                </li>
+                <li class="mb-3 d-flex align-items-center">
+                  <span class="ion-ios-checkmark-circle-outline" style="margin-right: 15px;color: #ea580c; font-size: 1.1rem;"></span>
+                  <span class="text-secondary small fw-medium">Gestion facile de vos locations</span>
+                </li>
+                <li class="mb-3 d-flex align-items-center">
+                  <span class="ion-ios-checkmark-circle-outline" style="margin-right: 15px;color: #ea580c; font-size: 1.1rem;"></span>
+                  <span class="text-secondary small fw-medium">Assurance et sécurité incluses</span>
+                </li>
+                <li class="mb-3 d-flex align-items-center">
+                  <span class="ion-ios-checkmark-circle-outline" style="margin-right: 15px;color: #ea580c; font-size: 1.1rem;"></span>
+                  <span class="text-secondary small fw-medium">Revenus mensuels attractifs</span>
+                </li>
+              </ul>
+            </div>
+            <div class="mt-auto position-relative d-flex align-items-end p-4 image-container" style="height: 250px;">
+              <img src="assets/images/service-rental.png" class="position-absolute top-0 start-0 w-100 h-100" style="object-fit: cover; z-index: 0;" onerror="this.src='assets/images/service-rental.png'">
+              <div class="image-overlay"></div>
+              <button class="btn-premium btn-premium-orange w-100 py-3" *ngIf="!isLoggedIn" routerLink="/signup/fleet" style="z-index: 5;">
+                <span>Louer ma voiture</span>
+                <span class="ion-md-arrow-forward btn-arrow"></span>
+              </button>
+              <button class="btn-premium btn-premium-orange w-100 py-3" *ngIf="isLoggedIn" routerLink="/fleet/home" style="z-index: 5;">
+                <span>Espace Propriétaire</span>
+                <span class="ion-md-arrow-forward btn-arrow"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 4: Entreprises -->
+        <div class="slider-card-wrapper" data-aos="fade-up" data-aos-delay="400">
+          <div class="solution-card h-100 rounded-4 shadow-sm overflow-hidden d-flex flex-column border border-light position-relative enterprise-card-bg">
+            <div class="p-5 position-relative z-index-2 flex-grow-1">
+              <div class="d-flex align-items-center mb-4 gap-3 flex-nowrap">
+                <div class="solution-icon-circle shadow-sm d-flex align-items-center justify-content-center text-white flex-shrink-0 icon-enterprise" style="width: 40px; height: 40px; border-radius: 50%; font-size: 1.4rem; margin-right: 15px;">
+                  <span class="ion-md-business"></span>
+                </div>
+                <span class="badge fw-bold text-uppercase rounded-pill badge-enterprise" style="padding: 8px 16px; font-size: 0.75rem; letter-spacing: 0.5px;">POUR LES ENTREPRISES</span>
+              </div>
+              <h3 class="fw-900 mb-4" style="font-size: 1.6rem; letter-spacing: -0.5px; color: #0f172a;">Optimisez vos<br>déplacements pro</h3>
+              <ul class="list-unstyled mb-4">
+                <li class="mb-3 d-flex align-items-center">
+                  <span class="ion-ios-checkmark-circle-outline" style="margin-right: 15px;color: #7c3aed; font-size: 1.1rem;"></span>
+                  <span class="text-secondary small fw-medium">Gestion de flotte simplifiée</span>
+                </li>
+                <li class="mb-3 d-flex align-items-center">
+                  <span class="ion-ios-checkmark-circle-outline" style="margin-right: 15px;color: #7c3aed; font-size: 1.1rem;"></span>
+                  <span class="text-secondary small fw-medium">Facturation mensuelle groupée</span>
+                </li>
+                <li class="mb-3 d-flex align-items-center">
+                  <span class="ion-ios-checkmark-circle-outline" style="margin-right: 15px;color: #7c3aed; font-size: 1.1rem;"></span>
+                  <span class="text-secondary small fw-medium">Panel de contrôle dédié</span>
+                </li>
+                <li class="mb-3 d-flex align-items-center">
+                  <span class="ion-ios-checkmark-circle-outline" style="margin-right: 15px;color: #7c3aed; font-size: 1.1rem;"></span>
+                  <span class="text-secondary small fw-medium">Support premium 24/7</span>
+                </li>
+              </ul>
+            </div>
+            <div class="mt-auto position-relative d-flex align-items-end p-4 image-container" style="height: 250px;">
+              <img src="assets/images/service-business.png" class="position-absolute top-0 start-0 w-100 h-100" style="object-fit: cover; z-index: 0;" onerror="this.src='assets/images/service-rides.png'">
+              <div class="image-overlay"></div>
+              <button class="btn-premium btn-premium-purple w-100 py-3" *ngIf="!isLoggedIn" routerLink="/signup/company" style="z-index: 5;">
+                <span>GoRide Business</span>
+                <span class="ion-md-arrow-forward btn-arrow"></span>
+              </button>
+              <button class="btn-premium btn-premium-purple w-100 py-3" *ngIf="isLoggedIn" routerLink="/company/home" style="z-index: 5;">
+                <span>Espace Entreprise</span>
+                <span class="ion-md-arrow-forward btn-arrow"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="solutions-nav justify-content-center mt-5" data-aos="fade-up">
+        <button class="btn-nav-slider" (click)="solutionSlider.scrollBy({left: -350, behavior: 'smooth'})">
+          <span class="ion-ios-arrow-back"></span>
+        </button>
+        <button class="btn-nav-slider ms-3" (click)="solutionSlider.scrollBy({left: 350, behavior: 'smooth'})">
+          <span class="ion-ios-arrow-forward"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- TESTIMONIALS & STATS SECTION -->
+<section class="testimonials-stats-section py-5 bg-white">
+  <div class="container-custom py-5">
+    
+    <!-- Header with Speech Bubble -->
+    <div class="text-center mb-5" data-aos="fade-up">
+      <div class="d-flex align-items-center justify-content-center mb-4">
+        <div class="header-line"></div>
+        <div class="speech-bubble-icon mx-4">
+          <span class="ion-md-chatbubbles"></span>
+        </div>
+        <div class="header-line"></div>
+      </div>
+      <h2 class="fw-800 display-4 mb-3">Ils nous font confiance</h2>
+      <p class="text-muted mx-auto" style="max-width: 650px; font-size: 1.1rem;">
+        GoRide est une nouvelle plateforme et vos avis comptent pour construire une expérience toujours meilleure.
+      </p>
+    </div>
+
+    <!-- Testimonials Cards -->
+    <div class="row g-4 mt-4">
+      <!-- Testimonial 1 -->
+      <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
+        <div class="testimonial-card-v3 p-5 h-100 d-flex flex-column shadow-sm border border-light-subtle rounded-4">
+          <div class="quote-mark mb-4" style="font-size: 4rem; line-height: 1; color: #2563eb; font-family: serif; opacity: 0.8;">“</div>
+          <p class="testimonial-text mb-5 flex-grow-1 text-dark opacity-75" style="line-height: 1.6;">
+            Première expérience avec GoRide et tout s'est très bien passé. Chauffeur ponctuel et courtois. Hâte de voir les prochaines évolutions de la plateforme !
+          </p>
+          <div class="d-flex align-items-center justify-content-between mt-auto pt-4 border-top border-light-subtle">
+            <div class="d-flex align-items-center">
+              <img src="assets/images/person_4.jpg" class="rounded-circle" width="50" height="50" style="object-fit: cover; margin-right: 15px;">
+              <div>
+                <h6 class="mb-0 fw-bold">Ahmed K.</h6>
+                <small class="text-muted">Tunis</small>
+              </div>
+            </div>
+            <span class="badge rounded-pill bg-primary-subtle text-primary px-3 py-2 small fw-bold" style="font-size: 0.7rem;">Nouveau client</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Testimonial 2 -->
+      <div class="col-lg-4" data-aos="fade-up" data-aos-delay="200">
+        <div class="testimonial-card-v3 p-5 h-100 d-flex flex-column shadow-sm border border-light-subtle rounded-4">
+          <div class="quote-mark mb-4" style="font-size: 4rem; line-height: 1; color: #2563eb; font-family: serif; opacity: 0.8;">“</div>
+          <p class="testimonial-text mb-5 flex-grow-1 text-dark opacity-75" style="line-height: 1.6;">
+            Application simple et agréable. Le service est encore jeune mais très prometteur. Bon courage à toute l'équipe GoRide !
+          </p>
+          <div class="d-flex align-items-center justify-content-between mt-auto pt-4 border-top border-light-subtle">
+            <div class="d-flex align-items-center">
+              <img src="assets/images/person_2.jpg" class="rounded-circle" width="50" height="50" style="object-fit: cover; margin-right: 15px;">
+              <div>
+                <h6 class="mb-0 fw-bold">Ines M.</h6>
+                <small class="text-muted">Sousse</small>
+              </div>
+            </div>
+            <span class="badge rounded-pill bg-primary-subtle text-primary px-3 py-2 small fw-bold" style="font-size: 0.7rem;">Nouveau client</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Testimonial 3 -->
+      <div class="col-lg-4" data-aos="fade-up" data-aos-delay="300">
+        <div class="testimonial-card-v3 p-5 h-100 d-flex flex-column shadow-sm border border-light-subtle rounded-4">
+          <div class="quote-mark mb-4" style="font-size: 4rem; line-height: 1; color: #2563eb; font-family: serif; opacity: 0.8;">“</div>
+          <p class="testimonial-text mb-5 flex-grow-1 text-dark opacity-75" style="line-height: 1.6;">
+            Je viens d'essayer GoRide et l'expérience était au top. J'aime soutenir les nouvelles initiatives locales !
+          </p>
+          <div class="d-flex align-items-center justify-content-between mt-auto pt-4 border-top border-light-subtle">
+            <div class="d-flex align-items-center">
+              <img src="assets/images/person_3.jpg" class="rounded-circle" width="50" height="50" style="object-fit: cover; margin-right: 15px;">
+              <div>
+                <h6 class="mb-0 fw-bold">Yassine B.</h6>
+                <small class="text-muted">Sfax</small>
+              </div>
+            </div>
+            <span class="badge rounded-pill bg-primary-subtle text-primary px-3 py-2 small fw-bold" style="font-size: 0.7rem;">Nouveau client</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feedback Bar -->
+    <div class="text-center mt-5 mb-5" data-aos="fade-up">
+      <div class="feedback-info-bar py-3 px-5 d-inline-flex align-items-center rounded-pill" style="background-color: #f5f3ff; border: 1px solid #ddd6fe;">
+        <span class="ion-ios-heart text-primary" style="font-size: 1.2rem; margin-right: 20px;"></span>
+        <span class="small fw-bold text-primary" style="letter-spacing: 0.3px;">Vos avis nous aident à améliorer GoRide chaque jour.</span>
+      </div>
+    </div>
+
+    <!-- Stats Bar New -->
+    <div class="stats-bar-new p-4 p-lg-5 mt-5 rounded-4 shadow-lg" data-aos="fade-up">
+      <div class="row align-items-center text-white">
+        <!-- Stat 1 -->
+        <div class="col-lg-3 col-md-6 mb-5 mb-lg-0 stat-item-new">
+          <div class="d-flex align-items-center justify-content-center justify-content-lg-start px-lg-3">
+            <div class="stat-icon-wrap me-4">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="26" height="26">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.806H8.002c-.446 0-.852.22-1.096.592l-1.516 2.228m15.545 2.228c.112.19.21.381.296.574M5.391 11.25c.086-.193.184-.383.296-.574m0 0A17.903 17.903 0 0 1 12 8.25c2.31 0 4.47.436 6.452 1.227m-12.904 0c-.22.446-.348.941-.348 1.465v2.228H19.5v-2.228c0-.524-.128-1.019-.348-1.465" />
+              </svg>
+            </div>
+            <div class="stat-content">
+              <h2 class="stat-number mb-0">+{{ trajetsCount }}</h2>
+              <p class="stat-label mb-0">Trajets effectués</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stat 2 -->
+        <div class="col-lg-3 col-md-6 mb-5 mb-lg-0 stat-item-new">
+          <div class="d-flex align-items-center justify-content-center justify-content-lg-start px-lg-3">
+            <div class="stat-icon-wrap me-4">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="26" height="26">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
+              </svg>
+            </div>
+            <div class="stat-content">
+              <h2 class="stat-number mb-0">{{ usersCount }}+</h2>
+              <p class="stat-label mb-0">Utilisateurs actifs</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stat 3 -->
+        <div class="col-lg-3 col-md-6 mb-5 mb-lg-0 stat-item-new">
+          <div class="d-flex align-items-center justify-content-center justify-content-lg-start px-lg-3">
+            <div class="stat-icon-wrap me-4">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="26" height="26">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.563.563 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.563.563 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
+              </svg>
+            </div>
+            <div class="stat-content">
+              <h2 class="stat-number mb-0">{{ ratingCount }} <span style="font-size: 1.5rem; vertical-align: middle;">⭐</span></h2>
+              <p class="stat-label mb-0">Note moyenne prévue</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stat 4 -->
+        <div class="col-lg-3 col-md-6 stat-item-new">
+          <div class="d-flex align-items-center justify-content-center justify-content-lg-start px-lg-3">
+            <div class="stat-icon-wrap me-4">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="26" height="26">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M14.25 9.75 16.5 12l-2.25 2.25m-4.5 0L7.5 12l2.25-2.25M6 20.25h12A2.25 2.25 0 0 0 20.25 18V6A2.25 2.25 0 0 0 18 3.75H6A2.25 2.25 0 0 0 3.75 6v12A2.25 2.25 0 0 0 6 20.25Z" />
+              </svg>
+            </div>
+            <div class="stat-content">
+              <h2 class="stat-number mb-0">24/7</h2>
+              <p class="stat-label mb-0">Support disponible</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- SECURITY / ENGAGEMENT -->
+<section class="security-section py-5">
+  <div class="container-custom py-5">
+    <div class="text-center mb-5" data-aos="fade-up">
+      <span class="text-primary fw-bold text-uppercase small letter-spacing-1">{{ 'HOME.SECURITY_SECTION.LABEL' | translate }}</span>
+      <h2 class="fw-800 mt-2">{{ 'HOME.SECURITY_SECTION.TITLE' | translate }}</h2>
+    </div>
+
+    <div class="row g-5 mt-4">
+      <div class="col-md-6 col-lg-3 text-center" data-aos="fade-up" data-aos-delay="100">
+        <div class="sec-icon mb-4"><span class="ion-ios-people"></span></div>
+        <h6 class="fw-bold">{{ 'HOME.SECURITY_SECTION.ITEM1_TITLE' | translate }}</h6>
+        <p class="text-muted small">{{ 'HOME.SECURITY_SECTION.ITEM1_DESC' | translate }}</p>
+      </div>
+      <div class="col-md-6 col-lg-3 text-center" data-aos="fade-up" data-aos-delay="200">
+        <div class="sec-icon mb-4"><span class="ion-ios-card"></span></div>
+        <h6 class="fw-bold">{{ 'HOME.SECURITY_SECTION.ITEM2_TITLE' | translate }}</h6>
+        <p class="text-muted small">{{ 'HOME.SECURITY_SECTION.ITEM2_DESC' | translate }}</p>
+      </div>
+      <div class="col-md-6 col-lg-3 text-center" data-aos="fade-up" data-aos-delay="300">
+        <div class="sec-icon mb-4"><span class="ion-ios-headset"></span></div>
+        <h6 class="fw-bold">{{ 'HOME.SECURITY_SECTION.ITEM3_TITLE' | translate }}</h6>
+        <p class="text-muted small">{{ 'HOME.SECURITY_SECTION.ITEM3_DESC' | translate }}</p>
+      </div>
+      <div class="col-md-6 col-lg-3 text-center" data-aos="fade-up" data-aos-delay="400">
+        <div class="sec-icon mb-4"><span class="ion-ios-finger-print"></span></div>
+        <h6 class="fw-bold">{{ 'HOME.SECURITY_SECTION.ITEM4_TITLE' | translate }}</h6>
+        <p class="text-muted small">{{ 'HOME.SECURITY_SECTION.ITEM4_DESC' | translate }}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT / MISSION -->
+<section class="about-landing py-5">
+  <div class="container-custom py-5">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6" data-aos="fade-right">
+        <div class="about-img-box position-relative">
+          <div class="about-img-wrapper">
+            <img src="assets/images/about.jpg" class="img-fluid w-100 h-100" style="object-fit: cover;">
+            <div class="img-overlay"></div>
+          </div>
+          <div class="about-exp-badge d-flex align-items-center" style="gap: 16px;">
+            <div class="badge-icon d-flex align-items-center justify-content-center rounded-circle bg-primary text-white shadow-sm flex-shrink-0" style="width: 45px; height: 45px; font-size: 1.3rem;">
+              <span class="ion-md-pin"></span>
+            </div>
+            <div class="text-start">
+              <p class="mb-0 fw-900 text-dark" style="font-size: 1.1rem; line-height: 1.2;">Nouvelle plateforme</p>
+              <p class="mb-0 text-primary fw-bold text-uppercase mt-1" style="font-size: 0.75rem; letter-spacing: 1px;">100% Locale</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6" data-aos="fade-left">
+        <span class="text-primary fw-bold text-uppercase small letter-spacing-1">{{ 'ABOUT.SUBHEADING' | translate }}</span>
+        <h2 class="fw-800 mt-2 display-5" style="color: #0f172a;">{{ 'ABOUT.TITLE' | translate }}</h2>
+        <p class="text-secondary lead mt-4 mb-5" style="line-height: 1.8;">{{ 'ABOUT.DESCRIPTION' | translate }}</p>
+        
+        <div class="row mt-4 mb-4">
+          <div class="col-sm-6 mb-4 pb-2">
+            <div class="d-flex align-items-center" style="gap: 20px;">
+              <div class="d-flex align-items-center justify-content-center rounded-circle shadow-sm flex-shrink-0" style="width: 45px; height: 45px; background: rgba(37, 99, 235, 0.1); color: #2563eb;">
+                <span class="ion-ios-flash" style="font-size: 1.4rem;"></span>
+              </div>
+              <span class="fw-bold text-dark" style="font-size: 1.05rem;">Réservation instantanée</span>
+            </div>
+          </div>
+          <div class="col-sm-6 mb-4 pb-2">
+            <div class="d-flex align-items-center" style="gap: 20px;">
+              <div class="d-flex align-items-center justify-content-center rounded-circle shadow-sm flex-shrink-0" style="width: 45px; height: 45px; background: rgba(16, 185, 129, 0.1); color: #10b981;">
+                <span class="ion-md-person" style="font-size: 1.4rem;"></span>
+              </div>
+              <span class="fw-bold text-dark" style="font-size: 1.05rem;">Conducteurs vérifiés</span>
+            </div>
+          </div>
+          <div class="col-sm-6 mb-4 pb-2">
+            <div class="d-flex align-items-center" style="gap: 20px;">
+              <div class="d-flex align-items-center justify-content-center rounded-circle shadow-sm flex-shrink-0" style="width: 45px; height: 45px; background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
+                <span class="ion-md-lock" style="font-size: 1.4rem;"></span>
+              </div>
+              <span class="fw-bold text-dark" style="font-size: 1.05rem;">Paiement sécurisé</span>
+            </div>
+          </div>
+          <div class="col-sm-6 mb-4 pb-2">
+            <div class="d-flex align-items-center" style="gap: 20px;">
+              <div class="d-flex align-items-center justify-content-center rounded-circle shadow-sm flex-shrink-0" style="width: 45px; height: 45px; background: rgba(139, 92, 246, 0.1); color: #8b5cf6;">
+                <span class="ion-md-headset" style="font-size: 1.4rem;"></span>
+              </div>
+              <span class="fw-bold text-dark" style="font-size: 1.05rem;">Support 24/7</span>
+            </div>
+          </div>
+        </div>
+        
+        <button class="btn-premium-outline-blue px-5 py-3 mt-2" style="border-radius: 14px; font-size: 1.1rem;" routerLink="/acceuil/services">
+          Nos services
+          <span class="ion-md-arrow-forward btn-arrow ms-2"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- APP DOWNLOAD -->
+<section class="download-section py-5 bg-white">
+  <div class="container-custom py-5 position-relative">
+    <div class="row align-items-center g-5 p-4 p-lg-5">
+      <!-- Image side (Left) -->
+      <div class="col-lg-6 text-center position-relative" data-aos="fade-right">
+        <div class="css-phone-wrapper">
+          <!-- Back Phone: Ride Selection -->
+          <div class="css-phone phone-back">
+            <div class="phone-screen">
+              <div class="app-header-light">
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                  <span class="fw-900 fs-5" style="letter-spacing: -0.5px;">GoRide</span>
+                  <div class="bg-light rounded-circle d-flex align-items-center justify-content-center" style="width: 30px; height: 30px; overflow: hidden;">
+                    <img src="assets/images/person_4.jpg" class="w-100 h-100" style="object-fit: cover;">
+                  </div>
+                </div>
+                <div class="mt-3 bg-light rounded-pill p-2 text-start d-flex align-items-center" style="font-size: 0.75rem; color: #64748b;">
+                  <span class="ion-ios-search ms-2 me-2" style="font-size: 1rem;"></span> Où allez-vous ?
+                </div>
+              </div>
+              <div class="map-bg" style="flex-grow: 0; height: 140px;">
+                 <!-- mini map -->
+                 <div class="position-absolute" style="top: 50%; left: 50%; transform: translate(-50%, -50%);">
+                   <div style="width: 40px; height: 40px; background: rgba(37, 99, 235, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                     <span class="ion-md-pin text-primary" style="font-size: 20px;"></span>
+                   </div>
+                 </div>
+              </div>
+              <div class="bg-light flex-grow-1 pt-3">
+                <div class="px-3 pb-2 fw-bold text-muted" style="font-size: 0.65rem; letter-spacing: 0.5px;">VÉHICULES DISPONIBLES</div>
+                <div class="list-item">
+                  <div class="bg-primary-subtle rounded p-2 text-primary me-2 d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;"><span class="ion-md-car fs-5"></span></div>
+                  <div class="flex-grow-1">
+                    <div class="fw-bold text-dark" style="font-size: 0.8rem;">Économique</div>
+                    <div class="text-muted" style="font-size: 0.65rem;">3 min • 4 places</div>
+                  </div>
+                  <div class="fw-bold text-dark" style="font-size: 0.8rem;">12 DT</div>
+                </div>
+                <div class="list-item">
+                  <div class="bg-dark rounded p-2 text-white me-2 d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;"><span class="ion-md-car fs-5"></span></div>
+                  <div class="flex-grow-1">
+                    <div class="fw-bold text-dark" style="font-size: 0.8rem;">Premium</div>
+                    <div class="text-muted" style="font-size: 0.65rem;">5 min • WiFi inclus</div>
+                  </div>
+                  <div class="fw-bold text-dark" style="font-size: 0.8rem;">25 DT</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Front Phone: Active Ride -->
+          <div class="css-phone phone-front">
+            <div class="phone-screen">
+              <div class="app-header-dark">
+                <div class="fw-900 fs-5 mt-2" style="letter-spacing: -0.5px;">GoRide</div>
+              </div>
+              <div class="map-bg flex-grow-1 overflow-hidden position-relative">
+                <div class="route-line"></div>
+                <div class="position-absolute" style="top: 25%; left: 30%;">
+                  <div style="width: 12px; height: 12px; background: #2563eb; border: 2px solid white; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"></div>
+                </div>
+                <div class="position-absolute" style="top: 65%; left: 70%;">
+                  <span class="ion-md-pin text-danger" style="font-size: 24px; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3));"></span>
+                </div>
+                <div class="position-absolute" style="top: 45%; left: 45%; background: #1e293b; color: white; padding: 3px 8px; border-radius: 12px; font-size: 0.65rem; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+                  12 min
+                </div>
+              </div>
+              <div class="driver-card">
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light">
+                  <div class="fw-bold text-dark" style="font-size: 0.85rem;">En route vers vous</div>
+                  <div class="bg-primary-subtle px-2 py-1 rounded text-primary fw-bold" style="font-size: 0.75rem;">12 DT</div>
+                </div>
+                <div class="d-flex align-items-center mb-3">
+                  <img src="assets/images/person_1.jpg" class="rounded-circle" width="40" height="40" style="object-fit: cover; border: 2px solid #e2e8f0;">
+                  <div class="ms-2 text-start">
+                    <div class="fw-bold text-dark" style="font-size: 0.8rem;">Ahmed K. <span style="color: #f59e0b; font-size: 0.7rem;">★ 4.9</span></div>
+                    <div class="text-muted" style="font-size: 0.65rem;">Toyota Corolla • 1234 TN 56</div>
+                  </div>
+                </div>
+                <div class="app-btn">
+                  Contacter le chauffeur
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Text side (Right) -->
+      <div class="col-lg-6" data-aos="fade-left">
+        <span class="text-primary fw-bold text-uppercase small letter-spacing-1 mb-2 d-block">{{ 'HOME.DOWNLOAD_SECTION.LABEL' | translate }}</span>
+        <h2 class="fw-900 mb-4 text-dark" style="font-size: 2.8rem; letter-spacing: -1px; line-height: 1.1;">{{ 'HOME.DOWNLOAD_SECTION.TITLE' | translate }}</h2>
+        <p class="text-secondary mb-5 fs-5" style="max-width: 500px; line-height: 1.6;">{{ 'HOME.DOWNLOAD_SECTION.SUBTITLE' | translate }}</p>
+        <div class="d-flex flex-wrap align-items-center mt-4" style="gap: 20px !important;">
+          <button class="btn-premium btn-premium-blue px-4 py-3" style="border-radius: 12px; font-size: 1.05rem;" *ngIf="!isLoggedIn" routerLink="/signup">
+            <span class="ion-ios-mail" style="margin-right: 12px;"></span> {{ 'HOME.DOWNLOAD_SECTION.CTA_NOTIFY' | translate }}
+          </button>
+          <button class="btn-premium btn-premium-blue px-4 py-3" style="border-radius: 12px; font-size: 1.05rem;" *ngIf="isLoggedIn" (click)="goToDashboard()">
+            <span [class]="getActiveRoleData().icon" style="margin-right: 12px;"></span> Mon Dashboard
+          </button>
+          <button class="btn-outline-v2 px-4 py-3 bg-white" style="border-radius: 12px; font-size: 1.05rem;" (click)="scrollToTop()">
+            {{ 'HOME.DOWNLOAD_SECTION.CTA_DISCOVER' | translate }} <span class="ion-md-arrow-forward ms-2"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT SECTION -->
+<section class="contact-home py-5">
+  <div class="container-custom py-5">
+    <div class="row g-5">
+      <div class="col-lg-7" data-aos="slide-left">
+        <span class="text-primary fw-bold text-uppercase small letter-spacing-1 mb-2 d-block">{{ 'FOOTER.CONTACT' | translate }}</span>
+        <h2 class="fw-900 mb-2 text-dark" style="font-size: 2.8rem; letter-spacing: -1px; line-height: 1.1;">{{ 'FOOTER.QUESTIONS' | translate }}</h2>
+        <p class="text-secondary mb-5 fs-6">{{ 'FOOTER.QUESTIONS_SUBTITLE' | translate }}</p>
+        
+        <!-- Feedback Messages -->
+        <div *ngIf="submitSuccess" class="alert alert-success d-flex align-items-center rounded-4 mb-4 border-0 shadow-sm p-3 animate__animated animate__fadeIn">
+          <span class="ion-md-checkmark-circle fs-4 me-3"></span>
+          <div>{{ successMessage }}</div>
+        </div>
+        <div *ngIf="submitError" class="alert alert-danger d-flex align-items-center rounded-4 mb-4 border-0 shadow-sm p-3 animate__animated animate__fadeIn">
+          <span class="ion-md-alert fs-4 me-3"></span>
+          <div>{{ errorMessage }}</div>
+        </div>
+
+        <form [formGroup]="contactForm" (ngSubmit)="onSubmitContact()" class="contact-form-home bg-white p-4 p-md-5 rounded-4 shadow-sm">
+          <div class="row gy-4">
+            <div class="col-md-6">
+              <div class="input-group-premium" [class.has-error]="contactForm.get('name')?.invalid && contactForm.get('name')?.touched">
+                <input type="text" formControlName="name" class="form-control" placeholder="Votre nom">
+                <span class="ion-ios-person icon-field"></span>
+              </div>
+              <div class="error-text text-danger small mt-1" *ngIf="contactForm.get('name')?.invalid && contactForm.get('name')?.touched">
+                Nom requis.
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="input-with-icon" [class.has-error]="contactForm.get('email')?.invalid && contactForm.get('email')?.touched">
+                <span class="ion-ios-mail input-icon" style="top: 50%; transform: translateY(-50%); font-size: 1.3rem; left: 18px;"></span>
+                <input type="email" 
+                       formControlName="email"
+                       class="custom-input" 
+                       [class.is-invalid]="contactForm.get('email')?.invalid && contactForm.get('email')?.touched"
+                       [class.is-valid]="contactForm.get('email')?.valid && contactForm.get('email')?.touched"
+                       placeholder="Votre email">
+                <span class="ion-md-checkmark-circle valid-check-icon" *ngIf="contactForm.get('email')?.valid && contactForm.get('email')?.touched"></span>
+              </div>
+              <div class="error-text text-danger small mt-1" *ngIf="contactForm.get('email')?.invalid && contactForm.get('email')?.touched">
+                <span *ngIf="contactForm.get('email')?.errors?.['required']">Email requis.</span>
+                <span *ngIf="contactForm.get('email')?.errors?.['email']">Format email invalide.</span>
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="input-group-premium custom-dropdown-wrapper" [class.has-error]="contactForm.get('subject')?.invalid && contactForm.get('subject')?.touched">
+                <div class="form-control custom-select-trigger d-flex justify-content-between align-items-center" (click)="toggleDropdown()">
+                  <span>{{ selectedSubject }}</span>
+                  <span class="ion-ios-arrow-down transition-all" [style.transform]="isDropdownOpen ? 'rotate(180deg)' : 'none'"></span>
+                </div>
+                <span class="ion-ios-list icon-field"></span>
+                
+                <!-- Custom Dropdown Menu -->
+                <div class="custom-dropdown-menu" [class.show]="isDropdownOpen">
+                  <div class="dropdown-item-premium d-flex align-items-center" *ngFor="let s of contactSubjects" 
+                       (click)="selectSubject(s.key)"
+                       [class.active]="s.key === selectedSubjectKey">
+                    <span [class]="s.icon + ' me-4'" style="font-size: 1.2rem; width: 20px; text-align: center;"></span>
+                    <span>{{ s.key | translate }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="error-text text-danger small mt-1" *ngIf="contactForm.get('subject')?.invalid && contactForm.get('subject')?.touched">
+                Veuillez choisir un sujet.
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="input-group-premium" [class.has-error]="contactForm.get('message')?.invalid && contactForm.get('message')?.touched">
+                <textarea formControlName="message" class="form-control" rows="5" placeholder="Votre message"></textarea>
+                <span class="ion-ios-create icon-field" style="top: 20px;"></span>
+              </div>
+              <div class="error-text text-danger small mt-1" *ngIf="contactForm.get('message')?.invalid && contactForm.get('message')?.touched">
+                <span *ngIf="contactForm.get('message')?.errors?.['required']">Message requis.</span>
+                <span *ngIf="contactForm.get('message')?.errors?.['minlength']">Minimum 10 caractères.</span>
+              </div>
+            </div>
+            <div class="col-12">
+              <button type="submit" class="btn btn-premium-blue w-100 py-3 mt-2 d-flex align-items-center justify-content-center" 
+                      [disabled]="isSubmitting || contactForm.invalid" style="border-radius: 16px;">
+                <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+                {{ isSubmitting ? 'Envoi en cours...' : 'Envoyer ma demande' }}
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="col-lg-5">
+        <div class="contact-info-home h-100 d-flex flex-column justify-content-center ps-lg-5">
+          <div class="info-item mb-4 d-flex align-items-center" data-aos="slide-right" data-aos-delay="100">
+            <div class="info-icon me-4"><span class="ion-ios-mail"></span></div>
+            <div><h6 class="fw-bold mb-1">Email</h6><p class="text-muted mb-0">contact@goride.tn</p></div>
+          </div>
+          <div class="info-item mb-4 d-flex align-items-center" data-aos="slide-right" data-aos-delay="200">
+            <div class="info-icon me-3"><span class="ion-ios-call"></span></div>
+            <div><h6 class="fw-bold mb-1">Téléphone</h6><p class="text-muted mb-0">+216 71 345 678</p></div>
+          </div>
+          <div class="info-item mb-4 d-flex align-items-center" data-aos="slide-right" data-aos-delay="300">
+            <div class="info-icon me-3"><span class="ion-ios-pin"></span></div>
+            <div><h6 class="fw-bold mb-1">Adresse</h6><p class="text-muted mb-0">Tunis, Tunisie</p></div>
+          </div>
+          <div class="info-item d-flex align-items-center" data-aos="slide-right" data-aos-delay="400">
+            <div class="info-icon me-3"><span class="ion-logo-whatsapp"></span></div>
+            <div><h6 class="fw-bold mb-1">WhatsApp</h6><p class="text-muted mb-0">+216 52 345 678</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER CTA -->
+<section class="footer-cta-section py-5">
+  <div class="container-custom py-4">
+    <div class="cta-banner-v2 p-5 rounded-4 text-center text-white position-relative overflow-hidden">
+      <div class="banner-pattern"></div>
+      <div class="position-relative z-index-2">
+        <h2 class="fw-800 mb-3">{{ 'HOME.CTA_FOOTER.TITLE' | translate }}</h2>
+        <p class="opacity-75 mb-5">{{ 'HOME.CTA_FOOTER.SUBTITLE' | translate }}</p>
+        <div class="d-flex justify-content-center gap-5" style="column-gap: 25px !important;">
+          <button class="btn btn-white-v2 px-5 py-3" *ngIf="!isLoggedIn" routerLink="/signup">{{ 'HOME.CTA_FOOTER.PRIMARY' | translate }}</button>
+          <button class="btn btn-white-v2 px-5 py-3" *ngIf="isLoggedIn" (click)="goToDashboard()">Continuer l'activité</button>
+          <button class="btn btn-outline-white-v2 px-5 py-3" routerLink="/acceuil/services">{{ 'HOME.CTA_FOOTER.SECONDARY' | translate }}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+

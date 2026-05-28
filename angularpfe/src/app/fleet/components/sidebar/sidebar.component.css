@@ -1,0 +1,147 @@
+.sidebar {
+  width: 280px;
+  height: 100vh;
+  background: #ffffff;
+  border-right: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 4px 0 24px rgba(0,0,0,0.02);
+}
+
+.sidebar-brand {
+  padding: 1.75rem 1.5rem;
+  border-bottom: 1px solid #f8fafc;
+}
+
+.logo-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-text {
+  font-size: 22px;
+  font-weight: 800;
+  color: #1e293b;
+  letter-spacing: -0.5px;
+  text-transform: uppercase;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 1.5rem 1rem;
+  overflow-y: auto;
+}
+
+/* Custom Scrollbar */
+.sidebar-nav::-webkit-scrollbar {
+  width: 5px;
+}
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 10px;
+}
+
+.nav-section {
+  margin-bottom: 1.5rem;
+}
+
+.section-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #94a3b8;
+  letter-spacing: 1.2px;
+  margin-bottom: 0.75rem;
+  padding-left: 1rem;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0.8rem 1rem;
+  color: #64748b;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 14px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-bottom: 4px;
+}
+
+.nav-item:hover {
+  background: #f8fafc;
+  color: #2563eb;
+  transform: translateX(4px);
+}
+
+.nav-item.active {
+  background: #eff6ff;
+  color: #2563eb;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
+}
+
+.nav-item .icon {
+  font-size: 20px;
+  width: 24px;
+  text-align: center;
+  transition: transform 0.2s;
+}
+
+.nav-item:hover .icon {
+  transform: scale(1.1);
+}
+
+.badge {
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-weight: 700;
+}
+
+.badge-warning {
+  background: #fffbeb;
+  color: #f59e0b;
+}
+
+.badge-danger {
+  background: #fef2f2;
+  color: #ef4444;
+}
+
+.sidebar-footer {
+  padding: 0 1rem 1.5rem 1rem;
+}
+
+.btn-logout {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 0.8rem 1rem;
+  color: #ef4444;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 14px;
+  background: #fff;
+  border: none;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.btn-logout:hover {
+  background: #fef2f2;
+  transform: translateX(4px);
+}
+
+.btn-logout .icon {
+  font-size: 20px;
+  width: 24px;
+  text-align: center;
+}

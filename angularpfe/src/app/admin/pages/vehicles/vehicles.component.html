@@ -1,0 +1,304 @@
+<div class="admin-vehicles animate__animated animate__fadeIn">
+  
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold text-dark mb-1">Gestion des véhicules</h2>
+      <p class="text-muted">Consultez et gérez tous les véhicules enregistrés sur la plateforme GoRide.</p>
+    </div>
+    <div class="search-wrapper">
+      <div class="input-group">
+        <span class="input-group-text bg-white border-end-0 rounded-pill-start">
+          <span class="ion-ios-search"></span>
+        </span>
+        <input type="text" class="form-control border-start-0 rounded-pill-end" 
+               placeholder="Rechercher marque, plaque, propriétaire..." 
+               [(ngModel)]="searchTerm" (ngModelChange)="onSearch()">
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-3">
+      <div class="metric-card bg-white shadow-sm p-3 rounded-4 h-100 border-start border-primary border-4">
+        <div class="d-flex justify-content-between">
+          <div>
+            <p class="text-muted small fw-bold text-uppercase mb-1">Total véhicules</p>
+            <h3 class="fw-bold mb-0 text-dark">{{ stats.total }}</h3>
+          </div>
+          <div class="text-primary fs-3"><span class="ion-ios-car"></span></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="metric-card bg-white shadow-sm p-3 rounded-4 h-100 border-start border-success border-4">
+        <div class="d-flex justify-content-between">
+          <div>
+            <p class="text-muted small fw-bold text-uppercase mb-1">Disponibles</p>
+            <h3 class="fw-bold mb-0 text-success">{{ stats.available }}</h3>
+          </div>
+          <div class="text-success fs-3"><span class="ion-ios-checkmark-circle"></span></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="metric-card bg-white shadow-sm p-3 rounded-4 h-100 border-start border-warning border-4">
+        <div class="d-flex justify-content-between">
+          <div>
+            <p class="text-muted small fw-bold text-uppercase mb-1">En attente</p>
+            <h3 class="fw-bold mb-0 text-warning">{{ stats.pending }}</h3>
+          </div>
+          <div class="text-warning fs-3"><span class="ion-ios-hourglass"></span></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="metric-card bg-white shadow-sm p-3 rounded-4 h-100 border-start border-info border-4">
+        <div class="d-flex justify-content-between">
+          <div>
+            <p class="text-muted small fw-bold text-uppercase mb-1">Revenus cumulés</p>
+            <h3 class="fw-bold mb-0 text-info">{{ stats.totalRevenue | number:'1.0-0':'fr-FR' }} DT</h3>
+          </div>
+          <div class="text-info fs-3"><span class="ion-ios-cash"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-card shadow-sm bg-white rounded-4 p-4">
+    
+    <!-- Filters and Sorting -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+      <div class="d-flex flex-wrap gap-2">
+        <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="currentFilter === 'ALL' ? 'btn-primary' : 'btn-light border text-muted'" (click)="applyFilter('ALL')">Tous</button>
+        <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="currentFilter === 'AVAILABLE' ? 'btn-success' : 'btn-light border text-success'" (click)="applyFilter('AVAILABLE')">Disponibles</button>
+        <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="currentFilter === 'PENDING' ? 'btn-warning text-dark' : 'btn-light border text-warning'" (click)="applyFilter('PENDING')">En attente</button>
+        <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="currentFilter === 'MAINTENANCE' ? 'btn-warning text-dark' : 'btn-light border text-warning'" (click)="applyFilter('MAINTENANCE')">Maintenance</button>
+        <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="currentFilter === 'SUSPENDED' ? 'btn-danger' : 'btn-light border text-danger'" (click)="applyFilter('SUSPENDED')">Suspendus</button>
+        
+        <div class="vr mx-1 opacity-25"></div>
+        
+        <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="currentFilter === 'OWNER' ? 'btn-outline-primary' : 'btn-light border text-muted'" (click)="applyFilter('OWNER')">Propriétaires</button>
+        <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="currentFilter === 'DRIVER' ? 'btn-outline-primary' : 'btn-light border text-muted'" (click)="applyFilter('DRIVER')">Chauffeurs</button>
+      </div>
+
+      <div class="d-flex align-items-center gap-2">
+        <span class="text-muted small fw-bold">Trier par :</span>
+        <select class="form-select form-select-sm rounded-pill border shadow-none" style="width: 180px;" [(ngModel)]="currentSort" (change)="onSearch()">
+          <option value="NEWEST">Plus récents</option>
+          <option value="OLDEST">Plus anciens</option>
+          <option value="REVENUE_DESC">Revenus décroissants</option>
+          <option value="RATING_DESC">Meilleure note</option>
+          <option value="PRICE_DESC">Prix le plus haut</option>
+          <option value="PRICE_ASC">Prix le plus bas</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Vehicles Table -->
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead>
+          <tr>
+            <th class="text-muted small text-uppercase">Véhicule</th>
+            <th class="text-muted small text-uppercase">Propriétaire</th>
+            <th class="text-muted small text-uppercase">Ville</th>
+            <th class="text-muted small text-uppercase text-center">Validation</th>
+            <th class="text-muted small text-uppercase text-center">Disponibilité</th>
+            <th class="text-muted small text-uppercase text-center">Note / Revenus</th>
+            <th class="text-muted small text-uppercase text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let vehicle of filteredVehicles">
+            <td>
+              <div class="d-flex align-items-center gap-3">
+                <div class="vehicle-icon-box shadow-sm rounded-3">
+                  <span class="ion-ios-car"></span>
+                </div>
+                <div>
+                  <span class="fw-bold d-block text-dark">{{ vehicle.brand }} {{ vehicle.model }}</span>
+                  <span class="badge bg-light text-muted border tiny">{{ vehicle.plateNumber }}</span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="d-flex flex-column">
+                <span class="fw-bold small">{{ vehicle.ownerName }}</span>
+                <span class="tiny text-muted">{{ vehicle.ownerRole === 'FLEET_OWNER' ? 'Propriétaire' : (vehicle.ownerRole === 'DRIVER' ? 'Chauffeur' : 'GoRide Platform') }}</span>
+              </div>
+            </td>
+            <td><span class="text-muted small">{{ vehicle.city }}</span></td>
+            <td class="text-center">
+              <span class="badge rounded-pill" [ngClass]="getValidationBadge(vehicle.validationStatus)">
+                {{ getValidationLabel(vehicle.validationStatus) }}
+              </span>
+            </td>
+            <td class="text-center">
+              <span class="badge rounded-pill px-3" [ngClass]="getAvailabilityBadge(vehicle.availabilityStatus)">
+                {{ getAvailabilityLabel(vehicle.availabilityStatus) }}
+              </span>
+            </td>
+            <td class="text-center">
+              <div class="d-flex flex-column align-items-center">
+                <span class="text-warning small fw-bold" *ngIf="vehicle.rating > 0"><span class="ion-ios-star me-1"></span>{{ vehicle.rating }}</span>
+                <span class="text-muted tiny" *ngIf="vehicle.rating === 0">Aucune note</span>
+                <span class="fw-bold text-dark small mt-1">{{ vehicle.totalRevenue | number:'1.0-0':'fr-FR' }} DT</span>
+              </div>
+            </td>
+            <td class="text-end">
+              <div class="d-flex justify-content-end gap-1">
+                <button class="btn btn-sm btn-light border text-primary rounded-pill px-3 fw-bold" (click)="openDetails(vehicle)">Détails</button>
+                
+                <!-- Action based on status -->
+                <ng-container *ngIf="vehicle.validationStatus === 'PENDING'">
+                  <button class="btn btn-sm btn-primary rounded-pill px-3 fw-bold" (click)="goToValidations(vehicle)" title="Gérer dans le centre de validation">
+                    Aller aux validations
+                  </button>
+                </ng-container>
+
+                <ng-container *ngIf="vehicle.validationStatus === 'APPROVED'">
+                  <button class="btn btn-sm btn-light border rounded-pill" 
+                          *ngIf="vehicle.availabilityStatus === 'AVAILABLE'" 
+                          (click)="toggleMaintenance(vehicle)" title="Maintenance">
+                    <span class="ion-ios-construct text-warning"></span>
+                  </button>
+                  <button class="btn btn-sm btn-light border rounded-pill" 
+                          *ngIf="vehicle.availabilityStatus === 'MAINTENANCE'" 
+                          (click)="toggleMaintenance(vehicle)" title="Remettre disponible">
+                    <span class="ion-ios-checkmark-circle text-success"></span>
+                  </button>
+                  <button class="btn btn-sm btn-light border rounded-pill" 
+                          *ngIf="vehicle.availabilityStatus !== 'SUSPENDED'" 
+                          (click)="openSuspendModal(vehicle)" title="Suspendre">
+                    <span class="ion-ios-pause text-danger"></span>
+                  </button>
+                  <button class="btn btn-sm btn-light border rounded-pill" 
+                          *ngIf="vehicle.availabilityStatus === 'SUSPENDED'" 
+                          (click)="reactivateVehicle(vehicle)" title="Réactiver">
+                    <span class="ion-ios-play text-success"></span>
+                  </button>
+                </ng-container>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <div *ngIf="filteredVehicles.length === 0" class="text-center py-5">
+        <span class="ion-ios-search fs-1 text-muted mb-2 d-block"></span>
+        <p class="text-muted">Aucun véhicule trouvé.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Details Modal -->
+<div class="modal-overlay animate__animated animate__fadeIn" *ngIf="isDetailsModalOpen" (click)="closeDetails()">
+  <div class="modal-content-wrapper shadow-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+      <h5 class="fw-bold text-dark mb-0">Détails du véhicule</h5>
+      <button class="btn btn-light rounded-circle p-2 d-flex" (click)="closeDetails()">
+        <span class="ion-ios-close fs-4 text-dark" style="line-height: 1;"></span>
+      </button>
+    </div>
+    
+    <div class="modal-body mb-4" *ngIf="selectedVehicle">
+      <div class="d-flex align-items-center gap-4 mb-4 pb-3 border-bottom">
+        <div class="vehicle-icon-box shadow-sm rounded-4" style="width: 80px; height: 80px; font-size: 40px;">
+          <span class="ion-ios-car"></span>
+        </div>
+        <div>
+          <h4 class="fw-bold text-dark mb-1">{{ selectedVehicle.brand }} {{ selectedVehicle.model }}</h4>
+          <div class="d-flex gap-2 align-items-center">
+            <span class="badge bg-light text-dark border">{{ selectedVehicle.plateNumber }}</span>
+            <span class="badge rounded-pill" [ngClass]="getValidationBadge(selectedVehicle.validationStatus)">
+              {{ getValidationLabel(selectedVehicle.validationStatus) }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-6">
+          <span class="tiny text-muted text-uppercase fw-bold d-block mb-1">Propriétaire</span>
+          <span class="text-dark fw-bold">{{ selectedVehicle.ownerName }}</span>
+        </div>
+        <div class="col-6">
+          <span class="tiny text-muted text-uppercase fw-bold d-block mb-1">Type de compte</span>
+          <span class="text-dark fw-bold">{{ selectedVehicle.ownerRole === 'FLEET_OWNER' ? 'Propriétaire de flotte' : (selectedVehicle.ownerRole === 'DRIVER' ? 'Chauffeur indépendant' : 'Flotte GoRide') }}</span>
+        </div>
+        <div class="col-6">
+          <span class="tiny text-muted text-uppercase fw-bold d-block mb-1">Catégorie</span>
+          <span class="text-dark fw-bold">{{ selectedVehicle.category }} / {{ selectedVehicle.type }}</span>
+        </div>
+        <div class="col-6">
+          <span class="tiny text-muted text-uppercase fw-bold d-block mb-1">Ville</span>
+          <span class="text-dark fw-bold">{{ selectedVehicle.city }}</span>
+        </div>
+        <div class="col-6">
+          <span class="tiny text-muted text-uppercase fw-bold d-block mb-1">Tarif indicatif</span>
+          <span class="text-primary fw-bold">{{ selectedVehicle.pricePerDay || selectedVehicle.pricePerRide }} DT / {{ selectedVehicle.ownerRole === 'DRIVER' ? 'Course' : 'Jour' }}</span>
+        </div>
+        <div class="col-6">
+          <span class="tiny text-muted text-uppercase fw-bold d-block mb-1">Statut actuel</span>
+          <span class="badge rounded-pill px-3" [ngClass]="getAvailabilityBadge(selectedVehicle.availabilityStatus)">
+            {{ getAvailabilityLabel(selectedVehicle.availabilityStatus) }}
+          </span>
+        </div>
+
+        <div class="col-12 mt-3 pt-3 border-top">
+          <div class="row text-center">
+            <div class="col-4">
+              <span class="tiny text-muted d-block">Réservations</span>
+              <span class="fw-bold text-dark fs-5">{{ selectedVehicle.totalBookings }}</span>
+            </div>
+            <div class="col-4 border-start border-end">
+              <span class="tiny text-muted d-block">Revenus</span>
+              <span class="fw-bold text-info fs-5">{{ selectedVehicle.totalRevenue }} DT</span>
+            </div>
+            <div class="col-4">
+              <span class="tiny text-muted d-block">Note</span>
+              <span class="fw-bold text-warning fs-5"><span class="ion-ios-star me-1"></span>{{ selectedVehicle.rating || 'N/A' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 mt-3 p-3 bg-danger-soft rounded-3" *ngIf="selectedVehicle.availabilityStatus === 'SUSPENDED' && selectedVehicle.suspensionReason">
+          <span class="tiny text-danger text-uppercase fw-bold d-block mb-1">Motif de suspension</span>
+          <p class="small text-danger fw-bold mb-0">{{ selectedVehicle.suspensionReason }}</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="modal-footer">
+      <button class="btn btn-light fw-bold w-100 rounded-pill" (click)='closeDetails()'>Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Suspension Modal -->
+<div class="modal-overlay animate__animated animate__fadeIn" *ngIf="isSuspendModalOpen" (click)="isSuspendModalOpen = false">
+  <div class="modal-content-wrapper shadow-lg" style="max-width: 450px;" (click)="$event.stopPropagation()">
+    <div class="modal-header d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+      <h5 class="fw-bold text-dark mb-0">Suspendre le véhicule</h5>
+      <button class="btn btn-light rounded-circle p-2 d-flex" (click)="isSuspendModalOpen = false">
+        <span class="ion-ios-close fs-4 text-dark" style="line-height: 1;"></span>
+      </button>
+    </div>
+    
+    <div class="modal-body mb-4">
+      <p class="text-muted small mb-3">Veuillez indiquer le motif de la suspension pour <strong>{{ selectedVehicle?.brand }} {{ selectedVehicle?.model }}</strong>.</p>
+      <textarea class="form-control rounded-4 p-3 bg-light border-0" rows="4" 
+                placeholder="Ex: Documents expirés, Plaintes multiples, Non respect de la charte..." 
+                [(ngModel)]="suspensionReason"></textarea>
+      <div class="text-danger tiny mt-2 fw-bold" *ngIf="suspensionError">{{ suspensionError }}</div>
+    </div>
+    
+    <div class="modal-footer d-flex gap-2">
+      <button class="btn btn-light fw-bold flex-grow-1 rounded-pill" (click)="isSuspendModalOpen = false">Annuler</button>
+      <button class="btn btn-danger fw-bold flex-grow-1 rounded-pill" (click)="confirmSuspension()">Confirmer la suspension</button>
+    </div>
+  </div>
+</div>

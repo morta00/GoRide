@@ -1,0 +1,183 @@
+<div class="reviews-page animate__animated animate__fadeIn">
+  <div class="page-header mb-4">
+    <h2 class="page-title">Avis clients</h2>
+    <p class="page-subtitle text-muted">Consultez les retours et évaluations laissés par vos passagers et entreprises partenaires.</p>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid mb-5">
+    <div class="stat-card">
+      <div class="stat-icon bg-orange-soft text-orange"><span class="ion-md-star"></span></div>
+      <div class="stat-info">
+        <span class="label">Note moyenne</span>
+        <h3 class="value">{{ summary.averageRating }} <small>/ 5</small></h3>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon bg-blue-soft text-blue"><span class="ion-md-chatbubbles"></span></div>
+      <div class="stat-info">
+        <span class="label">Total avis</span>
+        <h3 class="value">{{ summary.totalReviews }}</h3>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon bg-green-soft text-green"><span class="ion-md-person"></span></div>
+      <div class="stat-info">
+        <span class="label">Avis passagers</span>
+        <h3 class="value">{{ summary.passengerReviews }}</h3>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon bg-purple-soft text-purple"><span class="ion-md-business"></span></div>
+      <div class="stat-info">
+        <span class="label">Avis entreprises</span>
+        <h3 class="value">{{ summary.companyReviews }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters & Search -->
+  <div class="content-card mb-4">
+    <div class="filter-bar">
+      <div class="search-box">
+        <span class="ion-md-search search-icon"></span>
+        <input type="text" [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="Rechercher un avis, un client, un trajet...">
+      </div>
+      
+      <div class="filter-selects">
+        <select [(ngModel)]="activeFilter" (change)="applyFilters()" class="custom-select">
+          <option value="ALL">Tous les avis</option>
+          <option value="PASSENGER">Passagers uniquement</option>
+          <option value="COMPANY">Entreprises uniquement</option>
+          <option value="5STARS">5 étoiles</option>
+          <option value="4STARS">4 étoiles et +</option>
+        </select>
+
+        <select [(ngModel)]="sortOrder" (change)="applyFilters()" class="custom-select">
+          <option value="recent">Plus récents</option>
+          <option value="older">Plus anciens</option>
+          <option value="best">Meilleure note</option>
+          <option value="worst">Note la plus basse</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reviews List -->
+  <div class="reviews-list">
+    <div *ngFor="let review of filteredReviews" class="review-card animate__animated animate__fadeInUp">
+      <div class="review-header">
+        <div class="reviewer-info">
+          <div class="avatar-wrapper">
+            <app-profile-avatar
+              [name]="review.reviewerName"
+              [photoUrl]="review.avatar"
+              [size]="52"
+              [showStatus]="false">
+            </app-profile-avatar>
+          </div>
+          <div class="reviewer-text">
+            <div class="name-row">
+              <h4 class="reviewer-name">{{ review.reviewerName }}</h4>
+              <span class="type-badge" [ngClass]="review.reviewerType.toLowerCase()">
+                {{ review.reviewerType === 'PASSENGER' ? 'Passager' : 'Entreprise' }}
+              </span>
+            </div>
+            <p class="review-date">{{ review.date | date:'dd MMMM yyyy' }}</p>
+          </div>
+        </div>
+        <div class="rating-display">
+          <div class="stars">
+            <span *ngFor="let s of getStars(review.rating)" class="ion-md-star filled"></span>
+            <span *ngIf="hasHalfStar(review.rating)" class="ion-md-star-half filled"></span>
+            <span *ngFor="let s of getEmptyStars(review.rating)" class="ion-md-star-outline"></span>
+          </div>
+          <span class="rating-val">{{ review.rating }}</span>
+        </div>
+      </div>
+
+      <div class="review-body">
+        <p class="review-comment">"{{ review.comment }}"</p>
+        <div class="related-entity" *ngIf="review.relatedTitle">
+          <span class="label">{{ review.reviewerType === 'PASSENGER' ? 'Trajet' : 'Mission' }}:</span>
+          <span class="value">{{ review.relatedTitle }}</span>
+        </div>
+      </div>
+
+      <div class="review-footer">
+        <button class="btn-details" (click)="openDetails(review)">
+          <span class="ion-md-information-circle-outline me-2"></span> Détails
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="filteredReviews.length === 0" class="empty-state text-center py-5">
+      <span class="ion-md-star-outline d-block mb-3" style="font-size: 4rem; color: #cbd5e1;"></span>
+      <p class="text-muted">Aucun avis trouvé correspondant à vos critères.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Détails -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-container-centered animate__animated animate__zoomIn" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="header-top">
+        <span class="type-tag" [ngClass]="selectedReview?.reviewerType?.toLowerCase()">
+          {{ selectedReview?.reviewerType === 'PASSENGER' ? 'Avis Passager' : 'Avis Entreprise' }}
+        </span>
+        <button class="btn-close" (click)="closeModal()">&times;</button>
+      </div>
+      <div class="reviewer-main mt-3">
+        <div class="avatar-large">
+          <app-profile-avatar
+            [name]="selectedReview?.reviewerName || ''"
+            [photoUrl]="selectedReview?.avatar"
+            [size]="72"
+            [showStatus]="false">
+          </app-profile-avatar>
+        </div>
+        <div class="reviewer-titles">
+          <h3 class="mb-0">{{ selectedReview?.reviewerName }}</h3>
+          <p class="text-muted mb-0" *ngIf="selectedReview?.reviewerRole">{{ selectedReview?.reviewerRole }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-body p-4">
+      <div class="rating-section text-center mb-4">
+        <div class="stars-large mb-2">
+          <span *ngFor="let s of getStars(selectedReview?.rating || 0)" class="ion-md-star filled"></span>
+          <span *ngIf="hasHalfStar(selectedReview?.rating || 0)" class="ion-md-star-half filled"></span>
+          <span *ngFor="let s of getEmptyStars(selectedReview?.rating || 0)" class="ion-md-star-outline"></span>
+        </div>
+        <h4 class="rating-number">{{ selectedReview?.rating }} / 5</h4>
+      </div>
+
+      <div class="comment-section mb-4">
+        <label class="section-label">Commentaire</label>
+        <div class="comment-box">
+          <p>"{{ selectedReview?.comment }}"</p>
+        </div>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-item">
+          <label>Date de l'avis</label>
+          <span>{{ selectedReview?.date | date:'dd MMMM yyyy, HH:mm' }}</span>
+        </div>
+        <div class="info-item">
+          <label>{{ selectedReview?.reviewerType === 'PASSENGER' ? 'Trajet lié' : 'Mission liée' }}</label>
+          <span>{{ selectedReview?.relatedTitle }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer p-3 border-top d-flex justify-content-end gap-3">
+      <button class="btn-secondary-custom" (click)="closeModal()">Fermer</button>
+      <button class="btn-primary-custom" *ngIf="selectedReview" (click)="goToConversation(selectedReview)">
+        <span class="ion-md-chatbubbles me-2"></span> Voir la conversation
+      </button>
+    </div>
+  </div>
+</div>

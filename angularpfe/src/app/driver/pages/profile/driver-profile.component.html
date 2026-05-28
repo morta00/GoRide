@@ -1,0 +1,267 @@
+<div class="profile-container animate__animated animate__fadeIn">
+  <div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+      <h2>Mon Profil Chauffeur</h2>
+      <p class="text-muted">Gérez vos informations personnelles et professionnelles.</p>
+    </div>
+    <button class="btn-edit" (click)="toggleEdit()">
+      <span class="ion-md-create me-2"></span> Modifier le profil
+    </button>
+  </div>
+
+  <!-- Messages -->
+  <div *ngIf="successMessage" class="alert alert-success animate__animated animate__fadeInDown">
+    {{ successMessage }}
+  </div>
+  <div *ngIf="errorMessage" class="alert alert-danger animate__animated animate__fadeInDown">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Main Profile Card -->
+  <div class="profile-card" *ngIf="!isLoading && profile">
+    <!-- Hero -->
+    <div class="hero-section">
+      <app-profile-avatar
+        class="hero-avatar"
+        [firstName]="profile.firstName"
+        [lastName]="profile.lastName"
+        [photoUrl]="authService.getCurrentUser()?.photoUrl"
+        [size]="100"
+        [shape]="'rounded'"
+        [showStatus]="true"
+        [isOnline]="isOnline">
+      </app-profile-avatar>
+      <div class="hero-info">
+        <h1>{{ profile.firstName }} {{ profile.lastName }}</h1>
+        <div class="availability-pill" [class.online]="isOnline" [class.offline]="!isOnline">
+          <span class="availability-dot" aria-hidden="true"></span>
+          {{ isOnline ? 'En ligne' : 'Hors ligne' }}
+        </div>
+        <div class="badge-driver">
+          <span class="ion-md-car"></span>
+          {{ profile.workMode === 'INDEPENDENT' ? 'Chauffeur Indépendant' : 'Chauffeur Entreprise' }}
+        </div>
+        <div class="mt-2 small opacity-75">
+          <span class="ion-md-mail me-2"></span> {{ profile.email }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <nav class="tabs-nav">
+      <button class="tab-link" [class.active]="activeTab === 'info'" (click)="activeTab = 'info'">Informations</button>
+      <button class="tab-link" [class.active]="activeTab === 'security'" (click)="activeTab = 'security'">Sécurité</button>
+      <button class="tab-link" [class.active]="activeTab === 'documents'" (click)="activeTab = 'documents'">Documents</button>
+    </nav>
+
+    <!-- Tab Content -->
+    <div class="tab-content">
+      
+      <!-- INFO TAB -->
+      <div *ngIf="activeTab === 'info'" class="animate__animated animate__fadeIn">
+        <div class="section-title">
+          <span class="ion-md-person text-primary"></span> Informations Personnelles
+        </div>
+        <div class="info-grid">
+          <div class="info-item">
+            <label>Prénom</label>
+            <div class="value">{{ profile.firstName }}</div>
+          </div>
+          <div class="info-item">
+            <label>Nom</label>
+            <div class="value">{{ profile.lastName }}</div>
+          </div>
+          <div class="info-item">
+            <label>Téléphone</label>
+            <div class="value">{{ profile.phone || 'Non renseigné' }}</div>
+          </div>
+          <div class="info-item">
+            <label>Ville</label>
+            <div class="value">{{ profile.city || 'Non renseigné' }}</div>
+          </div>
+          <div class="info-item">
+            <label>Adresse</label>
+            <div class="value">{{ profile.address || 'Non renseigné' }}</div>
+          </div>
+          <div class="info-item">
+            <label>Pays</label>
+            <div class="value">{{ profile.country || 'Tunisie' }}</div>
+          </div>
+        </div>
+
+        <div class="section-title mt-4">
+          <span class="ion-md-ribbon text-warning"></span> Informations Professionnelles
+        </div>
+        <div class="info-grid">
+          <div class="info-item">
+            <label>Numéro de permis</label>
+            <div class="value" [class.empty]="!profile.licenseNumber">{{ profile.licenseNumber || 'Non renseigné' }}</div>
+          </div>
+          <div class="info-item">
+            <label>Expérience (années)</label>
+            <div class="value" [class.empty]="!profile.drivingExperienceYears">{{ profile.drivingExperienceYears || 'Non renseigné' }}</div>
+          </div>
+          <div class="info-item">
+            <label>Statut de disponibilité</label>
+            <div class="value">
+              <span class="status-dot" [ngClass]="{
+                'status-available': profile.availabilityStatus === 'AVAILABLE',
+                'status-busy': profile.availabilityStatus === 'BUSY',
+                'status-offline': profile.availabilityStatus === 'OFFLINE'
+              }"></span>
+              {{ profile.availabilityStatus === 'AVAILABLE' ? 'Disponible' : profile.availabilityStatus === 'BUSY' ? 'Occupé' : 'Hors ligne' }}
+            </div>
+          </div>
+          <div class="info-item">
+            <label>Note moyenne</label>
+            <div class="value"><span class="ion-md-star text-warning"></span> {{ profile.rating | number:'1.1-1' }}</div>
+          </div>
+          <div class="info-item">
+            <label>Trajets total</label>
+            <div class="value">{{ profile.totalTrips }}</div>
+          </div>
+        </div>
+
+        <div class="section-title mt-4">
+          <span class="ion-md-quote text-info"></span> Biographie
+        </div>
+        <div class="bio-text p-3 bg-light rounded-3" [class.empty]="!profile.bio">
+          {{ profile.bio || 'Aucune biographie renseignée.' }}
+        </div>
+      </div>
+
+      <!-- SECURITY TAB -->
+      <div *ngIf="activeTab === 'security'" class="animate__animated animate__fadeIn">
+        <div class="section-title">
+          <span class="ion-md-lock text-danger"></span> Changer le mot de passe
+        </div>
+        <form [formGroup]="securityForm" (ngSubmit)="changePassword()" class="max-w-md">
+          <div class="form-group">
+            <label>Ancien mot de passe</label>
+            <input type="password" formControlName="currentPassword" class="form-control" placeholder="••••••••">
+          </div>
+          <div class="form-group">
+            <label>Nouveau mot de passe</label>
+            <input type="password" formControlName="newPassword" class="form-control" placeholder="Minimum 8 caractères">
+          </div>
+          <div class="form-group">
+            <label>Confirmer le nouveau mot de passe</label>
+            <input type="password" formControlName="confirmPassword" class="form-control" placeholder="Confirmer">
+          </div>
+          <button type="submit" class="btn-save mt-3" [disabled]="securityForm.invalid">Mettre à jour le mot de passe</button>
+        </form>
+      </div>
+
+      <!-- DOCUMENTS TAB -->
+      <div *ngIf="activeTab === 'documents'" class="animate__animated animate__fadeIn">
+        <div class="section-title">
+          <span class="ion-md-document text-primary"></span> Documents Chauffeur
+        </div>
+        <div class="empty-placeholder">
+          <span class="ion-md-notifications-off mb-3" style="font-size: 3rem; display: block;"></span>
+          <h4>Aucun document ajouté.</h4>
+          <p class="text-muted">La fonctionnalité de téléversement des documents sera connectée prochainement.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status"></div>
+    <p class="mt-3 text-muted">Chargement du profil...</p>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-overlay" *ngIf="isEditing" (click)="toggleEdit()">
+  <div class="modal-content animate__animated animate__zoomIn" (click)="$event.stopPropagation()">
+    <h3>Modifier mon Profil</h3>
+    <p class="text-muted mb-4">Mettez à jour vos informations réelles.</p>
+
+    <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>Prénom</label>
+            <input type="text" formControlName="firstName" class="form-control">
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>Nom</label>
+            <input type="text" formControlName="lastName" class="form-control">
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>Téléphone</label>
+            <input type="text" formControlName="phone" class="form-control">
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>Ville</label>
+            <input type="text" formControlName="city" class="form-control">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Adresse</label>
+        <input type="text" formControlName="address" class="form-control">
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>Numéro de permis</label>
+            <input type="text" formControlName="licenseNumber" class="form-control">
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>Expérience (années)</label>
+            <input type="number" formControlName="drivingExperienceYears" class="form-control">
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>Mode de travail</label>
+            <select formControlName="workMode" class="form-control">
+              <option value="INDEPENDENT">Indépendant</option>
+              <option value="COMPANY">En entreprise</option>
+            </select>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>Disponibilité</label>
+            <select formControlName="availabilityStatus" class="form-control">
+              <option value="AVAILABLE">Disponible</option>
+              <option value="BUSY">Occupé</option>
+              <option value="OFFLINE">Hors ligne</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Biographie</label>
+        <textarea formControlName="bio" class="form-control" rows="3"></textarea>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" (click)="toggleEdit()">Annuler</button>
+        <button type="submit" class="btn-save">Enregistrer les modifications</button>
+      </div>
+    </form>
+  </div>
+</div>

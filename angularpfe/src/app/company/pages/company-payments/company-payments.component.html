@@ -1,0 +1,310 @@
+<div class="company-payments-page animate__animated animate__fadeIn p-4">
+  <!-- Titre -->
+  <div class="mb-4">
+    <h2 class="fw-bold mb-1">Paiements & Factures</h2>
+    <p class="text-muted">Suivez les paiements, factures, reçus et remboursements de votre entreprise.</p>
+  </div>
+
+  <!-- Résumé financier -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-3">
+      <div class="stat-card p-4 rounded-4 shadow-sm border-0 bg-white">
+        <div class="d-flex align-items-center gap-3">
+          <div class="stat-icon bg-soft-primary text-primary"><i class="ion-md-wallet"></i></div>
+          <div>
+            <h6 class="text-muted small mb-0">Total dépensé</h6>
+            <h3 class="fw-bold mb-0 text-primary">{{ stats.totalSpent | number:'1.0-0':'fr-FR' }} DT</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card p-4 rounded-4 shadow-sm border-0 bg-white">
+        <div class="d-flex align-items-center gap-3">
+          <div class="stat-icon bg-soft-warning text-warning"><i class="ion-md-paper"></i></div>
+          <div>
+            <h6 class="text-muted small mb-0">En attente</h6>
+            <h3 class="fw-bold mb-0">{{ stats.pendingInvoices }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card p-4 rounded-4 shadow-sm border-0 bg-white">
+        <div class="d-flex align-items-center gap-3">
+          <div class="stat-icon bg-soft-success text-success"><i class="ion-md-checkmark-circle"></i></div>
+          <div>
+            <h6 class="text-muted small mb-0">Factures payées</h6>
+            <h3 class="fw-bold mb-0">{{ stats.paidInvoices }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card p-4 rounded-4 shadow-sm border-0 bg-white">
+        <div class="d-flex align-items-center gap-3">
+          <div class="stat-icon bg-soft-danger text-danger"><i class="ion-md-refresh"></i></div>
+          <div>
+            <h6 class="text-muted small mb-0">Remboursements</h6>
+            <h3 class="fw-bold mb-0">{{ stats.refunds }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="bg-white rounded-4 shadow-sm p-4 mb-4">
+    <div class="row g-3 align-items-center">
+      <div class="col-lg-4">
+        <div class="search-box">
+          <i class="ion-md-search"></i>
+          <input type="text" class="form-control rounded-pill bg-light border-0 px-5" 
+                 placeholder="Rechercher une facture ou paiement..." [(ngModel)]="searchTerm" (input)="applyFilters()">
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <div class="d-flex gap-2">
+          <select class="form-select rounded-pill bg-light border-0 px-3" [(ngModel)]="filterType" (change)="applyFilters()">
+            <option value="ALL">Tous les éléments</option>
+            <option value="PENDING">Factures en attente</option>
+            <option value="PAID_INVOICES">Factures payées</option>
+            <option value="PAYMENTS">Historique paiements</option>
+            <option value="REFUNDS">Remboursements</option>
+          </select>
+          <select class="form-select rounded-pill bg-light border-0 px-3" [(ngModel)]="sortBy" (change)="applyFilters()">
+            <option value="NEWEST">Plus récents</option>
+            <option value="OLDEST">Plus anciens</option>
+            <option value="AMOUNT_ASC">Montant croissant</option>
+            <option value="AMOUNT_DESC">Montant décroissant</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- List of Invoices and Payments -->
+    <div class="col-lg-8">
+      <div class="items-list">
+        <div *ngFor="let item of filteredItems" class="item-card bg-white rounded-4 shadow-sm p-3 mb-3 animate__animated animate__fadeInUp">
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex gap-3 align-items-center">
+              <div class="item-icon-circle" [ngClass]="item.itemType === 'INVOICE' ? 'bg-soft-primary' : 'bg-soft-info'">
+                <i [ngClass]="item.itemType === 'INVOICE' ? 'ion-md-paper' : 'ion-md-wallet'"></i>
+              </div>
+              <div>
+                <h6 class="fw-bold mb-0">
+                  {{ item.itemType === 'INVOICE' ? item.invoiceNumber : item.title }}
+                </h6>
+                <p class="text-muted small mb-0">{{ item.serviceTitle }} • {{ item.date | date:'dd MMM yyyy' }}</p>
+              </div>
+            </div>
+            <div class="text-end">
+              <h5 class="fw-bold mb-1" [class.text-danger]="item.status === 'PENDING' && item.itemType === 'INVOICE'">
+                {{ item.amount }} DT
+              </h5>
+              <span class="badge rounded-pill" [ngClass]="item.status === 'PAID' ? 'bg-soft-success text-success' : 'bg-soft-warning text-warning'">
+                {{ item.status === 'PAID' ? 'Payé' : 'En attente' }}
+              </span>
+            </div>
+          </div>
+          <hr class="my-3 opacity-10">
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="text-muted small">
+              {{ item.itemType === 'INVOICE' ? 'Facture' : 'Paiement ' + (item.method || '') }}
+            </span>
+            <div class="actions">
+              <ng-container *ngIf="item.itemType === 'INVOICE'">
+                <button class="btn btn-outline-primary btn-sm rounded-pill px-3 me-2" (click)="openInvoice(item)">Voir facture</button>
+                <button class="btn btn-primary btn-sm rounded-pill px-3" *ngIf="item.status === 'PENDING'" (click)="openPayModal(item)">Payer</button>
+              </ng-container>
+              <ng-container *ngIf="item.itemType === 'PAYMENT'">
+                <button class="btn btn-outline-primary btn-sm rounded-pill px-3 me-2" (click)="openDetails(item)">Détails</button>
+                <button class="btn btn-soft-primary btn-sm rounded-pill px-3" (click)="openReceipt(item)">Reçu</button>
+              </ng-container>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="filteredItems.length === 0" class="text-center py-5 bg-white rounded-4 shadow-sm">
+          <span class="ion-md-wallet fs-1 text-muted opacity-25 d-block mb-3"></span>
+          <h5 class="fw-bold text-muted">Aucun paiement pour le moment</h5>
+          <p class="text-muted small mb-0">Vos factures et paiements apparaîtront ici.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Methods & Info -->
+    <div class="col-lg-4">
+      <div class="bg-white rounded-4 shadow-sm p-4 mb-4 sticky-top" style="top: 20px;">
+        <h5 class="fw-bold mb-4">Méthodes de paiement</h5>
+        <div *ngFor="let method of paymentSettings?.methods" 
+             class="payment-method-card border rounded-4 p-3 mb-3" 
+             [class.active]="paymentSettings.preferredPaymentMethod === method.label"
+             (click)="updatePreferredMethod(method.label)">
+          <div class="d-flex align-items-center gap-3">
+            <div class="method-icon">
+              <i [ngClass]="method.id === 'CARD_COMPANY' ? 'ion-md-card' : (method.id === 'BANK_TRANSFER' ? 'ion-md-business' : 'ion-md-wallet')" 
+                 class="h3 mb-0" [class.text-primary]="paymentSettings.preferredPaymentMethod === method.label"></i>
+            </div>
+            <div class="flex-grow-1">
+              <h6 class="fw-bold mb-0" [class.text-primary]="paymentSettings.preferredPaymentMethod === method.label">
+                {{ method.label }}
+              </h6>
+              <p class="text-muted small mb-0">{{ method.details }}</p>
+            </div>
+            <div class="text-success" *ngIf="paymentSettings.preferredPaymentMethod === method.label">
+              <span class="badge bg-soft-success text-success small">Préférée</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modals -->
+  <!-- Invoice Details -->
+  <div class="modal-overlay" *ngIf="showInvoiceModal" (click)="closeModals()">
+    <div class="modal-card-premium animate__animated animate__zoomIn" (click)="$event.stopPropagation()">
+      <div class="p-4 border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0">Détails de la facture</h5>
+        <button class="btn-close-custom" (click)="closeModals()">&times;</button>
+      </div>
+      <div class="p-5 text-center" *ngIf="selectedInvoice">
+        <div class="invoice-icon-large mx-auto mb-4 bg-soft-primary text-primary">
+          <i class="ion-md-paper"></i>
+        </div>
+        <h3 class="fw-bold mb-1">{{ selectedInvoice.invoiceNumber }}</h3>
+        <p class="text-muted mb-4">{{ selectedInvoice.serviceTitle }}</p>
+        
+        <div class="info-grid text-start mb-4">
+          <div class="info-row d-flex justify-content-between py-2 border-bottom">
+            <span class="text-muted">MONTANT</span>
+            <span class="fw-bold">{{ selectedInvoice.amount }} DT</span>
+          </div>
+          <div class="info-row d-flex justify-content-between py-2 border-bottom">
+            <span class="text-muted">STATUT</span>
+            <span class="badge rounded-pill" [ngClass]="selectedInvoice.status === 'PAID' ? 'bg-soft-success text-success' : 'bg-soft-warning text-warning'">
+              {{ selectedInvoice.status === 'PAID' ? 'Payé' : 'En attente' }}
+            </span>
+          </div>
+          <div class="info-row d-flex justify-content-between py-2">
+            <span class="text-muted">DATE D'ÉMISSION</span>
+            <span class="fw-bold">{{ selectedInvoice.date | date:'dd MMMM yyyy' }}</span>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button class="btn btn-primary rounded-pill py-3 px-4 flex-grow-1 fw-bold">Imprimer / Télécharger</button>
+          <button class="btn btn-light rounded-pill py-3 px-4" (click)="closeModals()">Fermer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment Modal -->
+  <div class="modal-overlay" *ngIf="showPaymentModal" (click)="closeModals()">
+    <div class="modal-card-premium animate__animated animate__headShake" (click)="$event.stopPropagation()">
+      <div class="p-5 text-center" *ngIf="selectedInvoice">
+        <h4 class="fw-bold mb-4">Régler la facture</h4>
+        <div class="bg-light rounded-4 p-4 mb-4 text-start">
+          <p class="text-muted small mb-1">Montant à payer</p>
+          <h2 class="fw-bold text-primary mb-0">{{ selectedInvoice.amount }} DT</h2>
+        </div>
+        
+        <div class="mb-4 text-start">
+          <label class="form-label small fw-bold text-muted mb-2">Choisir le moyen de paiement</label>
+          <div class="d-grid gap-2">
+            <div *ngFor="let m of paymentSettings?.methods" 
+                 class="p-3 border rounded-4 d-flex justify-content-between align-items-center clickable"
+                 [class.border-primary]="paymentSettings.preferredPaymentMethod === m.label"
+                 [class.bg-soft-primary]="paymentSettings.preferredPaymentMethod === m.label"
+                 (click)="updatePreferredMethod(m.label)">
+              <div>
+                <h6 class="mb-0 fw-bold">{{ m.label }}</h6>
+                <span class="text-muted small">{{ m.details }}</span>
+              </div>
+              <div class="text-primary" *ngIf="paymentSettings.preferredPaymentMethod === m.label">
+                <i class="ion-md-checkmark-circle"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="d-flex gap-3">
+          <button class="btn btn-primary rounded-pill py-3 px-4 flex-grow-1 fw-bold" (click)="processPayment(paymentSettings.preferredPaymentMethod)">
+            Confirmer le paiement
+          </button>
+          <button class="btn btn-light rounded-pill py-3 px-4 flex-grow-1 fw-bold" (click)="closeModals()">Annuler</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Receipt Modal -->
+  <div class="modal-overlay" *ngIf="showReceiptModal" (click)="closeModals()">
+    <div class="modal-card-premium animate__animated animate__zoomIn" (click)="$event.stopPropagation()">
+      <div class="p-5 text-center" *ngIf="selectedPayment">
+        <div class="receipt-header mb-4">
+          <div class="gocorp-logo mb-2">GOCORP</div>
+          <h5 class="fw-bold">REÇU DE PAIEMENT</h5>
+        </div>
+        
+        <div class="receipt-body bg-light rounded-4 p-4 text-start mb-4">
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted">Référence</span>
+            <span class="fw-bold">{{ selectedPayment.id }}</span>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted">Date</span>
+            <span class="fw-bold">{{ selectedPayment.date | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+          <hr>
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted">Service</span>
+            <span class="fw-bold">{{ selectedPayment.serviceTitle }}</span>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted">Méthode</span>
+            <span class="fw-bold">{{ selectedPayment.method }}</span>
+          </div>
+          <hr>
+          <div class="d-flex justify-content-between">
+            <span class="fw-bold">TOTAL</span>
+            <span class="fw-bold h4 mb-0 text-primary">{{ selectedPayment.amount }} DT</span>
+          </div>
+        </div>
+
+        <button class="btn btn-primary rounded-pill py-3 px-5 fw-bold" (click)="closeModals()">Imprimer le reçu</button>
+      </div>
+    </div>
+  </div>
+  <!-- PIN Modal -->
+  <div class="modal-overlay" *ngIf="showPinInput" (click)="showPinInput = false">
+    <div class="modal-card-premium animate__animated animate__zoomIn" (click)="$event.stopPropagation()">
+      <div class="p-5 text-center">
+        <div class="icon-circle-large mx-auto mb-4 bg-soft-dark text-dark">
+          <i class="ion-md-lock"></i>
+        </div>
+        <h4 class="fw-bold mb-2">Code PIN requis</h4>
+        <p class="text-muted mb-4">Veuillez saisir votre code PIN de paiement pour valider la transaction de <strong>{{ selectedInvoice?.amount }} DT</strong>.</p>
+        
+        <div class="mb-4">
+          <input type="password" [(ngModel)]="paymentPin" class="form-control text-center h1 fw-bold border-0 bg-light rounded-4 py-3" 
+                 maxlength="4" placeholder="••••" style="letter-spacing: 15px;" (keyup.enter)="verifyPinAndPay()">
+          <div class="text-danger small mt-2" *ngIf="pinError">
+            <i class="ion-md-alert me-1"></i> {{ pinError }}
+          </div>
+        </div>
+
+        <div class="d-flex gap-3">
+          <button class="btn btn-primary rounded-pill py-3 px-4 flex-grow-1 fw-bold" (click)="verifyPinAndPay()">
+            Valider le paiement
+          </button>
+          <button class="btn btn-light rounded-pill py-3 px-4 flex-grow-1 fw-bold" (click)="showPinInput = false; paymentPin = ''">Annuler</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

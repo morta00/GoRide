@@ -1,0 +1,219 @@
+<div class="current-ride-page animate__animated animate__fadeIn">
+  <header class="page-header mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+      <h1 class="fw-bold text-primary mb-1">Suivi de trajet</h1>
+      <p class="text-muted mb-0" *ngIf="activeRide">Suivez votre course en temps réel sur la carte.</p>
+    </div>
+    <button class="btn btn-outline-secondary rounded-pill px-4" routerLink="/client/reservations">
+      <i class="ion-md-list me-2"></i>Mes trajets
+    </button>
+  </header>
+
+  <div *ngIf="!activeRide && !isLoading" class="card p-5 text-center border-0 shadow-sm rounded-4">
+    <div class="empty-icon mb-4">
+      <span class="ion-md-car text-muted" style="font-size: 5rem;"></span>
+    </div>
+    <h3 class="fw-bold">Aucun trajet actif</h3>
+    <p class="text-muted mb-4">Vous n'avez pas de course en attente ou en cours pour le moment.</p>
+    <button class="btn btn-primary px-5 py-3 rounded-pill shadow-lg" routerLink="/client/request-ride">
+      Commander une course
+    </button>
+  </div>
+
+  <div class="searching-card p-5 text-center border-0 shadow-sm rounded-4 bg-white" *ngIf="activeRide?.status === 'PENDING'">
+    <div class="radar-animation mb-5">
+      <div class="circle"></div>
+      <div class="circle delay-1"></div>
+      <div class="circle delay-2"></div>
+      <div class="car-icon"><i class="ion-md-car text-primary"></i></div>
+    </div>
+    <h2 class="fw-bold text-primary mb-3">Recherche de chauffeur...</h2>
+    <p class="text-muted fs-5 mb-4">Nous connectons votre demande aux chauffeurs les plus proches.</p>
+    <div class="request-summary p-4 bg-light rounded-4 d-inline-block text-start mb-4">
+      <div><span class="fw-bold">Départ:</span> {{ activeRide?.departure }}</div>
+      <div class="mb-2"><span class="fw-bold">Arrivée:</span> {{ activeRide?.destination }}</div>
+      <div><span class="fw-bold">Estimation:</span> {{ activeRide?.estimatedPrice }} DT</div>
+    </div>
+    <button class="btn btn-outline-danger px-5 py-3 rounded-pill" (click)="cancelRide()">Annuler la demande</button>
+  </div>
+
+  <div class="row g-4" *ngIf="activeRide && activeRide.status !== 'PENDING'">
+    <div class="col-lg-8">
+      <div class="map-sim-container card border-0 shadow-sm rounded-4 overflow-hidden mb-3">
+        <div class="map-overlay p-3 d-flex flex-wrap gap-2 justify-content-between align-items-start">
+          <span class="badge px-3 py-2 rounded-pill shadow" [ngClass]="statusBadgeClass">
+            <i class="ion-md-time me-2" *ngIf="activeRide.status !== 'COMPLETED'"></i>
+            <i class="ion-md-checkmark-circle me-2" *ngIf="activeRide.status === 'COMPLETED'"></i>
+            {{ statusLabel }}
+          </span>
+          <span class="badge bg-light text-dark px-3 py-2 rounded-pill" *ngIf="mapLoading">
+            <span class="spinner-border spinner-border-sm me-1"></span> Chargement carte…
+          </span>
+        </div>
+        <div #rideMap class="ride-leaflet-map"></div>
+        <div class="map-footer px-3 py-2 d-flex align-items-center gap-2">
+          <span class="ion-md-map text-primary"></span>
+          <small class="text-muted" *ngIf="myLocationActive && routeFromGps">
+            <span class="ion-md-locate text-success me-1"></span>
+            Départ = votre position GPS · trajet vers {{ activeRide?.destination }} · chauffeur simulé
+          </small>
+          <small class="text-muted" *ngIf="myLocationActive && !routeFromGps">
+            <span class="ion-md-locate text-success me-1"></span>
+            Position GPS visible · départ selon l'adresse saisie
+          </small>
+          <small class="text-muted" *ngIf="!myLocationActive && !myLocationUnavailable">
+            Itinéraire OpenStreetMap · autorisez la localisation pour voir votre position
+          </small>
+          <small class="text-warning" *ngIf="myLocationUnavailable">
+            GPS indisponible — itinéraire et chauffeur simulés uniquement
+          </small>
+        </div>
+      </div>
+
+      <div class="trip-stats row g-2 mb-3" *ngIf="routeDistanceKm > 0">
+        <div class="col-4">
+          <div class="stat-chip">
+            <span class="label">Distance</span>
+            <span class="value">{{ routeDistanceKm | number:'1.0-1' }} km</span>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="stat-chip">
+            <span class="label">Durée est.</span>
+            <span class="value">{{ routeDurationMin }} min</span>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="stat-chip highlight">
+            <span class="label">{{ etaStatLabel }}</span>
+            <span class="value">~{{ etaMinutes }} min</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="progress-track mb-4" *ngIf="activeRide.status !== 'COMPLETED'">
+        <div class="d-flex justify-content-between small text-muted mb-1">
+          <span>{{ activeRide.departure }}</span>
+          <span>{{ progressPercent }}%</span>
+          <span>{{ activeRide.destination }}</span>
+        </div>
+        <div class="progress rounded-pill" style="height: 8px;">
+          <div class="progress-bar bg-primary progress-bar-striped progress-bar-animated"
+               [style.width.%]="progressPercent"></div>
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm rounded-4 p-4">
+        <h5 class="fw-bold mb-4">Détails de l'itinéraire</h5>
+        <div class="route-timeline">
+          <div class="timeline-item">
+            <div class="timeline-icon start"></div>
+            <div class="timeline-content">
+              <span class="label">Point de départ</span>
+              <div class="val">{{ activeRide.departure }}</div>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-icon end"></div>
+            <div class="timeline-content">
+              <span class="label">Destination finale</span>
+              <div class="val">{{ activeRide.destination }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 text-center" *ngIf="activeRide.status !== 'COMPLETED'">
+        <app-profile-avatar
+          class="mx-auto d-block mb-3"
+          [name]="activeRide.driverName || 'Chauffeur'"
+          [photoUrl]="activeRide.driverPhoto"
+          [size]="80"
+          [shape]="'rounded'"
+          [showStatus]="false">
+        </app-profile-avatar>
+        <h4 class="fw-bold mb-1">{{ activeRide.driverName || 'Votre chauffeur' }}</h4>
+        <div class="text-warning mb-3">
+          <i class="ion-md-star"></i> 4.9 <span class="text-muted">(128 courses)</span>
+        </div>
+        <div class="vehicle-tag bg-light p-2 rounded-3 mb-4 fw-bold text-primary">
+          {{ activeRide.vehicleModel || 'Véhicule GoRide' }}
+        </div>
+        <div class="driver-contact-actions d-grid">
+          <button class="btn btn-primary py-3 rounded-pill" (click)="contactDriver()">
+            <i class="ion-md-chatbubbles me-2"></i>Contacter le chauffeur
+          </button>
+          <button class="btn btn-outline-primary py-3 rounded-pill" (click)="showPhoneModal = true" [disabled]="!driverPhone">
+            <i class="ion-md-call me-2"></i>Appeler le chauffeur
+          </button>
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+        <h5 class="fw-bold mb-3">Infos trajet</h5>
+        <div class="d-flex justify-content-between mb-2">
+          <span class="text-muted">Type:</span>
+          <span class="fw-bold">{{ activeRide.rideType === 'INDIVIDUAL' ? 'Individuel' : 'Collaboratif' }}</span>
+        </div>
+        <div class="d-flex justify-content-between mb-2">
+          <span class="text-muted">Prix:</span>
+          <span class="fw-bold text-primary">{{ activeRide.estimatedPrice }} DT</span>
+        </div>
+        <div class="d-flex justify-content-between">
+          <span class="text-muted">Paiement:</span>
+          <span class="fw-bold">{{ activeRide.paymentMethod }}</span>
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-dark text-white mb-4" *ngIf="activeRide.status !== 'COMPLETED'">
+        <h6 class="text-warning fw-bold mb-3"><i class="ion-md-flask me-2"></i>Démo (tests)</h6>
+        <p class="small text-white-50 mb-3">Simulez les étapes si le chauffeur n'a pas encore démarré la course.</p>
+        <div class="d-grid gap-2">
+          <button class="btn btn-sm btn-outline-warning"
+                  *ngIf="activeRide.status === 'ACCEPTED' || activeRide.status === 'DRIVER_ARRIVING'"
+                  (click)="startRide()" [disabled]="actionLoading">
+            Démarrer la course
+          </button>
+          <button class="btn btn-sm btn-outline-success"
+                  *ngIf="activeRide.status === 'IN_PROGRESS'"
+                  (click)="completeRide()" [disabled]="actionLoading">
+            Terminer la course
+          </button>
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm rounded-4 p-4 text-center" *ngIf="activeRide.status === 'COMPLETED'">
+        <div class="icon-circle bg-success bg-opacity-10 text-success mx-auto mb-3">
+          <i class="ion-md-checkmark-circle fs-1"></i>
+        </div>
+        <h4 class="fw-bold mb-3">Course terminée !</h4>
+        <p class="text-muted mb-4">Merci d'avoir voyagé avec {{ activeRide.driverName || 'GoRide' }}.</p>
+        <div class="d-grid gap-3">
+          <button class="btn btn-warning py-3 rounded-pill fw-bold" (click)="leaveReview()">Laisser un avis</button>
+          <button class="btn btn-outline-secondary py-3 rounded-pill" routerLink="/client/payments">Voir le reçu</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" *ngIf="showPhoneModal" (click)="showPhoneModal = false">
+    <div class="modal-card mini animate__animated animate__zoomIn" (click)="$event.stopPropagation()">
+      <div class="p-5 text-center">
+        <app-profile-avatar
+          class="mx-auto d-block mb-3"
+          [name]="activeRide?.driverName || ''"
+          [photoUrl]="activeRide?.driverPhoto"
+          [size]="60"
+          [showStatus]="false">
+        </app-profile-avatar>
+        <h4 class="fw-bold mb-1">{{ activeRide?.driverName }}</h4>
+        <div class="text-muted mb-4">Chauffeur GoRide</div>
+        <a class="phone-number fs-3 fw-bold text-primary mb-4 d-block text-decoration-none"
+           [href]="'tel:' + driverPhone">{{ driverPhone }}</a>
+        <button class="btn btn-secondary w-100 py-3 rounded-pill" (click)="showPhoneModal = false">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>

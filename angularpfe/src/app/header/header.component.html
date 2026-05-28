@@ -1,0 +1,184 @@
+<nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light bg-transparent-header" id="ftco-navbar">
+  <div class="container-custom">
+    <a class="navbar-brand goride-logo" routerLink="/acceuil" (click)="closeAllMenus()">
+      <div class="logo-wrapper d-flex align-items-center">
+        <svg viewBox="0 0 100 100" width="36" height="36" xmlns="http://www.w3.org/2000/svg" class="me-2">
+          <path d="M 65 15 A 35 35 0 0 0 15 50" stroke="#2563eb" stroke-width="12" fill="none" />
+          <path d="M 18 68 A 35 35 0 0 0 50 85" stroke="#2563eb" stroke-width="12" fill="none" />
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M 50 45 C 50 25, 80 25, 80 45 C 80 65, 65 95, 65 95 C 65 95, 50 65, 50 45 Z M 65 35 A 10 10 0 1 0 65 55 A 10 10 0 1 0 65 35 Z" fill="#2563eb"/>
+        </svg>
+        <span class="logo-text fw-bold" style="font-size: 24px; letter-spacing: -0.5px; margin-bottom: 0;">
+          <span class="logo-part-dark">GO</span><span class="logo-part-blue">RIDE</span>
+        </span>
+      </div>
+    </a>
+
+    <button
+      class="navbar-toggler"
+      type="button"
+      (click)="toggleNavbar($event)"
+      aria-controls="ftco-nav"
+      [attr.aria-expanded]="isNavbarOpen"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="ftco-nav" [class.show]="isNavbarOpen">
+      <ul class="navbar-nav mx-auto align-items-lg-center">
+        <li class="nav-item" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+          <a class="nav-link" routerLink="/acceuil" (click)="closeAllMenus()">{{ 'NAV.HOME' | translate }}</a>
+        </li>
+
+        <li class="nav-item" routerLinkActive="active">
+          <a class="nav-link" routerLink="/acceuil/services" (click)="closeAllMenus()">{{ 'NAV.SERVICES' | translate }}</a>
+        </li>
+
+        <li class="nav-item" routerLinkActive="active">
+          <a class="nav-link" routerLink="/acceuil/about" (click)="closeAllMenus()">{{ 'NAV.ABOUT' | translate }}</a>
+        </li>
+        <li class="nav-item" routerLinkActive="active">
+          <a class="nav-link" routerLink="/acceuil/contact" (click)="closeAllMenus()">{{ 'NAV.CONTACT' | translate }}</a>
+        </li>
+      </ul>
+
+      <ul class="navbar-nav ms-auto align-items-lg-center">
+        <li class="nav-item">
+          <button class="nav-link lang-toggle" type="button" (click)="toggleLanguage($event)">
+            <span class="lang-toggle__icon" aria-hidden="true">
+              <span class="ion-ios-globe"></span>
+            </span>
+            <span class="lang-toggle__label">{{ currentLanguageLabel }}</span>
+          </button>
+        </li>
+
+        <ng-container *ngIf="!authService.isLoggedIn()">
+          <li class="nav-item">
+            <a class="nav-link btn btn-outline-light auth-btn ms-lg-3" routerLink="/login" (click)="closeAllMenus()">
+              {{ 'NAV.LOGIN' | translate }}
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a
+              class="nav-link btn btn-primary auth-btn ms-lg-2"
+              routerLink="/signup"
+              (click)="closeAllMenus()"
+            >
+              {{ 'NAV.REGISTER' | translate }}
+            </a>
+          </li>
+        </ng-container>
+
+        <ng-container *ngIf="authService.isLoggedIn()">
+          <!-- Notifications -->
+          <li class="nav-item position-relative notification-container">
+            <button class="nav-link notification-btn" type="button" aria-label="Notifications" (click)="toggleNotificationDropdown($event)">
+              <span class="ion-ios-notifications-outline notification-icon"></span>
+              <span class="notification-badge" *ngIf="unreadNotificationsCount > 0">{{ unreadNotificationsCount }}</span>
+            </button>
+
+            <!-- Dropdown Notifications -->
+            <div class="notification-dropdown-menu" [class.show]="isNotificationDropdownOpen">
+              <div class="notif-header d-flex align-items-center justify-content-between">
+                <h6 class="mb-0 fw-bold">Notifications</h6>
+                <button class="btn btn-link btn-sm text-primary p-0" *ngIf="unreadNotificationsCount > 0" (click)="markAllNotificationsAsRead($event)">
+                  Tout marquer lu
+                </button>
+              </div>
+
+              <div class="notif-body">
+                <div *ngIf="notifications.length === 0" class="p-4 text-center text-muted">
+                  <span class="ion-ios-notifications-off d-block mb-2" style="font-size: 2rem; opacity: 0.3;"></span>
+                  <p class="small mb-0">Aucune notification pour le moment</p>
+                </div>
+
+                <div 
+                  *ngFor="let notif of notifications" 
+                  class="notif-item" 
+                  [class.unread]="!notif.isRead"
+                  (click)="markNotificationAsRead(notif, $event)"
+                >
+                  <div class="notif-icon-wrapper" [ngClass]="'bg-soft-' + notif.color">
+                    <span [class]="notif.icon" [ngClass]="'text-' + notif.color"></span>
+                  </div>
+                  <div class="notif-content">
+                    <p class="notif-title mb-0">{{ notif.label }}</p>
+                    <p class="notif-message mb-1 text-muted">{{ notif.description }}</p>
+                    <p class="notif-time mb-0">{{ notif.time }}</p>
+                  </div>
+                  <div class="unread-dot" *ngIf="!notif.isRead"></div>
+                </div>
+              </div>
+
+              <div class="notif-footer text-center" *ngIf="notifications.length > 0">
+                <button class="btn btn-link btn-sm text-muted w-100 py-2" (click)="viewAllNotifications($event)">Voir toutes les notifications</button>
+              </div>
+            </div>
+          </li>
+
+          <!-- User Dropdown -->
+          <li class="nav-item position-relative user-dropdown-container">
+            <button class="nav-link user-dropdown-toggle d-flex align-items-center gap-2" type="button" (click)="toggleUserDropdown($event)">
+              <app-profile-avatar [firstName]="currentUser?.firstName || ''" [lastName]="currentUser?.lastName || ''" [photoUrl]="currentUser?.photoUrl" [size]="35" [showStatus]="true"></app-profile-avatar>
+              <span class="user-name fw-bold text-dark d-none d-md-inline">{{ currentUserFullName }}</span>
+              <span class="ion-ios-arrow-down ms-1 text-muted d-none d-md-inline" style="font-size: 0.8rem;"></span>
+            </button>
+
+            <!-- Dropdown Menu -->
+            <div class="user-dropdown-menu" [class.show]="isUserDropdownOpen">
+              <div class="dropdown-header">
+                <p class="mb-0 fw-bold text-dark" style="font-size: 1.05rem;">Bienvenue, {{ currentUser?.firstName }}</p>
+                <p class="mb-0 text-muted small mt-1">Mode <span class="text-primary fw-bold">{{ activeRoleLabel }}</span> actif</p>
+              </div>
+
+              <div class="dropdown-divider"></div>
+
+              <a class="dropdown-item" (click)="handleMenuClick('dashboard', $event)" style="cursor: pointer;">
+                <span class="ion-speedometer dropdown-icon icon-dashboard"></span> Tableau de bord
+              </a>
+              <a class="dropdown-item" (click)="handleMenuClick('profile', $event)" style="cursor: pointer;">
+                <span class="ion-ios-person dropdown-icon icon-profile"></span> Mon Profil
+              </a>
+
+              <a class="dropdown-item" (click)="toggleNotificationDropdown($event)">
+                <span class="ion-ios-notifications dropdown-icon icon-notif"></span> Notifications
+                <span class="ms-auto badge bg-danger rounded-pill" *ngIf="unreadNotificationsCount > 0" style="font-size: 10px;">{{ unreadNotificationsCount }}</span>
+              </a>
+
+              <div class="dropdown-divider"></div>
+              
+              <div class="dropdown-section-header">BASCULER D'ESPACE</div>
+              
+              <div class="role-switcher-list">
+                <a *ngFor="let role of availableRoles" 
+                   class="dropdown-item role-item" 
+                   [class.active-role]="roleService.getActiveRole() === role.id"
+                   (click)="switchRole(role.id)">
+                  <span [class]="role.icon + ' dropdown-icon'" [style.color]="role.color"></span>
+                  <span>{{ role.label }}</span>
+                  <span class="ms-auto active-indicator" *ngIf="roleService.getActiveRole() === role.id">
+                    <span class="ion-ios-checkmark-circle text-primary"></span>
+                  </span>
+                </a>
+              </div>
+
+              <div class="dropdown-divider"></div>
+
+              <a class="dropdown-item" (click)="navigateTo('/acceuil/contact')">
+                <span class="ion-help dropdown-icon icon-help"></span> Aide
+              </a>
+
+              <div class="dropdown-divider"></div>
+
+              <a class="dropdown-item logout-item" (click)="logout()">
+                <span class="ion-ios-log-out dropdown-icon icon-logout"></span> Déconnexion
+              </a>
+            </div>
+          </li>
+        </ng-container>
+      </ul>
+    </div>
+  </div>
+</nav>
+

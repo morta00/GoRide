@@ -1,0 +1,237 @@
+<div class="admin-reports animate__animated animate__fadeIn">
+  
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold text-dark mb-1">Signalements</h2>
+      <p class="text-muted">Analysez les signalements de contenu, utilisateurs, avis et comportements suspects.</p>
+    </div>
+    <div class="search-wrapper">
+      <div class="input-group shadow-sm border-0 rounded-pill bg-white overflow-hidden">
+        <span class="input-group-text bg-white border-0 ps-3">
+          <span class="ion-ios-search text-primary"></span>
+        </span>
+        <input type="text" class="form-control border-0 py-2 shadow-none" 
+               placeholder="Rechercher un signalement, utilisateur, avis..." 
+               [(ngModel)]="searchTerm" (ngModelChange)="applyFilters()">
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-2">
+      <div class="stat-card bg-white shadow-sm p-3 rounded-4 border-start border-danger border-4 h-100">
+        <p class="text-muted tiny fw-bold text-uppercase mb-1">Total</p>
+        <h4 class="fw-bold mb-0 text-dark">{{ stats.total }}</h4>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="stat-card bg-white shadow-sm p-3 rounded-4 border-start border-danger border-4 h-100">
+        <p class="text-muted tiny fw-bold text-uppercase mb-1">Nouveaux</p>
+        <h4 class="fw-bold mb-0 text-danger">{{ stats.new }}</h4>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="stat-card bg-white shadow-sm p-3 rounded-4 border-start border-warning border-4 h-100">
+        <p class="text-muted tiny fw-bold text-uppercase mb-1">En examen</p>
+        <h4 class="fw-bold mb-0 text-warning">{{ stats.inReview }}</h4>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="stat-card bg-white shadow-sm p-3 rounded-4 border-start border-dark border-4 h-100">
+        <p class="text-muted tiny fw-bold text-uppercase mb-1">Priorité Haute</p>
+        <h4 class="fw-bold mb-0 text-dark">{{ stats.highPriority }}</h4>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="stat-card bg-white shadow-sm p-3 rounded-4 border-start border-success border-4 h-100">
+        <p class="text-muted tiny fw-bold text-uppercase mb-1">Actions prises</p>
+        <h4 class="fw-bold mb-0 text-success">{{ stats.actionsTaken }}</h4>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="stat-card bg-primary text-white shadow-sm p-3 rounded-4 h-100">
+        <p class="text-white-50 tiny fw-bold text-uppercase mb-1">Fermés</p>
+        <h4 class="fw-bold mb-0">{{ stats.closed }}</h4>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content Card -->
+  <div class="content-card shadow-sm bg-white rounded-4 p-4">
+    
+    <!-- Filters -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+      <div class="d-flex flex-wrap gap-2">
+        <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="statusFilter === 'ALL' ? 'btn-primary' : 'btn-light border'" (click)="statusFilter = 'ALL'; applyFilters()">Tous</button>
+        <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="statusFilter === 'NEW' ? 'btn-outline-danger' : 'btn-light border'" (click)="statusFilter = 'NEW'; applyFilters()">Nouveaux</button>
+        <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="typeFilter === 'REVIEW_ABUSE' ? 'btn-light border text-primary' : 'btn-light border'" (click)="typeFilter = (typeFilter === 'REVIEW_ABUSE' ? 'ALL' : 'REVIEW_ABUSE'); applyFilters()">Avis abusifs</button>
+        <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="priorityFilter === 'HIGH' ? 'btn-danger' : 'btn-light border'" (click)="priorityFilter = (priorityFilter === 'HIGH' ? 'ALL' : 'HIGH'); applyFilters()">Haute Priorité</button>
+      </div>
+
+      <div class="d-flex gap-2">
+        <select class="form-select form-select-sm rounded-pill border" style="width: 150px;" [(ngModel)]="currentSort" (change)="applyFilters()">
+          <option value="NEWEST">Plus récents</option>
+          <option value="PRIORITY">Priorité haute</option>
+          <option value="UPDATED">Mise à jour</option>
+        </select>
+        <button class="btn btn-sm btn-light border rounded-pill px-3 fw-bold" (click)="resetToMocks()">Réinitialiser</button>
+      </div>
+    </div>
+
+    <!-- Reports Table -->
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead>
+          <tr class="tiny text-muted text-uppercase">
+            <th>Signalement</th>
+            <th>Signalant / Signalé</th>
+            <th class="text-center">Type / Priorité</th>
+            <th class="text-center">Statut</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of filteredReports" class="pointer" (click)="openDetails(r)">
+            <td>
+              <span class="fw-bold text-dark d-block mb-1">{{ r.title }}</span>
+              <span class="tiny text-muted d-block">{{ r.id }} • {{ r.createdAt | date:'short' }}</span>
+              <span class="small text-muted d-block text-truncate" style="max-width: 250px;">{{ r.reason }}</span>
+            </td>
+            <td>
+              <div class="d-flex flex-column gap-1">
+                 <span class="small fw-bold text-primary"><span class="text-muted tiny fw-normal">De:</span> {{ r.reporterName }}</span>
+                 <span class="small fw-bold text-danger"><span class="text-muted tiny fw-normal">Sur:</span> {{ r.reportedName }}</span>
+              </div>
+            </td>
+            <td class="text-center">
+              <span class="badge bg-light text-muted tiny border d-block mb-1">{{ getTypeLabel(r.reportType) }}</span>
+              <span class="badge rounded-pill tiny" [ngClass]="getPriorityClass(r.priority)">{{ getPriorityLabel(r.priority) }}</span>
+            </td>
+            <td class="text-center">
+              <span class="badge rounded-pill px-3 py-2 tiny" [ngClass]="getStatusClass(r.status)">{{ getStatusLabel(r.status) }}</span>
+              <span class="tiny text-muted d-block mt-1" *ngIf="r.assignedTo">Par: {{ r.assignedTo }}</span>
+            </td>
+            <td class="text-end">
+              <div class="d-flex justify-content-end gap-2" (click)="$event.stopPropagation()">
+                <button class="btn btn-sm btn-primary rounded-pill px-3 fw-bold shadow-sm" (click)="openDetails(r)">Détails</button>
+                <div class="dropdown">
+                   <button class="btn btn-sm btn-light border rounded-pill px-2" data-bs-toggle="dropdown">
+                      <span class="ion-ios-more"></span>
+                   </button>
+                   <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 p-2 animate__animated animate__fadeIn">
+                      <li *ngIf="!r.assignedTo"><a class="dropdown-item rounded-3 small fw-bold" (click)="takeCharge(r)">Prendre en charge</a></li>
+                      <li *ngIf="r.relatedEntityType === 'REVIEW' || r.relatedEntityType === 'MESSAGE'"><a class="dropdown-item rounded-3 small fw-bold text-warning" (click)="hideContent(r)">Masquer contenu</a></li>
+                      <li *ngIf="r.relatedEntityType === 'USER'"><a class="dropdown-item rounded-3 small fw-bold text-danger" (click)="suspendUser(r)">Suspendre utilisateur</a></li>
+                      <li><a class="dropdown-item rounded-3 small fw-bold text-primary" (click)="createComplaint(r)">Créer réclamation</a></li>
+                      <li><a class="dropdown-item rounded-3 small fw-bold text-muted" (click)="openReject(r)">Rejeter signalement</a></li>
+                      <li><hr class="dropdown-divider"></li>
+                      <li><a class="dropdown-item rounded-3 small fw-bold" (click)="closeReport(r)">Clôturer</a></li>
+                   </ul>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div *ngIf="filteredReports.length === 0" class="text-center py-5">
+       <span class="ion-ios-alert fs-1 text-muted opacity-25 d-block mb-3"></span>
+       <h5 class="fw-bold text-muted">Aucun signalement trouvé</h5>
+    </div>
+  </div>
+
+</div>
+
+<!-- Details Modal -->
+<div class="modal-overlay animate__animated animate__fadeIn" *ngIf="showDetailsModal" (click)="closeDetails()">
+  <div class="modal-content-wrapper shadow-lg bg-white p-4" style="max-width: 650px; z-index: 10000;" (click)="$event.stopPropagation()">
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+      <h5 class="fw-bold text-dark mb-0">Signalement {{ selectedReport?.id }}</h5>
+      <button class="btn btn-light rounded-circle" (click)="closeDetails()">
+        <span class="ion-ios-close fs-4"></span>
+      </button>
+    </div>
+    
+    <div class="modal-body" *ngIf="selectedReport">
+      <div class="row g-4">
+         <div class="col-12 mb-2">
+            <h4 class="fw-bold text-dark mb-1">{{ selectedReport.title }}</h4>
+            <div class="d-flex gap-2">
+               <span class="badge rounded-pill" [ngClass]="getStatusClass(selectedReport.status)">{{ getStatusLabel(selectedReport.status) }}</span>
+               <span class="badge rounded-pill" [ngClass]="getPriorityClass(selectedReport.priority)">{{ getPriorityLabel(selectedReport.priority) }}</span>
+               <span class="badge bg-light text-muted border tiny">{{ getTypeLabel(selectedReport.reportType) }}</span>
+            </div>
+         </div>
+
+         <div class="col-md-6">
+            <div class="p-3 bg-light rounded-4 h-100">
+               <span class="tiny text-muted text-uppercase d-block mb-2">Signalé par</span>
+               <h6 class="fw-bold mb-1 text-dark">{{ selectedReport.reporterName }}</h6>
+               <span class="small text-muted">{{ getRoleLabel(selectedReport.reporterRole) }}</span>
+            </div>
+         </div>
+         <div class="col-md-6">
+            <div class="p-3 bg-danger-soft rounded-4 h-100">
+               <span class="tiny text-danger text-uppercase d-block mb-2">Élément / Personne Signalé(e)</span>
+               <h6 class="fw-bold mb-1 text-dark">{{ selectedReport.reportedName }}</h6>
+               <span class="small text-muted">{{ getRoleLabel(selectedReport.reportedRole) }}</span>
+            </div>
+         </div>
+
+         <div class="col-12">
+            <div class="p-3 border rounded-4 bg-white">
+               <span class="tiny text-muted text-uppercase d-block mb-2">Raison & Description</span>
+               <h6 class="fw-bold small text-dark">{{ selectedReport.reason }}</h6>
+               <p class="small text-muted mb-0">{{ selectedReport.description }}</p>
+            </div>
+         </div>
+
+         <div class="col-12" *ngIf="selectedReport.adminDecision">
+            <div class="p-3 bg-success-soft rounded-4 border border-success border-opacity-10">
+               <span class="tiny text-success text-uppercase d-block mb-2 fw-bold">Décision Administrateur</span>
+               <p class="small text-dark fw-bold mb-0">{{ selectedReport.adminDecision }}</p>
+            </div>
+         </div>
+
+         <div class="col-md-4">
+            <span class="tiny text-muted d-block">Créé le</span>
+            <span class="fw-bold small">{{ selectedReport.createdAt | date:'medium' }}</span>
+         </div>
+         <div class="col-md-4">
+            <span class="tiny text-muted d-block">Mise à jour</span>
+            <span class="fw-bold small">{{ selectedReport.updatedAt | date:'medium' }}</span>
+         </div>
+         <div class="col-md-4">
+            <span class="tiny text-muted d-block">ID Entité liée</span>
+            <span class="fw-bold small text-primary">#{{ selectedReport.relatedEntityId }}</span>
+         </div>
+      </div>
+
+      <div class="d-flex gap-2 mt-4 pt-4 border-top">
+        <button class="btn btn-primary rounded-pill flex-grow-1 fw-bold shadow-sm" *ngIf="!selectedReport.assignedTo" (click)="takeCharge(selectedReport)">Prendre en charge</button>
+        <button class="btn btn-outline-primary rounded-pill flex-grow-1 fw-bold" *ngIf="selectedReport.relatedServiceId" (click)="goToService(selectedReport.relatedServiceId)">Voir service</button>
+        <button class="btn btn-outline-info rounded-pill flex-grow-1 fw-bold" *ngIf="selectedReport.relatedEntityType === 'REVIEW'" (click)="goToReview(selectedReport.relatedEntityId)">Voir avis</button>
+        <button class="btn btn-outline-info rounded-pill flex-grow-1 fw-bold" *ngIf="selectedReport.relatedEntityType === 'PAYMENT'" (click)="goToPayment(selectedReport.relatedEntityId)">Voir paiement</button>
+        <button class="btn btn-danger rounded-pill px-4 fw-bold" (click)="createComplaint(selectedReport)">Créer réclamation</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal-overlay animate__animated animate__fadeIn" *ngIf="showRejectModal" (click)="showRejectModal = false">
+  <div class="modal-content-wrapper shadow-lg bg-white p-4" style="max-width: 500px; z-index: 10001;" (click)="$event.stopPropagation()">
+    <h5 class="fw-bold text-dark border-bottom pb-3 mb-4">Rejeter le signalement</h5>
+    <div class="mb-3">
+       <label class="form-label small fw-bold">Motif du rejet</label>
+       <textarea class="form-control rounded-4 shadow-none" rows="4" placeholder="Expliquez pourquoi ce signalement n'est pas fondé..." [(ngModel)]="rejectReason" [class.is-invalid]="errorMsg"></textarea>
+       <div class="invalid-feedback fw-bold small" *ngIf="errorMsg">{{ errorMsg }}</div>
+    </div>
+    <div class="d-flex gap-2 mt-4">
+       <button class="btn btn-light rounded-pill flex-grow-1" (click)="showRejectModal = false">Annuler</button>
+       <button class="btn btn-dark rounded-pill flex-grow-1 fw-bold shadow-sm" (click)="confirmReject()">Confirmer le rejet</button>
+    </div>
+  </div>
+</div>

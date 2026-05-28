@@ -1,0 +1,108 @@
+<section class="hero-section-v2">
+  <div class="hero-bg-image-services"></div>
+  <div class="hero-overlay-dark"></div>
+  <div class="container-custom position-relative z-index-10">
+    <div class="row align-items-center">
+      <div class="col-lg-7 hero-content-v2" data-aos="fade-right">
+        <h1 class="hero-title-v2 mb-3">Nos Services</h1>
+        <p class="hero-subtitle-v2 mb-0">Découvrez nos solutions de mobilité pensées pour vous.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES GRID 4 COLUMNS -->
+<section class="services-grid-v4 py-5 bg-white">
+  <div class="container-custom py-4">
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+      
+      <!-- Card 1: Trajets -->
+      <div class="col" data-aos="fade-up">
+        <div class="service-card-lux">
+          <div class="card-img-container">
+            <img src="assets/images/image_6.jpg" alt="Trajets" class="img-fluid">
+            <div class="card-badge-mini">Populaire</div>
+          </div>
+          <div class="card-content-lux">
+            <div class="card-icon-floating">
+              <span class="ion-ios-car"></span>
+            </div>
+            <h3 class="fw-800 h5 mb-3">Trajets Quotidiens</h3>
+            <p class="text-muted small mb-4">
+              Déplacez-vous rapidement en ville sans stress. Nos chauffeurs partenaires vous emmènent à destination.
+            </p>
+            <a class="text-link-premium" style="cursor: pointer;" (click)="handleAction('ROLE_CLIENT', '/client/home', '/signup')">
+              Commander un trajet <span class="ion-md-arrow-forward ms-1"></span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Location -->
+      <div class="col" data-aos="fade-up" data-aos-delay="100">
+        <div class="service-card-lux">
+          <div class="card-img-container">
+            <img src="assets/images/image_1.jpg" alt="Louer">
+          </div>
+          <div class="card-content-lux">
+            <div class="card-icon-floating">
+              <span class="ion-ios-key"></span>
+            </div>
+            <h3 class="fw-800 h5 mb-3">Louer un véhicule</h3>
+            <p class="text-muted small mb-4">
+              Trouvez la voiture idéale pour vos besoins. Location courte ou longue durée, simple et rapide.
+            </p>
+            <a class="text-link-premium" style="cursor: pointer;" (click)="handleAction('ROLE_CLIENT', '/client/home', '/signup')">
+              Voir les véhicules <span class="ion-md-arrow-forward ms-1"></span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Partenariat -->
+      <div class="col" data-aos="fade-up" data-aos-delay="200">
+        <div class="service-card-lux">
+          <div class="card-img-container">
+            <img src="assets/images/goride-fleet-owner-key.png" alt="Partenaire" style="object-position: center top;">
+          </div>
+          <div class="card-content-lux">
+            <div class="card-icon-floating">
+              <span class="ion-ios-cash"></span>
+            </div>
+            <h3 class="fw-800 h5 mb-3">Mettre mon véhicule</h3>
+            <p class="text-muted small mb-4">
+              Rentabilisez votre voiture en la proposant sur GoRide de façon simple et sécurisée.
+            </p>
+            <a class="text-link-premium" style="cursor: pointer;" (click)="handleAction('ROLE_FLEET_OWNER', '/fleet/home', '/signup/fleet')">
+              Devenir partenaire <span class="ion-md-arrow-forward ms-1"></span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 4: Entreprise -->
+      <div class="col" data-aos="fade-up" data-aos-delay="300">
+        <div class="service-card-lux">
+          <div class="card-img-container">
+            <img src="assets/images/service-business.png" alt="Entreprise">
+          </div>
+          <div class="card-content-lux">
+            <div class="card-icon-floating">
+              <span class="ion-ios-business"></span>
+            </div>
+            <h3 class="fw-800 h5 mb-3">Solutions Pro & Flotte</h3>
+            <p class="text-muted small mb-4">
+              Gérez votre flotte d'entreprise avec efficacité. Optimisez vos déplacements et votre budget.
+            </p>
+            <a class="text-link-premium" style="cursor: pointer;" (click)="handleAction('ROLE_COMPANY', '/company/home', '/signup/company')">
+              Créer un compte Pro <span class="ion-md-arrow-forward ms-1"></span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+

@@ -1,0 +1,36 @@
+<div class="assistant-root">
+  <button type="button" class="assistant-fab" (click)="toggle()" [attr.aria-expanded]="open">
+    <span class="ion-md-chatbubbles"></span>
+    <span class="fab-label">{{ 'ASSISTANT.HELP_FAB' | translate }}</span>
+  </button>
+
+  <div class="assistant-panel" *ngIf="open">
+    <header class="assistant-header">
+      <div>
+        <strong>{{ 'ASSISTANT.TITLE' | translate }}</strong>
+      </div>
+      <button type="button" class="btn-close" (click)="toggle()"><span class="ion-md-close"></span></button>
+    </header>
+
+    <div class="assistant-messages">
+      <div *ngFor="let m of messages" [class.user]="m.from === 'user'" [class.bot]="m.from === 'bot'" class="msg-line" [innerHTML]="formatMessage(m.text)">
+      </div>
+      <div *ngIf="loading" class="msg-line bot">…</div>
+    </div>
+
+    <div class="assistant-suggestions" *ngIf="welcomeOnly && !loading">
+      <button type="button" class="suggest-chip" *ngFor="let key of suggestionKeys" (click)="askSuggestion(key)">
+        {{ key | translate }}
+      </button>
+    </div>
+
+    <footer class="assistant-footer">
+      <input type="text" [(ngModel)]="input"
+             [placeholder]="'ASSISTANT.PLACEHOLDER' | translate"
+             (keyup.enter)="send()" [disabled]="loading" />
+      <button type="button" (click)="send()" [disabled]="loading || !input.trim()">
+        {{ 'ASSISTANT.SEND' | translate }}
+      </button>
+    </footer>
+  </div>
+</div>

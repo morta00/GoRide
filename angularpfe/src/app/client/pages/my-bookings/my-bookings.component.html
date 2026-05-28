@@ -1,0 +1,502 @@
+<div class="bookings-page">
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-content">
+      <h1>Mes réservations</h1>
+      <p>Suivez vos demandes de location, vos réservations confirmées et vos locations passées.</p>
+    </div>
+  </header>
+
+  <!-- Success Toast -->
+  <div class="success-toast" *ngIf="successMessage">
+    <span class="ion-md-checkmark-circle"></span>
+    {{ successMessage }}
+  </div>
+
+  <!-- Statistics Cards -->
+  <section class="stats-grid">
+    <div class="stat-card" (click)="setFilter('Toutes')">
+      <div class="stat-icon all"><span class="ion-md-list"></span></div>
+      <div class="stat-info">
+        <span class="stat-label">Toutes</span>
+        <span class="stat-value">{{ stats.all }}</span>
+      </div>
+    </div>
+    <div class="stat-card" (click)="setFilter('En attente')">
+      <div class="stat-icon pending"><span class="ion-md-time"></span></div>
+      <div class="stat-info">
+        <span class="stat-label">En attente</span>
+        <span class="stat-value">{{ stats.pending }}</span>
+      </div>
+    </div>
+    <div class="stat-card" (click)="setFilter('Confirmées')">
+      <div class="stat-icon confirmed"><span class="ion-md-checkmark-circle"></span></div>
+      <div class="stat-info">
+        <span class="stat-label">Confirmées</span>
+        <span class="stat-value">{{ stats.confirmed }}</span>
+      </div>
+    </div>
+    <div class="stat-card" (click)="setFilter('En cours')">
+      <div class="stat-icon ongoing"><span class="ion-md-car"></span></div>
+      <div class="stat-info">
+        <span class="stat-label">En cours</span>
+        <span class="stat-value">{{ stats.ongoing }}</span>
+      </div>
+    </div>
+    <div class="stat-card" (click)="setFilter('Terminées')">
+      <div class="stat-icon completed"><span class="ion-md-done-all"></span></div>
+      <div class="stat-info">
+        <span class="stat-label">Terminées</span>
+        <span class="stat-value">{{ stats.completed }}</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Filters & Search Bar -->
+  <section class="controls-section">
+    <div class="filters-scroll">
+      <div class="tabs-container">
+        <button 
+          *ngFor="let f of filters" 
+          [class.active]="activeFilter === f"
+          (click)="setFilter(f)"
+          class="tab-btn">
+          {{ f }}
+        </button>
+      </div>
+    </div>
+
+    <div class="search-sort-bar">
+      <div class="search-input">
+        <span class="ion-md-search"></span>
+        <input type="text" [(ngModel)]="searchQuery" (input)="applyFilters()" placeholder="Véhicule, ville ou propriétaire...">
+      </div>
+      <div class="sort-select">
+        <label>Trier par :</label>
+        <select [(ngModel)]="sortBy" (change)="applyFilters()">
+          <option value="recent">Plus récentes</option>
+          <option value="oldest">Plus anciennes</option>
+          <option value="price-asc">Prix croissant</option>
+          <option value="price-desc">Prix décroissant</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <!-- Bookings List -->
+  <main class="bookings-list" *ngIf="filteredBookings.length > 0; else emptyState">
+    <div class="booking-card" *ngFor="let b of filteredBookings">
+      <div class="booking-main">
+        <div class="vehicle-image">
+          <div class="img-placeholder"><span class="ion-md-car"></span></div>
+          <span class="status-badge" [ngClass]="getStatusClass(b.status)">{{ b.status }}</span>
+        </div>
+
+        <div class="booking-details">
+          <div class="details-header">
+            <div>
+              <h3>{{ b.vehicleName }}</h3>
+              <p class="category-owner">{{ b.category }} • <span class="owner">{{ b.owner }}</span></p>
+            </div>
+            <div class="price-box">
+              <span class="price-val">{{ b.totalPrice }} DT</span>
+              <span class="deposit-val">Caution: {{ b.deposit }} DT</span>
+            </div>
+          </div>
+
+          <div class="details-grid">
+            <div class="detail-item">
+              <span class="label">Période</span>
+              <span class="value"><span class="ion-md-calendar"></span> {{ b.startDate | date:'dd MMM' }} - {{ b.endDate | date:'dd MMM yyyy' }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Prise en charge</span>
+              <span class="value"><span class="ion-md-pin"></span> {{ b.pickupLocation }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Retour</span>
+              <span class="value"><span class="ion-md-pin"></span> {{ b.returnLocation }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Paiement</span>
+              <span class="value"><span class="ion-md-wallet"></span> {{ b.paymentMethod }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="booking-actions">
+        <!-- Actions conditional by status -->
+        <ng-container [ngSwitch]="b.status">
+          <div class="action-group" *ngSwitchCase="'En attente'">
+            <button class="btn-outline" (click)="openDetails(b)">Voir détails</button>
+            <button class="btn-danger-outline" (click)="openCancelModal(b)">Annuler</button>
+          </div>
+          <div class="action-group" *ngSwitchCase="'Confirmées'">
+            <button class="btn-outline" (click)="openDetails(b)">Voir détails</button>
+            <button class="btn-primary-soft" (click)="contactOwner(b)">Contacter</button>
+            <button class="btn-danger-outline" (click)="openCancelModal(b)">Annuler</button>
+          </div>
+          <div class="action-group" *ngSwitchCase="'En cours'">
+            <button class="btn-outline" (click)="openDetails(b)">Voir détails</button>
+            <button class="btn-primary-glow" (click)="openExtendModal(b)">Prolonger</button>
+            <button class="btn-primary-soft" (click)="contactOwner(b)">Contacter</button>
+          </div>
+          <div class="action-group" *ngSwitchCase="'Terminées'">
+            <button class="btn-outline" (click)="openDetails(b)">Voir détails</button>
+            <button class="btn-primary" (click)="reRent(b)">Relouer</button>
+            <button class="btn-secondary-outline" (click)="openInvoiceModal(b)">Facture</button>
+            <button class="btn-warning-soft" (click)="openReviewModal(b)">
+              <span class="ion-md-star"></span> {{ b.reviewId ? 'Voir mon avis' : 'Laisser un avis' }}
+            </button>
+          </div>
+          <div class="action-group" *ngSwitchCase="'Refusées'">
+            <button class="btn-outline" (click)="openDetails(b)">Voir détails</button>
+            <button class="btn-primary" (click)="searchAnotherCar(b)">Rechercher autre voiture</button>
+          </div>
+          <div class="action-group" *ngSwitchCase="'Annulées'">
+            <button class="btn-outline" (click)="openDetails(b)">Voir détails</button>
+            <button class="btn-primary" (click)="reRent(b)">Relouer</button>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </main>
+
+  <!-- Empty State -->
+  <ng-template #emptyState>
+    <div class="empty-state">
+      <div class="empty-icon"><span class="ion-md-calendar"></span></div>
+      <h2>Aucune réservation trouvée</h2>
+      <p>Il semble que vous n'ayez aucune réservation correspondant à vos critères.</p>
+      <button class="btn-primary-glow" routerLink="../explore">Explorer les véhicules</button>
+    </div>
+  </ng-template>
+</div>
+
+<!-- Details Modal -->
+<div class="modal-overlay" *ngIf="showDetailsModal && selectedBooking" (click)="closeDetailsModal()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Détails de la réservation</h2>
+      <button class="close-btn" (click)="closeDetailsModal()"><span class="ion-md-close"></span></button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Status & ID -->
+      <div class="modal-top-bar">
+        <span class="booking-id">ID: #{{ selectedBooking.id }}</span>
+        <span class="status-badge" [ngClass]="getStatusClass(selectedBooking.status)">{{ selectedBooking.status }}</span>
+      </div>
+
+      <!-- Vehicle Info -->
+      <div class="modal-section vehicle-info">
+        <div class="vehicle-thumb">
+          <img *ngIf="selectedBooking.image" [src]="selectedBooking.image" alt="Vehicle">
+          <div *ngIf="!selectedBooking.image" class="thumb-placeholder"><span class="ion-md-car"></span></div>
+        </div>
+        <div class="vehicle-text">
+          <h3>{{ selectedBooking.vehicleName }}</h3>
+          <p>{{ selectedBooking.category }} • {{ selectedBooking.owner }}</p>
+          <p class="creation-date" *ngIf="selectedBooking.createdAt">Créée le : {{ selectedBooking.createdAt }}</p>
+        </div>
+      </div>
+
+      <div class="details-divider"></div>
+
+      <!-- Dates & Locations -->
+      <div class="modal-grid">
+        <div class="modal-grid-item">
+          <label>Date de début</label>
+          <p><span class="ion-md-calendar icon"></span> {{ selectedBooking.startDate | date:'dd MMMM yyyy' }}</p>
+        </div>
+        <div class="modal-grid-item">
+          <label>Date de retour</label>
+          <p><span class="ion-md-calendar icon"></span> {{ selectedBooking.endDate | date:'dd MMMM yyyy' }}</p>
+        </div>
+        <div class="modal-grid-item">
+          <label>Lieu de prise en charge</label>
+          <p><span class="ion-md-pin icon"></span> {{ selectedBooking.pickupLocation }}</p>
+        </div>
+        <div class="modal-grid-item">
+          <label>Lieu de retour</label>
+          <p><span class="ion-md-pin icon"></span> {{ selectedBooking.returnLocation }}</p>
+        </div>
+      </div>
+
+      <div class="details-divider"></div>
+
+      <!-- Pricing & Payment -->
+      <div class="modal-grid pricing">
+        <div class="modal-grid-item">
+          <label>Montant total</label>
+          <p class="amount-val">{{ selectedBooking.totalPrice }} DT</p>
+        </div>
+        <div class="modal-grid-item">
+          <label>Caution</label>
+          <p>{{ selectedBooking.deposit }} DT</p>
+        </div>
+        <div class="modal-grid-item">
+          <label>Statut du paiement</label>
+          <p [class.paid]="selectedBooking.paymentStatus === 'PAID'">{{ selectedBooking.paymentMethod }}</p>
+        </div>
+      </div>
+
+      <!-- Client Notes -->
+      <div class="modal-section" *ngIf="selectedBooking.clientNotes">
+        <label>Note client</label>
+        <p class="notes-text">{{ selectedBooking.clientNotes }}</p>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-primary-soft" (click)="closeDetailsModal()">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Cancel Confirmation Modal -->
+<div class="modal-overlay" *ngIf="showCancelModal && selectedBooking" (click)="closeCancelModal()">
+  <div class="modal-container confirm-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Annuler la réservation</h2>
+      <button class="close-btn" (click)="closeCancelModal()" [disabled]="isCancelling"><span class="ion-md-close"></span></button>
+    </div>
+
+    <div class="modal-body">
+      <div class="confirm-content">
+        <div class="confirm-icon"><span class="ion-md-alert"></span></div>
+        <p class="confirm-text">Voulez-vous vraiment annuler cette réservation ? Cette action ne peut pas être annulée.</p>
+        
+        <div class="booking-summary-mini">
+          <p><strong>Véhicule :</strong> {{ selectedBooking.vehicleName }}</p>
+          <p><strong>Dates :</strong> {{ selectedBooking.startDate | date:'dd/MM/yyyy' }} - {{ selectedBooking.endDate | date:'dd/MM/yyyy' }}</p>
+          <p><strong>Montant :</strong> {{ selectedBooking.totalPrice }} DT</p>
+        </div>
+
+        <div class="error-box" *ngIf="cancelError">
+          {{ cancelError }}
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer confirm-footer">
+      <button class="btn-outline" (click)="closeCancelModal()" [disabled]="isCancelling">Non, garder</button>
+      <button class="btn-danger" (click)="executeCancel()" [disabled]="isCancelling">
+        <span *ngIf="!isCancelling">Oui, annuler</span>
+        <span *ngIf="isCancelling" class="loader-mini"></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Extend Modal -->
+<div class="modal-overlay" *ngIf="showExtendModal && selectedBooking" (click)="closeExtendModal()">
+  <div class="modal-container confirm-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Prolonger la location</h2>
+      <button class="close-btn" (click)="closeExtendModal()" [disabled]="isExtending"><span class="ion-md-close"></span></button>
+    </div>
+
+    <div class="modal-body">
+      <div class="extend-form">
+        <div class="vehicle-mini-card">
+          <span class="ion-md-car"></span>
+          <div>
+            <p class="v-name">{{ selectedBooking.vehicleName }}</p>
+            <p class="v-date">Fin actuelle : {{ selectedBooking.endDate | date:'dd/MM/yyyy' }}</p>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Nouvelle date de retour</label>
+          <input type="date" 
+                 class="form-control" 
+                 [(ngModel)]="extensionEndDate" 
+                 (change)="onDateChange()"
+                 [min]="selectedBooking.endDate">
+          <small class="hint">Sélectionnez une date après le {{ selectedBooking.endDate | date:'dd/MM/yyyy' }}</small>
+        </div>
+
+        <div class="extension-summary" *ngIf="extraDays > 0">
+          <div class="summary-row">
+            <span>Jours supplémentaires</span>
+            <span class="val">+{{ extraDays }} jours</span>
+          </div>
+          <div class="summary-row total">
+            <span>Montant supplémentaire estimé</span>
+            <span class="val">{{ extraPrice | number:'1.2-2' }} DT</span>
+          </div>
+        </div>
+
+        <div class="error-box" *ngIf="extendError">
+          {{ extendError }}
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer confirm-footer">
+      <button class="btn-outline" (click)="closeExtendModal()" [disabled]="isExtending">Annuler</button>
+      <button class="btn-primary" (click)="executeExtension()" [disabled]="isExtending || !extensionEndDate">
+        <span *ngIf="!isExtending">Envoyer la demande</span>
+        <span *ngIf="isExtending" class="loader-mini"></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Invoice Modal -->
+<div class="modal-overlay" *ngIf="showInvoiceModal" (click)="closeInvoiceModal()">
+  <div class="modal-container invoice-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header no-print">
+      <h2>Facture de location</h2>
+      <button class="close-btn" (click)="closeInvoiceModal()"><span class="ion-md-close"></span></button>
+    </div>
+
+    <div class="modal-body">
+      <div class="loader-container" *ngIf="isLoadingInvoice">
+        <div class="loader-mini"></div>
+        <p>Génération de la facture...</p>
+      </div>
+
+      <div class="invoice-content" *ngIf="!isLoadingInvoice && selectedInvoice">
+        <div class="invoice-header">
+          <div class="brand">Go<span>Ride</span></div>
+          <div class="invoice-meta">
+            <h3>FACTURE</h3>
+            <p><strong>N° :</strong> {{ selectedInvoice.invoiceNumber }}</p>
+            <p><strong>Date :</strong> {{ selectedInvoice.createdAt | date:'dd/MM/yyyy' }}</p>
+          </div>
+        </div>
+
+        <div class="invoice-grid">
+          <div class="invoice-col">
+            <label>Client</label>
+            <p class="val">{{ selectedInvoice.clientName }}</p>
+          </div>
+          <div class="invoice-col">
+            <label>Propriétaire</label>
+            <p class="val">{{ selectedInvoice.ownerName }}</p>
+          </div>
+        </div>
+
+        <div class="invoice-details">
+          <h4>Détails du véhicule</h4>
+          <div class="detail-row">
+            <span>Véhicule</span>
+            <span>{{ selectedInvoice.vehicleName }}</span>
+          </div>
+          <div class="detail-row">
+            <span>Période</span>
+            <span>Du {{ selectedInvoice.startDate | date:'dd/MM/yyyy' }} au {{ selectedInvoice.endDate | date:'dd/MM/yyyy' }}</span>
+          </div>
+          <div class="detail-row">
+            <span>Lieu de prise en charge</span>
+            <span>{{ selectedInvoice.pickupLocation }}</span>
+          </div>
+          <div class="detail-row">
+            <span>Lieu de retour</span>
+            <span>{{ selectedInvoice.returnLocation }}</span>
+          </div>
+        </div>
+
+        <div class="invoice-summary">
+          <div class="summary-line">
+            <span>Caution (Bloquée)</span>
+            <span>{{ selectedInvoice.depositAmount | number:'1.2-2' }} DT</span>
+          </div>
+          <div class="summary-line total">
+            <span>Montant Total Payé</span>
+            <span>{{ selectedInvoice.totalPrice | number:'1.2-2' }} DT</span>
+          </div>
+          <div class="payment-badge" [ngClass]="selectedInvoice.paymentStatus?.toLowerCase()">
+            {{ selectedInvoice.paymentStatus === 'PAID' ? 'PAYÉ' : 'EN ATTENTE' }}
+          </div>
+        </div>
+        
+        <div class="invoice-footer">
+          <p>Merci d'avoir choisi GoRide pour votre location.</p>
+          <small>Ceci est une facture générée numériquement.</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer no-print">
+      <button class="btn-outline" (click)="closeInvoiceModal()">Fermer</button>
+      <button class="btn-primary" (click)="downloadInvoice()">
+        <span class="ion-md-print"></span> Télécharger PDF
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Review Modal -->
+<div class="modal-overlay" *ngIf="showReviewModal && selectedBooking" (click)="closeReviewModal()">
+  <div class="modal-container review-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ isEditingReview ? 'Modifier mon avis' : 'Laisser un avis' }}</h2>
+      <button class="close-btn" (click)="closeReviewModal()" [disabled]="isSavingReview"><span class="ion-md-close"></span></button>
+    </div>
+
+    <div class="modal-body">
+      <div class="review-vehicle-mini">
+        <div class="v-icon"><span class="ion-md-car"></span></div>
+        <div class="v-details">
+          <h3>{{ selectedBooking.vehicleName }}</h3>
+          <p>{{ selectedBooking.owner }}</p>
+        </div>
+      </div>
+
+      <div class="review-form mt-4">
+        <!-- Vehicle Rating -->
+        <div class="rating-section mb-4">
+          <label>Note du véhicule</label>
+          <div class="star-rating">
+            <button type="button" *ngFor="let s of [1,2,3,4,5]" 
+                    (click)="setRating('vehicle', s)"
+                    [class.active]="reviewForm.vehicleRating >= s">
+              <span class="ion-md-star"></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Owner Rating -->
+        <div class="rating-section mb-4">
+          <label>Note du propriétaire / agence</label>
+          <div class="star-rating">
+            <button type="button" *ngFor="let s of [1,2,3,4,5]" 
+                    (click)="setRating('owner', s)"
+                    [class.active]="reviewForm.ownerRating >= s">
+              <span class="ion-md-star"></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Comment -->
+        <div class="form-group mb-3">
+          <label>Commentaire (optionnel)</label>
+          <textarea 
+            class="form-control" 
+            [(ngModel)]="reviewForm.comment" 
+            rows="4" 
+            placeholder="Partagez votre expérience avec ce véhicule et ce propriétaire..."></textarea>
+          <small class="text-muted" *ngIf="reviewForm.comment && reviewForm.comment.length > 0 && reviewForm.comment.length < 5">
+            Le commentaire doit faire au moins 5 caractères.
+          </small>
+        </div>
+
+        <div class="error-box" *ngIf="reviewError">
+          {{ reviewError }}
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-outline" (click)="closeReviewModal()" [disabled]="isSavingReview">Annuler</button>
+      <button class="btn-primary" (click)="saveReview()" [disabled]="isSavingReview || (reviewForm.comment && reviewForm.comment.length > 0 && reviewForm.comment.length < 5)">
+        <span *ngIf="!isSavingReview">{{ isEditingReview ? 'Mettre à jour' : 'Envoyer l\'avis' }}</span>
+        <span *ngIf="isSavingReview" class="loader-mini"></span>
+      </button>
+    </div>
+  </div>
+</div>

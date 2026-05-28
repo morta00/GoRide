@@ -1,0 +1,179 @@
+<div class="create-trip-container animate__animated animate__fadeIn">
+  <!-- Header -->
+  <header class="page-header mb-4">
+    <div class="welcome-text">
+      <h2>Proposer un trajet</h2>
+      <p>Publiez un trajet partagé pour permettre aux passagers de réserver une place et réduire le coût du déplacement.</p>
+    </div>
+  </header>
+
+  <div class="content-card shadow-sm p-5 text-center my-4 animate__animated animate__fadeIn" *ngIf="!hasActiveVehicle" style="max-width: 650px; margin: 0 auto; border-radius: 16px;">
+    <div class="icon-box-circle bg-soft-primary text-primary mx-auto mb-4" style="width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background-color: rgba(59, 130, 246, 0.1);">
+      <span class="ion-md-car fs-1" style="font-size: 3rem; color: #3b82f6;"></span>
+    </div>
+    <h3 class="fw-bold mb-3 text-dark">Aucun véhicule de travail configuré</h3>
+    <p class="text-muted mb-4 fs-5" style="line-height: 1.6;">
+      Pour proposer un trajet partagé, vous devez d'abord utiliser votre propre véhicule ou louer un véhicule disponible auprès d'un propriétaire.
+    </p>
+
+    <div class="vehicle-empty-actions">
+      <a class="vehicle-empty-btn vehicle-empty-btn--primary" routerLink="/driver/my-vehicle">
+        <span class="ion-md-settings"></span>
+        <span>Configurer mon véhicule</span>
+      </a>
+      <a class="vehicle-empty-btn vehicle-empty-btn--outline" routerLink="/driver/partner-vehicles">
+        <span class="ion-md-business"></span>
+        <span>Louer une voiture</span>
+      </a>
+    </div>
+
+    <hr class="my-4" style="opacity: 0.15;">
+
+    <div class="row text-start g-3">
+      <div class="col-sm-6">
+        <div class="p-3 border rounded bg-light h-100">
+          <h6 class="fw-bold text-dark mb-1"><span class="ion-md-checkmark-circle text-success me-1"></span> Véhicule personnel</h6>
+          <p class="small text-muted mb-0">Ajoutez votre voiture personnelle et attendez la validation si nécessaire.</p>
+        </div>
+      </div>
+      <div class="col-sm-6">
+        <div class="p-3 border rounded bg-light h-100">
+          <h6 class="fw-bold text-dark mb-1"><span class="ion-md-key text-primary me-1"></span> Véhicule loué</h6>
+          <p class="small text-muted mb-0">Choisissez une voiture disponible proposée par un fleet-owner de confiance.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-card form-card shadow-sm p-4 animate__animated animate__fadeIn" *ngIf="hasActiveVehicle">
+    <!-- Active Vehicle info card -->
+    <div class="p-3 border rounded-3 mb-4" style="background-color: rgba(59, 130, 246, 0.04); border-color: rgba(59, 130, 246, 0.15);">
+      <div class="d-flex align-items-center gap-3">
+        <div class="icon-circle bg-primary text-white" style="width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background-color: #3b82f6;">
+          <span class="ion-md-car fs-4"></span>
+        </div>
+        <div>
+          <h6 class="fw-bold m-0 text-dark">
+            Véhicule actif : {{ workVehicleInfo?.vehicle?.brand }} {{ workVehicleInfo?.vehicle?.model }} — 
+            <span class="badge bg-secondary font-monospace" style="letter-spacing: 0.5px; color: #fff; background-color: #6c757d;">{{ workVehicleInfo?.vehicle?.licensePlate }}</span>
+          </h6>
+          <p class="m-0 text-muted small" *ngIf="workVehicleInfo?.mode === 'OWN_VEHICLE'">
+            <span class="ion-md-checkmark-circle text-success me-1"></span> Mode : <strong>Véhicule personnel</strong>
+          </p>
+          <p class="m-0 text-muted small" *ngIf="workVehicleInfo?.mode === 'RENTED_VEHICLE'">
+            <span class="ion-md-key text-primary me-1"></span> Mode : <strong>Véhicule loué auprès de {{ workVehicleInfo?.vehicle?.ownerName }}</strong>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-alert mb-4">
+      <span class="ion-md-information-circle icon"></span>
+      <p>Le trajet partagé permet de diviser les frais entre les passagers. Assurez-vous d'indiquer un prix équitable par place.</p>
+    </div>
+
+    <form [formGroup]="tripForm" (ngSubmit)="onSubmit()">
+      <!-- ... (le reste du formulaire) ... -->
+      <!-- [Je garde le contenu existant ici par souci de concision mais je l'entoure du ngIf] -->
+      <div class="row g-4 mb-4">
+        <div class="col-md-6">
+          <label class="form-label fw-bold">Ville de départ <span class="text-danger">*</span></label>
+          <div class="input-group-custom">
+            <span class="ion-md-pin icon start"></span>
+            <input type="text" class="form-control" formControlName="departure" placeholder="Ex: Tunis">
+          </div>
+          <div *ngIf="tripForm.get('departure')?.touched && tripForm.get('departure')?.invalid" class="text-danger small mt-1">
+            La ville de départ est obligatoire.
+          </div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-bold">Ville d'arrivée <span class="text-danger">*</span></label>
+          <div class="input-group-custom">
+            <span class="ion-md-pin icon end"></span>
+            <input type="text" class="form-control" formControlName="destination" placeholder="Ex: Sousse">
+          </div>
+          <div *ngIf="tripForm.get('destination')?.touched && tripForm.get('destination')?.invalid" class="text-danger small mt-1">
+            La ville d'arrivée est obligatoire.
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-4 mb-4">
+        <div class="col-md-6">
+          <label class="form-label fw-bold">Adresse précise de départ <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" formControlName="departureAddress" placeholder="Ex: Avenue Habib Bourguiba">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-bold">Adresse précise d'arrivée <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" formControlName="destinationAddress" placeholder="Ex: Port Kantaoui">
+        </div>
+      </div>
+
+      <div class="row g-4 mb-4">
+        <div class="col-md-6">
+          <label class="form-label fw-bold">Date du trajet <span class="text-danger">*</span></label>
+          <div class="input-group-custom">
+            <span class="ion-md-calendar icon"></span>
+            <input type="date" class="form-control" formControlName="date" [min]="getTodayDate()">
+          </div>
+          <div *ngIf="tripForm.get('date')?.touched && tripForm.get('date')?.errors?.['pastDate']" class="text-danger small mt-1">
+            La date du trajet ne peut pas être dans le passé.
+          </div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-bold">Heure de départ <span class="text-danger">*</span></label>
+          <div class="input-group-custom">
+            <span class="ion-md-time icon"></span>
+            <input type="time" class="form-control" formControlName="time">
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-4 mb-4">
+        <div class="col-md-4">
+          <label class="form-label fw-bold">Nombre de places <span class="text-danger">*</span></label>
+          <input type="number" class="form-control" formControlName="seats" min="1">
+          <div *ngIf="tripForm.get('seats')?.touched && tripForm.get('seats')?.errors?.['max']" class="text-danger small mt-1">
+            Le nombre de places ne peut pas dépasser {{ workVehicleInfo?.vehicle?.seats ? workVehicleInfo.vehicle.seats - 1 : 3 }} (limite du véhicule).
+          </div>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-bold">Prix par place (DT) <span class="text-danger">*</span></label>
+          <input type="number" class="form-control" formControlName="price" min="1">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-bold">Véhicule utilisé <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" formControlName="vehicle" readonly>
+          <div class="form-text small text-muted">Le véhicule est défini dans votre profil.</div>
+        </div>
+      </div>
+
+      <div class="row g-4 mb-4">
+        <div class="col-md-6">
+          <div class="options-box p-3 border rounded-3 bg-light">
+            <h6 class="fw-bold mb-3">Options du trajet</h6>
+            <div class="form-check form-switch mb-2">
+              <input class="form-check-input" type="checkbox" formControlName="luggage" id="luggageCheck">
+              <label class="form-check-label" for="luggageCheck">Bagages autorisés</label>
+            </div>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" formControlName="pets" id="petsCheck">
+              <label class="form-check-label" for="petsCheck">Animaux autorisés</label>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-bold">Commentaire optionnel</label>
+          <textarea class="form-control" formControlName="comment" rows="4"></textarea>
+        </div>
+      </div>
+
+      <div class="form-actions d-flex justify-content-end gap-3 pt-3 border-top">
+        <button type="button" class="btn btn-light px-4" routerLink="/driver/dashboard">Annuler</button>
+        <button type="submit" class="btn btn-primary px-5 shadow-sm" [disabled]="tripForm.invalid || isSubmitting">
+          Publier le trajet
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

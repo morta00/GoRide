@@ -1,0 +1,198 @@
+<div class="admin-reviews animate__animated animate__fadeIn">
+  
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold text-dark mb-1">Avis & Évaluations</h2>
+      <p class="text-muted">Surveillez les avis, notes et retours clients sur les services GoRide.</p>
+    </div>
+    <div class="search-wrapper">
+      <div class="input-group shadow-sm border-0 rounded-pill bg-white overflow-hidden">
+        <span class="input-group-text bg-white border-0 ps-3">
+          <span class="ion-ios-search text-primary"></span>
+        </span>
+        <input type="text" class="form-control border-0 py-2 shadow-none" 
+               placeholder="Rechercher un avis, auteur, cible..." 
+               [(ngModel)]="searchTerm" (ngModelChange)="applyFilters()">
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-2">
+      <div class="stat-card bg-white shadow-sm p-3 rounded-4 border-start border-primary border-4 h-100">
+        <p class="text-muted tiny fw-bold text-uppercase mb-1">Total avis</p>
+        <h4 class="fw-bold mb-0 text-dark">{{ stats.total }}</h4>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="stat-card bg-white shadow-sm p-3 rounded-4 border-start border-warning border-4 h-100">
+        <p class="text-muted tiny fw-bold text-uppercase mb-1">Note Moyenne</p>
+        <h4 class="fw-bold mb-0 text-warning"><span class="ion-ios-star me-1"></span>{{ stats.avgRating }} / 5</h4>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="stat-card bg-white shadow-sm p-3 rounded-4 border-start border-danger border-4 h-100">
+        <p class="text-muted tiny fw-bold text-uppercase mb-1">Signalés</p>
+        <h4 class="fw-bold mb-0 text-danger">{{ stats.reported }}</h4>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="stat-card bg-white shadow-sm p-3 rounded-4 border-start border-primary border-4 h-100">
+        <p class="text-muted tiny fw-bold text-uppercase mb-1">À vérifier</p>
+        <h4 class="fw-bold mb-0 text-primary">{{ stats.toVerify }}</h4>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="stat-card bg-white shadow-sm p-3 rounded-4 border-start border-dark border-4 h-100">
+        <p class="text-muted tiny fw-bold text-uppercase mb-1">Notes faibles</p>
+        <h4 class="fw-bold mb-0 text-dark">{{ stats.lowRating }}</h4>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="stat-card bg-light text-muted shadow-sm p-3 rounded-4 border-start border-secondary border-4 h-100">
+        <p class="text-muted tiny fw-bold text-uppercase mb-1">Masqués</p>
+        <h4 class="fw-bold mb-0">{{ stats.hidden }}</h4>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="content-card shadow-sm bg-white rounded-4 p-4">
+    
+    <!-- Filters -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+      <div class="d-flex flex-wrap gap-2">
+        <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="statusFilter === 'ALL' ? 'btn-primary' : 'btn-light border'" (click)="statusFilter = 'ALL'; applyFilters()">Tous</button>
+        <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="statusFilter === 'VISIBLE' ? 'btn-outline-success' : 'btn-light border'" (click)="statusFilter = 'VISIBLE'; applyFilters()">Visibles</button>
+        <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="statusFilter === 'REPORTED' ? 'btn-outline-danger' : 'btn-light border'" (click)="statusFilter = 'REPORTED'; applyFilters()">Signalés</button>
+        <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="statusFilter === 'TO_VERIFY' ? 'btn-outline-warning' : 'btn-light border'" (click)="statusFilter = 'TO_VERIFY'; applyFilters()">À vérifier</button>
+        <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="statusFilter === 'LOW_RATING' ? 'btn-light border text-danger' : 'btn-light border'" (click)="statusFilter = 'LOW_RATING'; applyFilters()">Notes faibles</button>
+      </div>
+
+      <div class="d-flex gap-2">
+        <select class="form-select form-select-sm rounded-pill border" style="width: 150px;" [(ngModel)]="currentSort" (change)="applyFilters()">
+          <option value="NEWEST">Plus récents</option>
+          <option value="RATING_DESC">Note ↓</option>
+          <option value="RATING_ASC">Note ↑</option>
+          <option value="REPORTED">Signalés d'abord</option>
+        </select>
+        <button class="btn btn-sm btn-light border rounded-pill px-3 fw-bold" (click)="resetToMocks()">Réinitialiser</button>
+      </div>
+    </div>
+
+    <!-- Review Cards Grid -->
+    <div class="row g-4">
+      <div class="col-md-6 col-lg-4" *ngFor="let r of filteredReviews">
+        <div class="review-card p-3 rounded-4 border border-white shadow-sm h-100 transition-all bg-white position-relative" (click)="openDetails(r)">
+          
+          <div class="d-flex justify-content-between align-items-start mb-3">
+             <div class="d-flex align-items-center gap-2">
+                <div class="avatar bg-primary-soft rounded-circle d-flex align-items-center justify-content-center fw-bold text-primary" style="width: 35px; height: 35px;">{{ r.reviewerName.charAt(0) }}</div>
+                <div>
+                   <span class="small fw-bold text-dark d-block">{{ r.reviewerName }}</span>
+                   <span class="tiny text-muted">{{ getRoleLabel(r.reviewerRole) }}</span>
+                </div>
+             </div>
+             <span class="badge rounded-pill px-3 py-1 tiny" [ngClass]="getStatusClass(r.status)">{{ getStatusLabel(r.status) }}</span>
+          </div>
+
+          <div class="rating-stars mb-2">
+             <span class="ion-ios-star text-warning me-1" *ngFor="let s of getStars(r.rating)"></span>
+             <span class="ion-ios-star text-light me-1" *ngFor="let s of getEmptyStars(r.rating)"></span>
+             <span class="small fw-bold text-dark ms-2">{{ r.rating }}/5</span>
+          </div>
+
+          <p class="small text-dark mb-3 review-text">{{ r.comment }}</p>
+
+          <div class="target-info p-2 bg-light rounded-3 mb-3">
+             <span class="tiny text-muted d-block">Cible : <span class="fw-bold text-dark">{{ r.targetName }}</span> <span class="text-primary">({{ getRoleLabel(r.targetRole) }})</span></span>
+             <span class="tiny text-muted d-block mt-1">Service : <span class="fw-bold">{{ getServiceLabel(r.serviceType) }}</span></span>
+          </div>
+
+          <div *ngIf="r.isReported" class="alert-box bg-danger-soft p-2 rounded-3 mb-3 border-start border-danger border-3">
+             <span class="tiny text-danger fw-bold d-block"><span class="ion-ios-alert me-1"></span>SIGNALÉ</span>
+             <span class="tiny text-muted">{{ r.reportReason }}</span>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top">
+             <span class="tiny text-muted">{{ r.createdAt | date:'shortDate' }}</span>
+             <div class="actions d-flex gap-1" (click)="$event.stopPropagation()">
+                <button class="btn btn-icon btn-sm rounded-circle bg-light border" (click)="openDetails(r)" title="Détails"><span class="ion-ios-eye"></span></button>
+                <button class="btn btn-icon btn-sm rounded-circle bg-light border text-danger" *ngIf="r.status !== 'HIDDEN'" (click)="hideReview(r)" title="Masquer"><span class="ion-ios-eye-off"></span></button>
+                <button class="btn btn-icon btn-sm rounded-circle bg-light border text-success" *ngIf="r.status === 'HIDDEN'" (click)="restoreReview(r)" title="Restaurer"><span class="ion-ios-eye"></span></button>
+                <button class="btn btn-icon btn-sm rounded-circle bg-light border text-primary" *ngIf="r.status === 'PENDING_REVIEW'" (click)="markVerified(r)" title="Vérifier"><span class="ion-ios-checkmark"></span></button>
+             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="filteredReviews.length === 0" class="text-center py-5">
+       <span class="ion-ios-star-half fs-1 text-muted opacity-25 d-block mb-3"></span>
+       <h5 class="fw-bold text-muted">Aucun avis correspondant</h5>
+    </div>
+  </div>
+
+</div>
+
+<!-- Details Modal -->
+<div class="modal-overlay animate__animated animate__fadeIn" *ngIf="showDetailsModal" (click)="closeDetails()">
+  <div class="modal-content-wrapper shadow-lg bg-white p-4" style="max-width: 550px; z-index: 10000;" (click)="$event.stopPropagation()">
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+      <h5 class="fw-bold text-dark mb-0">Détails de l'avis</h5>
+      <button class="btn btn-light rounded-circle" (click)="closeDetails()">
+        <span class="ion-ios-close fs-4"></span>
+      </button>
+    </div>
+    
+    <div class="modal-body" *ngIf="selectedReview">
+      <div class="text-center mb-4 p-4 bg-light rounded-4">
+         <div class="rating-stars mb-2">
+            <span class="ion-ios-star text-warning fs-3" *ngFor="let s of getStars(selectedReview.rating)"></span>
+            <span class="ion-ios-star text-muted opacity-25 fs-3" *ngFor="let s of getEmptyStars(selectedReview.rating)"></span>
+         </div>
+         <h2 class="fw-bold text-dark mb-0">{{ selectedReview.rating }} / 5</h2>
+         <span class="badge rounded-pill mt-2" [ngClass]="getStatusClass(selectedReview.status)">{{ getStatusLabel(selectedReview.status) }}</span>
+      </div>
+
+      <div class="mb-4">
+         <p class="small text-muted text-uppercase fw-bold mb-2">Commentaire de l'utilisateur</p>
+         <div class="p-3 border rounded-4 bg-white">
+            <p class="text-dark mb-0">{{ selectedReview.comment }}</p>
+         </div>
+      </div>
+
+      <div class="row g-3 mb-4">
+         <div class="col-6">
+            <span class="tiny text-muted text-uppercase d-block mb-1">Auteur</span>
+            <span class="fw-bold small d-block">{{ selectedReview.reviewerName }}</span>
+            <span class="tiny text-muted">{{ getRoleLabel(selectedReview.reviewerRole) }}</span>
+         </div>
+         <div class="col-6">
+            <span class="tiny text-muted text-uppercase d-block mb-1">Cible</span>
+            <span class="fw-bold small d-block text-primary">{{ selectedReview.targetName }}</span>
+            <span class="tiny text-muted">{{ getRoleLabel(selectedReview.targetRole) }}</span>
+         </div>
+         <div class="col-12 border-top pt-2">
+            <span class="tiny text-muted text-uppercase d-block mb-1">Service lié</span>
+            <span class="fw-bold small d-block">{{ getServiceLabel(selectedReview.serviceType) }}</span>
+            <span class="tiny text-primary" *ngIf="selectedReview.relatedServiceId">ID: {{ selectedReview.relatedServiceId }}</span>
+         </div>
+      </div>
+
+      <div *ngIf="selectedReview.isReported" class="p-3 bg-danger-soft rounded-4 border border-danger border-opacity-10 mb-4">
+         <span class="tiny text-danger fw-bold d-block mb-1">Détails du signalement</span>
+         <p class="small text-dark mb-0">{{ selectedReview.reportReason }}</p>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button class="btn btn-outline-primary rounded-pill flex-grow-1 fw-bold" *ngIf="selectedReview.relatedServiceId" (click)="goToService(selectedReview.relatedServiceId)">Voir service</button>
+        <button class="btn btn-danger rounded-pill flex-grow-1 fw-bold shadow-sm" *ngIf="selectedReview.rating <= 2 || selectedReview.isReported" (click)="createComplaint(selectedReview)">Créer réclamation</button>
+        <button class="btn btn-dark rounded-pill flex-grow-1 fw-bold" *ngIf="selectedReview.status !== 'HIDDEN'" (click)="hideReview(selectedReview)">Masquer l'avis</button>
+        <button class="btn btn-outline-success rounded-pill flex-grow-1 fw-bold" *ngIf="selectedReview.status === 'HIDDEN'" (click)="restoreReview(selectedReview)">Restaurer</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="640" height="640" viewBox="0 0 640 640" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Illustration">
+  <defs>
+    <linearGradient id="g1" x1="120" y1="90" x2="520" y2="560" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1089ff" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#01d28e" stop-opacity="0.85"/>
+    </linearGradient>
+    <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#FFFFFF" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.06"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#000000" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <!-- Decorative orbs -->
+  <circle cx="120" cy="140" r="80" fill="#1089ff" fill-opacity="0.18"/>
+  <circle cx="520" cy="110" r="56" fill="#01d28e" fill-opacity="0.14"/>
+  <circle cx="540" cy="520" r="92" fill="#1089ff" fill-opacity="0.14"/>
+
+  <!-- Glass panel behind -->
+  <rect x="130" y="130" width="380" height="420" rx="26" fill="url(#g2)" stroke="#FFFFFF" stroke-opacity="0.18" filter="url(#shadow)"/>
+
+  <!-- Abstract character (original simple shapes) -->
+  <path d="M370 215c0 38-31 69-69 69s-69-31-69-69 31-69 69-69 69 31 69 69Z" fill="#FFD7C2"/>
+  <path d="M232 216c10-40 43-70 84-70 33 0 62 19 77 46-12 10-28 16-46 16-26 0-49-13-62-33-11 19-31 33-54 38Z" fill="#1F2937" fill-opacity="0.85"/>
+
+  <path d="M205 470c12-74 74-130 159-130 85 0 149 58 158 138-56 52-124 80-206 80-52 0-96-12-111-24Z" fill="url(#g1)"/>
+
+  <!-- Arm + hand holding "phone" -->
+  <path d="M330 360c36 0 64 20 84 44 11 14 2 34-16 38l-55 11c-16 3-30-9-28-25l5-52c1-9 5-16 10-16Z" fill="#FFCAB0"/>
+  <rect x="405" y="395" width="46" height="28" rx="8" fill="#0F172A" fill-opacity="0.9"/>
+  <rect x="412" y="402" width="32" height="14" rx="6" fill="#FFFFFF" fill-opacity="0.22"/>
+
+  <!-- Extra accents -->
+  <path d="M220 520c40 26 92 38 154 38 36 0 70-5 101-14" stroke="#FFFFFF" stroke-opacity="0.22" stroke-width="10" stroke-linecap="round"/>
+</svg>
+

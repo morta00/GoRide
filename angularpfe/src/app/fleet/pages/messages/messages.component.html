@@ -1,0 +1,274 @@
+<div class="messages-container" [class.chat-open]="!!selectedConversation">
+  <!-- Colonne Gauche : Liste des Conversations -->
+  <div class="conversations-sidebar">
+    <div class="sidebar-header">
+      <div class="header-title-row">
+        <h3>Messages</h3>
+      </div>
+      <div class="search-wrapper">
+        <span class="ion-ios-search search-icon"></span>
+        <input 
+          type="text" 
+          placeholder="Rechercher..." 
+          [(ngModel)]="searchTerm"
+          class="search-input"
+        >
+      </div>
+
+      <!-- Filtres de Conversations -->
+      <div class="filters-bar">
+        <button [class.active]="selectedFilter === 'ALL'" (click)="setFilter('ALL')">Toutes</button>
+        <button [class.active]="selectedFilter === 'RENTAL_CLIENT'" (click)="setFilter('RENTAL_CLIENT')">Locataires</button>
+        <button [class.active]="selectedFilter === 'DRIVER_RENTAL'" (click)="setFilter('DRIVER_RENTAL')">Chauffeurs</button>
+        <button [class.active]="selectedFilter === 'SUPPORT'" (click)="setFilter('SUPPORT')">Support</button>
+        <button [class.active]="selectedFilter === 'UNREAD'" (click)="setFilter('UNREAD')">Non lues</button>
+      </div>
+    </div>
+
+    <div class="conversations-list custom-scrollbar">
+      <div *ngIf="loadingConversations" class="loading-state">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p>Chargement...</p>
+      </div>
+
+      <div *ngIf="errorMessage" class="error-alert">
+        <span class="ion-ios-alert"></span>
+        <p>{{ errorMessage }}</p>
+        <button (click)="loadConversations()" class="btn-retry">Réessayer</button>
+      </div>
+
+      <div *ngIf="!loadingConversations && filteredConversations().length === 0 && !errorMessage" class="empty-state">
+        <span class="ion-ios-chatbubbles"></span>
+        <p class="empty-title">Aucune conversation</p>
+        <p class="empty-subtitle">Vos conversations avec les locataires, chauffeurs et le support apparaîtront ici.</p>
+      </div>
+
+      <div 
+        *ngFor="let conv of filteredConversations()" 
+        class="conversation-item"
+        [class.active]="selectedConversation?.id === conv.id"
+        (click)="selectConversation(conv)"
+      >
+        <div class="avatar-wrapper">
+          <app-profile-avatar
+            [firstName]="conv.context === 'SUPPORT' ? 'Support' : ''"
+            [lastName]="conv.context === 'SUPPORT' ? 'User' : ''"
+            [name]="conv.context === 'SUPPORT' ? '' : (conv.otherParticipantName || '')"
+            [photoUrl]="conv.otherParticipantPhoto"
+            [size]="44"
+            shape="rounded"
+          ></app-profile-avatar>
+          <div class="status-indicator online"></div>
+        </div>
+        
+        <div class="conv-info">
+          <div class="conv-header">
+            <span class="participant-name">{{ conv.otherParticipantName }}</span>
+            <span class="conv-time">{{ formatTime(conv.lastMessageTimestamp) }}</span>
+          </div>
+
+          <!-- Context Badge -->
+          <div class="context-badge-row">
+            <span *ngIf="conv.context === 'RENTAL_CLIENT'" class="badge-context locataire">Locataire</span>
+            <span *ngIf="conv.context === 'DRIVER_RENTAL'" class="badge-context chauffeur">Chauffeur</span>
+            <span *ngIf="conv.context === 'SUPPORT'" class="badge-context support">Support GoRide</span>
+          </div>
+
+          <div class="conv-vehicle" *ngIf="conv.vehicleName">
+            <span class="ion-ios-car"></span> {{ conv.vehicleName }}
+          </div>
+          <div class="conv-vehicle" *ngIf="!conv.vehicleName && conv.context === 'DRIVER_RENTAL'">
+            <span class="ion-ios-information-circle-outline"></span> Demande véhicule chauffeur
+          </div>
+          
+          <div class="conv-preview">
+            <p class="last-message">{{ conv.lastMessage || 'Nouvelle conversation' }}</p>
+            <span *ngIf="conv.unreadCount > 0" class="unread-badge">{{ conv.unreadCount }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Colonne Droite : Chat -->
+  <div class="chat-area">
+    <ng-container *ngIf="selectedConversation; else noSelection">
+      <!-- Header Chat -->
+      <div class="chat-header">
+        <div class="selected-user-info">
+          <button class="back-btn" (click)="selectedConversation = undefined">
+            <span class="ion-ios-arrow-back"></span>
+          </button>
+          <div class="avatar-wrapper sm">
+            <app-profile-avatar
+              [firstName]="selectedConversation.context === 'SUPPORT' ? 'Support' : ''"
+              [lastName]="selectedConversation.context === 'SUPPORT' ? 'User' : ''"
+              [name]="selectedConversation.context === 'SUPPORT' ? '' : (selectedConversation.otherParticipantName || '')"
+              [photoUrl]="selectedConversation.otherParticipantPhoto"
+              [size]="40"
+              shape="rounded"
+            ></app-profile-avatar>
+          </div>
+          <div class="user-details">
+            <div class="name-badge-row">
+              <h4>{{ selectedConversation.otherParticipantName }}</h4>
+              <span *ngIf="selectedConversation.context === 'RENTAL_CLIENT'" class="badge-context-header locataire">Locataire</span>
+              <span *ngIf="selectedConversation.context === 'DRIVER_RENTAL'" class="badge-context-header chauffeur">Chauffeur</span>
+              <span *ngIf="selectedConversation.context === 'SUPPORT'" class="badge-context-header support">Support GoRide</span>
+            </div>
+            <span *ngIf="!isOtherTyping && selectedConversation.vehicleName" class="status-text">En ligne • {{ selectedConversation.vehicleName }}</span>
+            <span *ngIf="!isOtherTyping && !selectedConversation.vehicleName && selectedConversation.context === 'DRIVER_RENTAL'" class="status-text">En ligne • Demande véhicule chauffeur</span>
+            <span *ngIf="!isOtherTyping && selectedConversation.context === 'SUPPORT'" class="status-text">En ligne • Support & Assistance</span>
+            <span *ngIf="isOtherTyping" class="typing-text">En train d'écrire...</span>
+          </div>
+        </div>
+        <div class="chat-actions">
+          <button
+            *ngIf="isRideConversation(selectedConversation)"
+            type="button"
+            class="btn-view-trip"
+            (click)="viewTripDetails(); $event.stopPropagation()">
+            <span class="ion-ios-navigate"></span> Voir trajet
+          </button>
+          <button
+            *ngIf="isRentalConversation(selectedConversation)"
+            type="button"
+            class="btn-view-trip"
+            (click)="viewRentalDetails()">
+            <span class="ion-ios-calendar"></span> Voir réservation
+          </button>
+        </div>
+      </div>
+
+      <!-- Corps du Chat -->
+      <div class="chat-body custom-scrollbar" #chatBody id="chat-body">
+        <div
+          class="trip-context-card"
+          *ngIf="isRideConversation(selectedConversation)"
+          (click)="viewTripDetails()">
+          <div class="trip-context-icon"><span class="ion-ios-navigate"></span></div>
+          <div class="trip-context-body">
+            <span class="trip-context-kicker">Course liée</span>
+            <span class="trip-context-route">
+              {{ selectedConversation?.tripRoute || selectedConversation?.vehicleName }}
+            </span>
+            <span class="trip-context-hint">Cliquez pour voir le trajet</span>
+          </div>
+        </div>
+
+        <div *ngIf="loadingMessages" class="loading-messages">
+          <div class="spinner-grow text-primary" role="status"></div>
+        </div>
+
+        <ng-container *ngFor="let msg of messages; let i = index">
+          <!-- Séparateur de date -->
+          <div class="date-separator" *ngIf="isNewDay(messages, i)">
+            <span>{{ formatDateSeparator(msg.timestamp) }}</span>
+          </div>
+
+          <div class="message-wrapper" [class.sent]="$any(msg).sentByMe">
+            <!-- Avatar du participant -->
+            <div class="message-avatar" *ngIf="!$any(msg).sentByMe">
+              <app-profile-avatar
+                [firstName]="selectedConversation?.context === 'SUPPORT' ? 'Support' : ''"
+                [lastName]="selectedConversation?.context === 'SUPPORT' ? 'User' : ''"
+                [name]="selectedConversation?.context === 'SUPPORT' ? '' : (selectedConversation?.otherParticipantName || '')"
+                [photoUrl]="selectedConversation?.otherParticipantPhoto"
+                [size]="28"
+              ></app-profile-avatar>
+            </div>
+
+            <div class="message-content">
+              <p>{{ msg.content }}</p>
+              <div class="message-info">
+                <span class="message-time">{{ formatTime(msg.timestamp) }}</span>
+                <span *ngIf="$any(msg).sentByMe" class="read-status" [class.read]="msg.isRead">
+                  <span class="ion-ios-checkmark-circle"></span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+        
+        <!-- Indicateur écriture -->
+        <div *ngIf="isOtherTyping" class="message-wrapper">
+          <div class="typing-indicator-bubble">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Chat (Input) -->
+      <div class="chat-footer">
+        <div class="input-wrapper">
+          <input 
+            type="text" 
+            [(ngModel)]="newMessage" 
+            (keyup.enter)="sendMessage()" 
+            (input)="onTyping()"
+            placeholder="Écrivez votre message..."
+            class="message-input"
+          >
+          <button 
+            class="send-btn" 
+            [disabled]="!newMessage.trim() || isSending" 
+            (click)="sendMessage()"
+          >
+            <span *ngIf="!isSending" class="ion-ios-paper-plane"></span>
+            <div *ngIf="isSending" class="spinner-border spinner-border-sm" role="status"></div>
+          </button>
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-template #noSelection>
+      <div class="no-selection-state">
+        <div class="no-selection-content">
+          <div class="illustration-wrapper">
+            <span class="ion-ios-chatbubbles main-icon"></span>
+          </div>
+          <h3>Vos messages</h3>
+          <p>Sélectionnez une conversation pour commencer à discuter avec vos locataires, chauffeurs et le support.</p>
+        </div>
+      </div>
+    </ng-template>
+  </div>
+</div>
+
+<!-- Modal détail course -->
+<div class="trip-modal-backdrop" *ngIf="showTripModal" (click)="closeTripModal()">
+  <div class="trip-modal card shadow-lg" (click)="$event.stopPropagation()">
+    <div class="trip-modal-header">
+      <h5><span class="ion-ios-navigate me-2"></span>Détail du trajet</h5>
+      <button type="button" class="trip-modal-close" (click)="closeTripModal()" aria-label="Fermer">
+        <span class="ion-ios-close"></span>
+      </button>
+    </div>
+    <div class="trip-modal-body">
+      <div *ngIf="tripModalLoading" class="text-center py-4">
+        <div class="spinner-border text-primary" role="status"></div>
+      </div>
+      <p *ngIf="tripModalError" class="text-danger small mb-3">{{ tripModalError }}</p>
+      <ng-container *ngIf="tripDetail && !tripModalLoading">
+        <div class="trip-route-display">{{ tripDetail.route }}</div>
+        <div class="trip-meta-grid" *ngIf="tripDetail.departure || tripDetail.destination">
+          <div><span class="label">Départ</span><span class="value">{{ tripDetail.departure || '—' }}</span></div>
+          <div><span class="label">Arrivée</span><span class="value">{{ tripDetail.destination || '—' }}</span></div>
+        </div>
+        <div class="trip-meta-grid">
+          <div *ngIf="tripDetail.clientName"><span class="label">Client</span><span class="value">{{ tripDetail.clientName }}</span></div>
+          <div *ngIf="tripDetail.driverName"><span class="label">Chauffeur</span><span class="value">{{ tripDetail.driverName }}</span></div>
+          <div *ngIf="tripDetail.status"><span class="label">Statut</span><span class="value">{{ tripDetail.status }}</span></div>
+          <div *ngIf="tripDetail.price != null"><span class="label">Prix estimé</span><span class="value">{{ tripDetail.price }} DT</span></div>
+          <div *ngIf="tripDetail.passengers"><span class="label">Passagers</span><span class="value">{{ tripDetail.passengers }}</span></div>
+          <div><span class="label">Référence</span><span class="value">#{{ tripDetail.id }}</span></div>
+        </div>
+      </ng-container>
+    </div>
+    <div class="trip-modal-footer">
+      <button type="button" class="btn btn-light rounded-pill" (click)="closeTripModal()">Fermer</button>
+    </div>
+  </div>
+</div>

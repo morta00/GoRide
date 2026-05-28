@@ -1,0 +1,60 @@
+<header class="topbar">
+  <div class="topbar-left">
+    <h1 class="page-title">{{ getPageTitle() }}</h1>
+    <span class="badge bg-primary-soft text-primary ms-3 px-3 rounded-pill">ZONE SÉCURISÉE</span>
+  </div>
+
+  <div class="topbar-right">
+    <div class="system-status d-none d-md-flex align-items-center gap-2 me-3">
+      <div class="pulse-dot"></div>
+      <span class="tiny fw-bold text-muted">SYSTÈME OPÉRATIONNEL</span>
+    </div>
+
+    <div class="user-profile-container">
+      <div class="user-profile" (click)="toggleDropdown()">
+        <div class="avatar-wrapper position-relative">
+          <app-profile-avatar [firstName]="currentUser?.firstName" [lastName]="currentUser?.lastName" [photoUrl]="currentUser?.photoUrl" [size]="40"></app-profile-avatar>
+          <div class="status-online" style="position:absolute;bottom:0;right:0;width:10px;height:10px;background:#10b981;border-radius:50%;border:2px solid white;z-index:10;"></div>
+        </div>
+        <div class="user-info d-none d-md-block">
+          <span class="user-name">{{ currentUserFullName }}</span>
+          <span class="user-role badge-primary-soft text-primary">Administrateur Système</span>
+        </div>
+        <span class="ion-ios-arrow-down arrow-icon text-muted"></span>
+      </div>
+
+      <!-- Dropdown Menu -->
+      <div class="dropdown-menu-custom shadow-lg" *ngIf="isUserDropdownOpen">
+        <div class="dropdown-header px-3 py-2 border-bottom">
+           <span class="text-muted small fw-bold">BASCULER D'ESPACE</span>
+        </div>
+        <div class="role-list p-1">
+          <button 
+            *ngFor="let role of availableRoles" 
+            class="role-item-custom"
+            [class.active-role-item]="role.id === authService.getActiveRole()"
+            (click)="switchRole(role.id, role.route)"
+          >
+            <span [class]="role.icon" [style.color]="role.color"></span>
+            <span>{{ role.label }}</span>
+            <span class="ms-auto ion-ios-checkmark-circle text-primary" *ngIf="role.id === authService.getActiveRole()"></span>
+          </button>
+        </div>
+        <div class="dropdown-divider"></div>
+        <a class="dropdown-item" (click)="goToHome($event)" style="cursor: pointer;">
+          <span class="ion-ios-home-outline"></span> Accueil
+        </a>
+        <a class="dropdown-item" (click)="goToProfile($event)" style="cursor: pointer;">
+          <span class="ion-ios-person-outline"></span> Mon Profil
+        </a>
+        <a class="dropdown-item" (click)="goToSettings($event)" style="cursor: pointer;">
+          <span class="ion-ios-settings-outline"></span> Paramètres
+        </a>
+        <div class="dropdown-divider"></div>
+        <a class="dropdown-item text-danger" (click)="authService.logout()">
+          <span class="ion-ios-log-out text-danger"></span> Déconnexion
+        </a>
+      </div>
+    </div>
+  </div>
+</header>

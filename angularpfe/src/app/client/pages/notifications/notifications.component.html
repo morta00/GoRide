@@ -1,0 +1,167 @@
+<div class="notifications-page animate__animated animate__fadeIn">
+  <!-- Header -->
+  <header class="page-header mb-5">
+    <div>
+      <h1 class="fw-bold text-dark">Notifications</h1>
+      <p class="text-muted">{{ isTenantMode ? 'Suivez vos alertes de location : véhicules, contrats, paiements et support.' : 'Suivez vos alertes de trajet : courses, chauffeurs, messages, paiements et support.' }}</p>
+    </div>
+    <div class="header-actions d-flex gap-2">
+      <button class="btn btn-outline-primary rounded-pill px-4" (click)="markAllAsRead()">Tout marquer comme lu</button>
+      <button class="btn btn-outline-danger rounded-pill px-4" (click)="deleteRead()">Supprimer les lues</button>
+    </div>
+  </header>
+
+  <!-- Stats Grid -->
+  <div class="stats-grid mb-5">
+    <div class="stat-card">
+      <div class="stat-icon bg-soft-primary text-primary"><i class="ion-md-notifications"></i></div>
+      <div class="stat-info">
+        <span class="label">Total</span>
+        <h3 class="value">{{ getStats().total }}</h3>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon bg-soft-danger text-danger"><i class="ion-md-alert"></i></div>
+      <div class="stat-info">
+        <span class="label">Non lues</span>
+        <h3 class="value text-danger">{{ getStats().unread }}</h3>
+      </div>
+    </div>
+    <div class="stat-card border-important">
+      <div class="stat-icon bg-soft-warning text-warning"><i class="ion-md-star"></i></div>
+      <div class="stat-info">
+        <span class="label">Importantes</span>
+        <h3 class="value text-warning">{{ getStats().important }}</h3>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon bg-soft-success text-success"><i class="ion-md-today"></i></div>
+      <div class="stat-info">
+        <span class="label">Aujourd'hui</span>
+        <h3 class="value">{{ getStats().today }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters & Search -->
+  <div class="controls-card p-4 mb-4">
+    <div class="row g-3 align-items-center">
+      <div class="col-md-4">
+        <div class="search-box">
+          <i class="ion-md-search"></i>
+          <input type="text" [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="Rechercher titre, message, type...">
+        </div>
+      </div>
+      <div class="col-md-5">
+        <div class="filter-tabs">
+          <button class="filter-btn" [class.active]="activeFilter === 'ALL'" (click)="activeFilter = 'ALL'; applyFilters()">Toutes</button>
+          <button class="filter-btn" [class.active]="activeFilter === 'UNREAD'" (click)="activeFilter = 'UNREAD'; applyFilters()">Non lues</button>
+          <button class="filter-btn" [class.active]="activeFilter === 'IMPORTANT'" (click)="activeFilter = 'IMPORTANT'; applyFilters()">Importantes</button>
+          <button class="filter-btn" [class.active]="activeFilter === 'RIDE'" (click)="activeFilter = 'RIDE'; applyFilters()">{{ isTenantMode ? 'Locations' : 'Courses' }}</button>
+          <button class="filter-btn" [class.active]="activeFilter === 'MESSAGE'" (click)="activeFilter = 'MESSAGE'; applyFilters()">Messages</button>
+          <button class="filter-btn" [class.active]="activeFilter === 'PAYMENT'" (click)="activeFilter = 'PAYMENT'; applyFilters()">Paiements</button>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <select [(ngModel)]="sortOrder" (change)="applyFilters()" class="form-select-custom">
+          <option value="RECENT">Plus récentes</option>
+          <option value="OLDEST">Plus anciennes</option>
+          <option value="UNREAD_FIRST">Non lues d'abord</option>
+          <option value="IMPORTANT_FIRST">Importantes d'abord</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notifications List -->
+  <div class="notif-list">
+    <div class="notif-card animate__animated animate__fadeInUp" 
+         *ngFor="let notif of filteredNotifications"
+         [class.unread]="!notif.isRead"
+         [class.important]="notif.isImportant">
+      
+      <div class="notif-icon-box" [ngClass]="notif.type.toLowerCase()">
+        <i [class]="getIcon(notif.type)"></i>
+      </div>
+
+      <div class="notif-content">
+        <div class="d-flex justify-content-between align-items-start mb-1">
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <h5 class="notif-title mb-0" [class.fw-bold]="!notif.isRead">{{ notif.title }}</h5>
+            <span class="badge-type" [ngClass]="notif.type.toLowerCase()">{{ isTenantMode && notif.type === 'RIDE_COMPLETED' ? 'LOCATION' : notif.type }}</span>
+            <span class="badge bg-danger text-white rounded-pill px-2" style="font-size: 0.6rem" *ngIf="!notif.isRead">NON LUE</span>
+            <span class="badge bg-warning text-dark rounded-pill px-2" style="font-size: 0.6rem" *ngIf="notif.isImportant">IMPORTANT</span>
+          </div>
+          <span class="notif-date small text-muted">{{ notif.createdAt | date:'dd MMM, HH:mm' }}</span>
+        </div>
+        <p class="notif-message text-muted mb-0">{{ notif.message }}</p>
+        
+        <div class="notif-actions mt-3">
+          <button class="btn-notif btn-view" (click)="viewNotification(notif)">
+            <i class="ion-md-eye me-1"></i> Voir
+          </button>
+          <button class="btn-notif" (click)="toggleRead(notif)">
+            <i [class]="notif.isRead ? 'ion-md-mail-unread' : 'ion-md-mail'"></i>
+            {{ notif.isRead ? 'Marquer non lue' : 'Marquer comme lue' }}
+          </button>
+          <button class="btn-notif btn-delete" (click)="deleteNotification(notif.id)">
+            <i class="ion-md-trash"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="empty-state p-5 text-center" *ngIf="filteredNotifications.length === 0">
+      <div class="empty-icon-glow mb-4">
+        <i class="ion-md-notifications-off"></i>
+      </div>
+      <h4 class="fw-bold">Aucune notification</h4>
+      <p class="text-muted">Vous n'avez pas de nouvelles alertes pour le moment.</p>
+    </div>
+  </div>
+
+  <!-- Detail Modal -->
+  <div class="modal-overlay" *ngIf="showModal" (click)="showModal = false">
+    <div class="modal-card-centered animate__animated animate__zoomIn" (click)="$event.stopPropagation()">
+      <div class="modal-header-premium p-4" [ngClass]="selectedNotification?.type?.toLowerCase()">
+        <div class="d-flex justify-content-between align-items-center w-100">
+          <div class="d-flex align-items-center">
+            <div class="modal-icon me-3">
+              <i [class]="getIcon(selectedNotification?.type || '')"></i>
+            </div>
+            <h4 class="mb-0 text-white fw-bold">{{ selectedNotification?.title }}</h4>
+          </div>
+          <button class="btn-close-white" (click)="showModal = false">&times;</button>
+        </div>
+      </div>
+
+      <div class="modal-body p-4">
+        <div class="info-badges mb-4">
+          <span class="badge-modal" [ngClass]="selectedNotification?.type?.toLowerCase()">{{ isTenantMode && selectedNotification?.type === 'RIDE_COMPLETED' ? 'LOCATION' : selectedNotification?.type }}</span>
+          <span class="badge bg-light text-dark ms-2">{{ selectedNotification?.createdAt | date:'EEEE dd MMMM yyyy, HH:mm' }}</span>
+        </div>
+
+        <div class="message-box p-4 bg-light rounded-4 mb-4">
+          <p class="mb-0 fs-5 text-dark">"{{ selectedNotification?.message }}"</p>
+        </div>
+
+        <div class="entity-info p-3 border rounded-3 mb-4" *ngIf="selectedNotification?.relatedEntityId">
+          <div class="d-flex align-items-center">
+            <i class="ion-md-link text-primary fs-4 me-3"></i>
+            <div>
+              <span class="small text-muted d-block">ID RÉFÉRENCE</span>
+              <span class="fw-bold">{{ selectedNotification?.relatedEntityId }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex gap-3">
+          <button class="btn btn-primary flex-grow-1 py-3 rounded-pill fw-bold shadow" (click)="goToLinkedEntity()">
+            <i class="ion-md-open me-2"></i> Accéder au détail
+          </button>
+          <button class="btn btn-light flex-grow-1 py-3 rounded-pill fw-bold" (click)="showModal = false">Fermer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

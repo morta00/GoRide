@@ -1,0 +1,312 @@
+<div class="split-login-wrapper">
+  
+  <!-- Visual Side (Left) -->
+  <div class="login-visual-side" [style.backgroundImage]="'url(/assets/images/goride-login-side.png)'">
+    <div class="visual-overlay"></div>
+    <div class="visual-content">
+      <h1 class="visual-title">
+        {{ 'LOGIN.VISUAL_TITLE' | translate }} <br><span>{{ 'LOGIN.VISUAL_TITLE_BRAND' | translate }}</span>
+      </h1>
+      <p class="visual-subtitle">{{ 'LOGIN.VISUAL_SUBTITLE' | translate }}</p>
+    </div>
+  </div>
+
+  <!-- Form Side (Right) -->
+  <div class="login-form-side">
+    <div class="form-container-new">
+      
+      <!-- Back to Home -->
+      <div class="mb-4">
+        <a routerLink="/acceuil" class="back-home-link d-inline-flex align-items-center">
+          <span class="ion-ios-arrow-back" style="margin-right: 12px;"></span> {{ 'LOGIN.BACK_HOME' | translate }}
+        </a>
+      </div>
+
+      <!-- Logo at top of form area -->
+      <div class="form-logo-v mb-4 text-start">
+        <div class="d-flex align-items-center">
+          <svg viewBox="0 0 100 100" width="38" height="38" xmlns="http://www.w3.org/2000/svg" class="me-2">
+            <path d="M 65 15 A 35 35 0 0 0 15 50" stroke="#2563eb" stroke-width="12" fill="none" />
+            <path d="M 18 68 A 35 35 0 0 0 50 85" stroke="#2563eb" stroke-width="12" fill="none" />
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M 50 45 C 50 25, 80 25, 80 45 C 80 65, 65 95, 65 95 C 65 95, 50 65, 50 45 Z M 65 35 A 10 10 0 1 0 65 55 A 10 10 0 1 0 65 35 Z" fill="#2563eb"/>
+          </svg>
+          <span class="fw-bold" style="font-size: 24px; color: #1e293b; letter-spacing: -1px;">GoRide</span>
+        </div>
+      </div>
+
+      <!-- Messages Alert (Global) -->
+      <div *ngIf="errorMessage" class="alert alert-danger d-flex align-items-center py-3 px-4 rounded-4 border-0 shadow-sm mb-4 animate__animated animate__shakeX" 
+           style="background-color: #fef2f2; color: #991b1b; border-left: 5px solid #ef4444 !important;">
+        <div class="d-flex align-items-center justify-content-center bg-white rounded-circle shadow-sm me-3" style="width: 32px; height: 32px; flex-shrink: 0;">
+          <span class="ion-ios-alert text-danger" style="font-size: 1.2rem;"></span>
+        </div>
+        <div class="small fw-bold" style="line-height: 1.4;">{{ errorMessage }}</div>
+      </div>
+
+      <div *ngIf="successMessage" class="alert alert-success d-flex align-items-center py-3 px-4 rounded-4 border-0 shadow-sm mb-4 animate__animated animate__fadeInUp"
+           style="background-color: #f0fdf4; color: #166534; border-left: 5px solid #10b981 !important;">
+        <div class="d-flex align-items-center justify-content-center bg-white rounded-circle shadow-sm me-3" style="width: 32px; height: 32px; flex-shrink: 0;">
+          <span class="ion-ios-checkmark-circle text-success" style="font-size: 1.2rem;"></span>
+        </div>
+        <div class="small fw-bold" style="line-height: 1.4;">{{ successMessage }}</div>
+      </div>
+
+      <!-- ETAT 1 : CONNEXION -->
+      <div *ngIf="mode === 'login'" class="animate__animated animate__fadeIn">
+        <div class="form-header-new mb-5">
+          <h2 class="fw-bold text-dark">{{ 'LOGIN.TITLE' | translate }}</h2>
+          <p class="text-muted small">{{ 'LOGIN.SUBTITLE' | translate }}</p>
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+          <div class="form-group mb-4 pb-2">
+            <label class="form-label-custom">{{ 'LOGIN.EMAIL_LABEL' | translate }}</label>
+            <div class="input-with-icon">
+              <span class="ion-ios-mail input-icon"></span>
+              <input class="form-control custom-input" type="email" formControlName="email" [placeholder]="'LOGIN.EMAIL_PLACEHOLDER' | translate">
+            </div>
+          </div>
+
+          <div class="form-group mb-4 pb-2">
+            <label class="form-label-custom">{{ 'LOGIN.PASSWORD_LABEL' | translate }}</label>
+            <div class="input-with-icon">
+              <span class="ion-ios-lock input-icon"></span>
+              <input class="form-control custom-input" [type]="hidePassword ? 'password' : 'text'" formControlName="password" [placeholder]="'LOGIN.PASSWORD_PLACEHOLDER' | translate">
+              <button type="button" class="password-toggle-icon" (click)="hidePassword = !hidePassword">
+                <span [class]="hidePassword ? 'ion-ios-eye-off' : 'ion-ios-eye'"></span>
+              </button>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <label style="display: flex; align-items: center; gap: 14px; cursor: pointer; margin: 0;">
+              <input type="checkbox" style="width: 18px; height: 18px; accent-color: #2563eb; flex-shrink: 0; cursor: pointer;" />
+              <span class="text-muted small" style="margin: 0; line-height: 1.2;">{{ 'LOGIN.REMEMBER' | translate }}</span>
+            </label>
+            <a class="custom-link small fw-bold pointer" (click)="toggleForgotPassword()" style="color: #2563eb !important; font-weight: 700;">
+              {{ 'LOGIN.FORGOT' | translate }}
+            </a>
+          </div>
+
+          <button class="btn btn-primary-custom w-100 py-3 mb-4" type="submit" [disabled]="isSubmitting || form.invalid">
+            <span *ngIf="!isSubmitting">{{ 'LOGIN.SUBMIT' | translate }}</span>
+            <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+          </button>
+
+          <div class="text-center">
+            <p class="text-muted small">
+              {{ 'LOGIN.NO_ACCOUNT' | translate }} 
+              <a class="signup-link-custom fw-bold" routerLink="/signup">{{ 'LOGIN.SIGNUP' | translate }}</a>
+            </p>
+          </div>
+        </form>
+      </div>
+
+      <!-- ETAT 2 : MOT DE PASSE OUBLIÉ -->
+      <div *ngIf="mode === 'forgot'" class="animate__animated animate__fadeIn">
+        <div class="form-header-new mb-5 text-center">
+          <div class="mb-3">
+             <span class="ion-ios-lock" style="font-size: 40px; color: #2563eb;"></span>
+          </div>
+          <h2 class="fw-bold text-dark">{{ 'FORGOT_PASSWORD.TITLE' | translate }}</h2>
+          <p class="text-muted small">{{ 'FORGOT_PASSWORD.SUBTITLE' | translate }}</p>
+        </div>
+
+        <div class="alert alert-danger d-flex align-items-center mb-4" *ngIf="errorMessage" style="border-radius: 12px; background-color: #fef2f2; border: 1px solid #fee2e2;">
+          <span class="ion-ios-alert me-3" style="font-size: 24px; color: #dc2626;"></span>
+          <div class="text-danger small fw-medium">{{ errorMessage }}</div>
+        </div>
+
+        <form [formGroup]="forgotForm" (ngSubmit)="submitForgot()" novalidate *ngIf="!successMessage">
+          <div class="form-group mb-4 pb-2">
+            <label class="form-label-custom">{{ 'FORGOT_PASSWORD.EMAIL_LABEL' | translate }}</label>
+            <div class="input-with-icon">
+              <span class="ion-ios-mail input-icon"></span>
+              <input class="form-control custom-input" type="email" formControlName="email" [placeholder]="'FORGOT_PASSWORD.EMAIL_PLACEHOLDER' | translate">
+            </div>
+          </div>
+
+          <button class="btn btn-primary-custom w-100 py-3 mb-4" type="submit" [disabled]="isSubmitting || forgotForm.invalid">
+            <span *ngIf="!isSubmitting">{{ 'FORGOT_PASSWORD.SUBMIT' | translate }}</span>
+            <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+          </button>
+
+          <div class="text-center">
+            <a (click)="toggleForgotPassword()" style="color: #2563eb !important; font-weight: 700; font-size: 14.5px; text-decoration: none; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center;">
+              &larr; {{ 'FORGOT_PASSWORD.BACK' | translate }}
+            </a>
+          </div>
+        </form>
+
+        <div *ngIf="successMessage" class="text-center animate__animated animate__fadeIn">
+          <div class="mb-4">
+             <span class="ion-ios-checkmark-circle" style="font-size: 60px; color: #059669;"></span>
+          </div>
+          <div class="alert alert-success mb-4" style="border-radius: 12px; background-color: #f0fdf4; border: 1px solid #dcfce7; color: #166534;">
+            {{ successMessage }}
+          </div>
+          <div class="alert alert-warning text-start mb-3" *ngIf="forgotEmailHint" style="border-radius: 12px;">
+            <p class="small mb-0">{{ forgotEmailHint }}</p>
+          </div>
+          <button class="btn btn-primary-custom w-100 py-3" style="border-radius: 12px;" (click)="toggleForgotPassword()">
+            {{ 'LOGIN.RESET_BACK_LOGIN' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <!-- ETAT 3 : NOUVEAU MOT DE PASSE -->
+      <div *ngIf="mode === 'reset'" class="animate__animated animate__fadeIn">
+        
+        <!-- Messages Spécifiques au Reset -->
+        <div *ngIf="resetErrorMessage" class="alert alert-danger d-flex align-items-center py-3 px-4 rounded-4 border-0 shadow-sm mb-4 animate__animated animate__shakeX" 
+             style="background-color: #fef2f2; color: #991b1b; border-left: 5px solid #ef4444 !important;">
+          <div class="d-flex align-items-center justify-content-center bg-white rounded-circle shadow-sm me-3" style="width: 32px; height: 32px; flex-shrink: 0;">
+            <span class="ion-ios-alert text-danger" style="font-size: 1.2rem;"></span>
+          </div>
+          <div class="small fw-bold" style="line-height: 1.4;">{{ resetErrorMessage }}</div>
+        </div>
+
+        <div *ngIf="resetMessage" class="alert alert-success d-flex align-items-center py-3 px-4 rounded-4 border-0 shadow-sm mb-4 animate__animated animate__fadeInUp"
+             style="background-color: #f0fdf4; color: #166534; border-left: 5px solid #10b981 !important;">
+          <div class="d-flex align-items-center justify-content-center bg-white rounded-circle shadow-sm me-3" style="width: 32px; height: 32px; flex-shrink: 0;">
+            <span class="ion-ios-checkmark-circle text-success" style="font-size: 1.2rem;"></span>
+          </div>
+          <div class="small fw-bold" style="line-height: 1.4;">{{ resetMessage }}</div>
+        </div>
+
+        <div class="form-header-new mb-5">
+          <div class="d-flex align-items-center mb-2">
+            <div style="position: relative; width: 48px; height: 48px; background: #eff6ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; animation: zoomIn 0.5s ease-out; filter: drop-shadow(0 2px 4px rgba(37, 99, 235, 0.1)); margin-right: 16px; flex-shrink: 0;">
+              <!-- Lock Icon in the center -->
+              <span class="ion-ios-lock" style="font-size: 20px; color: #3b82f6; position: absolute; z-index: 2;"></span>
+              <!-- Refresh Arrow overlapping around it -->
+              <span class="ion-ios-refresh" style="font-size: 38px; color: #2563eb; position: absolute; z-index: 1;"></span>
+            </div>
+            <h2 class="fw-bold text-dark mb-0" style="font-size: 1.5rem;">{{ 'RESET_PASSWORD.TITLE' | translate }}</h2>
+          </div>
+          <p class="text-muted small">{{ 'RESET_PASSWORD.SUBTITLE' | translate }}</p>
+        </div>
+
+        <form [formGroup]="resetForm" (ngSubmit)="submitReset()" novalidate *ngIf="!resetMessage">
+          
+          <div class="form-group mb-4 pb-2">
+            <label class="form-label-custom">{{ 'RESET_PASSWORD.PASSWORD_LABEL' | translate }}</label>
+            <div class="input-with-icon">
+              <span class="ion-ios-lock input-icon"></span>
+              <input class="form-control custom-input" 
+                     [class.is-valid]="fReset['password'].valid && fReset['password'].dirty"
+                     [type]="hidePassword ? 'password' : 'text'" 
+                     formControlName="password" 
+                     [placeholder]="'RESET_PASSWORD.PASSWORD_PLACEHOLDER' | translate"
+                     (focus)="fReset['password'].markAsTouched()">
+              <button type="button" class="password-toggle-icon" (click)="hidePassword = !hidePassword">
+                <span [class]="hidePassword ? 'ion-ios-eye-off' : 'ion-ios-eye'"></span>
+              </button>
+            </div>
+            <!-- Règles du mot de passe -->
+            <div class="d-flex flex-wrap mt-2" style="gap: 12px;">
+              <span class="d-inline-flex align-items-center" style="font-size: 12px; color: #94a3b8; font-weight: 600;">
+                <span class="ion-ios-checkmark-circle me-1" style="font-size: 1rem;"></span> {{ 'RESET_PASSWORD.REQ_MIN' | translate }}
+              </span>
+              <span class="d-inline-flex align-items-center" style="font-size: 12px; color: #94a3b8; font-weight: 600;">
+                <span class="ion-ios-checkmark-circle me-1" style="font-size: 1rem;"></span> {{ 'RESET_PASSWORD.REQ_NUMBER' | translate }}
+              </span>
+              <span class="d-inline-flex align-items-center" style="font-size: 12px; color: #94a3b8; font-weight: 600;">
+                <span class="ion-ios-checkmark-circle me-1" style="font-size: 1rem;"></span> {{ 'RESET_PASSWORD.REQ_SYMBOL' | translate }}
+              </span>
+            </div>
+          </div>
+
+          <div class="form-group mb-4 pb-2">
+            <label class="form-label-custom">{{ 'RESET_PASSWORD.CONFIRM_LABEL' | translate }}</label>
+            <div class="input-with-icon">
+              <span class="ion-ios-checkmark-circle-outline input-icon"></span>
+              <input class="form-control custom-input" 
+                     [class.is-invalid]="resetForm.errors?.['mismatch'] && fReset['confirmPassword'].touched"
+                     [class.is-valid]="!resetForm.errors?.['mismatch'] && fReset['confirmPassword'].dirty && fReset['confirmPassword'].value"
+                     [type]="hideConfirmPassword ? 'password' : 'text'" 
+                     formControlName="confirmPassword" 
+                     [placeholder]="'RESET_PASSWORD.CONFIRM_PLACEHOLDER' | translate">
+              <button type="button" class="password-toggle-icon" (click)="hideConfirmPassword = !hideConfirmPassword">
+                <span [class]="hideConfirmPassword ? 'ion-ios-eye-off' : 'ion-ios-eye'"></span>
+              </button>
+            </div>
+            <div class="invalid-feedback d-block small mt-2 fw-bold" *ngIf="resetForm.errors?.['mismatch'] && fReset['confirmPassword'].touched">
+              {{ 'RESET_PASSWORD.MISMATCH' | translate }}
+            </div>
+          </div>
+
+          <!-- Erreur affichée après clic si règles non respectées -->
+          <div *ngIf="resetSubmitAttempted && resetForm.invalid"
+               class="d-flex align-items-start rounded-3 mb-3 px-3 py-2"
+               style="background:#fef2f2; border:1.5px solid #ef4444; font-size:13px; color:#991b1b; font-weight:600; gap:10px;">
+            <span class="ion-ios-close-circle" style="font-size:1.3rem; color:#ef4444; flex-shrink:0;"></span>
+            <span>
+              <span *ngIf="!passwordRules.length">{{ 'RESET_PASSWORD.ERR_MIN_LENGTH' | translate }} </span>
+              <span *ngIf="!passwordRules.number">{{ 'RESET_PASSWORD.ERR_NUMBER' | translate }} </span>
+              <span *ngIf="!passwordRules.symbol">{{ 'RESET_PASSWORD.ERR_SYMBOL' | translate }} </span>
+              <span *ngIf="resetForm.errors?.['mismatch']">{{ 'RESET_PASSWORD.MISMATCH' | translate }}</span>
+            </span>
+          </div>
+
+          <button class="btn btn-primary-custom w-100 py-3 mb-3" type="button" (click)="trySubmitReset()" [disabled]="isSubmittingReset">
+            <span *ngIf="!isSubmittingReset">{{ 'RESET_PASSWORD.SUBMIT' | translate }}</span>
+            <span *ngIf="isSubmittingReset" class="spinner-border spinner-border-sm me-2"></span>
+          </button>
+
+          <div class="text-center d-flex justify-content-center">
+            <a (click)="mode = 'login'" style="color: #2563eb !important; font-weight: 700; font-size: 14.5px; text-decoration: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.3s ease;">
+              &larr; {{ 'RESET_PASSWORD.BACK_LOGIN' | translate }}
+            </a>
+          </div>
+        </form>
+
+        <!-- Success Redirect Button -->
+        <div *ngIf="resetMessage" class="text-center mt-4">
+           <button class="btn btn-primary-custom w-100 py-3" (click)="mode = 'login'">
+             {{ 'LOGIN.RESET_SIGN_IN_NOW' | translate }}
+           </button>
+        </div>
+
+      </div>
+      
+      <!-- ETAT 4 : DEUXIÈME FACTEUR (2FA) -->
+      <div *ngIf="mode === '2fa'" class="animate__animated animate__fadeIn">
+        <div class="form-header-new mb-5 text-center">
+          <div class="mb-3">
+             <div style="position: relative; width: 64px; height: 64px; background: #f0fdf4; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; filter: drop-shadow(0 4px 6px rgba(16, 185, 129, 0.1));">
+                <span class="ion-md-shield" style="font-size: 32px; color: #10b981;"></span>
+             </div>
+          </div>
+          <h2 class="fw-bold text-dark">{{ 'LOGIN.TWO_FA.TITLE' | translate }}</h2>
+          <p class="text-muted small">{{ 'LOGIN.TWO_FA.SUBTITLE' | translate }}</p>
+        </div>
+
+        <form (ngSubmit)="submit2FA()" novalidate>
+          <div class="form-group mb-5 pb-2 text-center">
+            <div class="d-flex justify-content-center gap-2 mb-3">
+              <input type="text" [(ngModel)]="twoFactorCode" name="2faCode" 
+                     class="form-control text-center fw-bold" 
+                     style="font-size: 2rem; letter-spacing: 12px; border-radius: 16px; border: 2px solid #e2e8f0; height: 80px; padding: 0;"
+                     maxlength="6" [placeholder]="'LOGIN.TWO_FA.PLACEHOLDER' | translate" autofocus>
+            </div>
+            <p class="text-muted small">{{ 'LOGIN.TWO_FA.CODE_HINT' | translate }}</p>
+          </div>
+
+          <button class="btn btn-primary-custom w-100 py-3 mb-4" type="submit" [disabled]="isSubmitting || twoFactorCode.length !== 6">
+            <span *ngIf="!isSubmitting">{{ 'LOGIN.TWO_FA.SUBMIT' | translate }}</span>
+            <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+          </button>
+
+          <div class="text-center">
+            <a (click)="mode = 'login'; errorMessage = null; successMessage = null" style="color: #64748b !important; font-weight: 600; font-size: 14px; text-decoration: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+              &larr; {{ 'LOGIN.TWO_FA.CANCEL' | translate }}
+            </a>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+</div>

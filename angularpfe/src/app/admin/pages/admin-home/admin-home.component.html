@@ -1,0 +1,319 @@
+<div class="admin-home animate__animated animate__fadeIn">
+  
+  <div class="d-flex flex-column mb-4">
+    <h2 class="fw-bold text-dark mb-1">Tableau de bord administrateur</h2>
+    <p class="text-muted">Supervisez l’activité globale de la plateforme GoRide.</p>
+  </div>
+
+  <!-- Key Metrics 8 Cards -->
+  <div class="row g-4 mb-4">
+    <!-- Row 1 -->
+    <div class="col-md-3 col-sm-6">
+      <div class="metric-card bg-white shadow-sm p-4 rounded-4 h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="icon-box bg-primary-soft text-primary">
+            <span class="ion-ios-people"></span>
+          </div>
+          <span class="badge bg-success-soft text-success">+12%</span>
+        </div>
+        <p class="text-muted small fw-bold text-uppercase mb-1">Utilisateurs Totaux</p>
+        <h3 class="fw-bold mb-0 text-dark">{{ formatNumber(stats.totalUsers) }}</h3>
+      </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+      <div class="metric-card bg-white shadow-sm p-4 rounded-4 h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="icon-box bg-info-soft text-info">
+            <span class="ion-ios-person"></span>
+          </div>
+          <span class="badge bg-success-soft text-success">+5%</span>
+        </div>
+        <p class="text-muted small fw-bold text-uppercase mb-1">Passagers Actifs</p>
+        <h3 class="fw-bold mb-0 text-dark">{{ formatNumber(stats.activePassengers) }}</h3>
+      </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+      <div class="metric-card bg-white shadow-sm p-4 rounded-4 h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="icon-box bg-primary-soft text-primary">
+            <span class="ion-ios-speedometer"></span>
+          </div>
+          <span class="badge bg-success-soft text-success">+8%</span>
+        </div>
+        <p class="text-muted small fw-bold text-uppercase mb-1">Chauffeurs Actifs</p>
+        <h3 class="fw-bold mb-0 text-dark">{{ formatNumber(stats.activeDrivers) }}</h3>
+      </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+      <div class="metric-card bg-white shadow-sm p-4 rounded-4 h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="icon-box bg-warning-soft text-warning">
+            <span class="ion-ios-briefcase"></span>
+          </div>
+          <span class="badge bg-secondary-soft text-secondary">+2%</span>
+        </div>
+        <p class="text-muted small fw-bold text-uppercase mb-1">Propriétaires Actifs</p>
+        <h3 class="fw-bold mb-0 text-dark">{{ formatNumber(stats.activeOwners) }}</h3>
+      </div>
+    </div>
+    
+    <!-- Row 2 -->
+    <div class="col-md-3 col-sm-6">
+      <div class="metric-card bg-white shadow-sm p-4 rounded-4 h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="icon-box bg-success-soft text-success">
+            <span class="ion-ios-car"></span>
+          </div>
+          <span class="badge bg-success-soft text-success">+15%</span>
+        </div>
+        <p class="text-muted small fw-bold text-uppercase mb-1">Véhicules Enregistrés</p>
+        <h3 class="fw-bold mb-0 text-dark">{{ formatNumber(stats.registeredVehicles) }}</h3>
+      </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+      <div class="metric-card bg-white shadow-sm p-4 rounded-4 h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="icon-box bg-success-soft text-success">
+            <span class="ion-ios-cash"></span>
+          </div>
+          <span class="badge bg-success-soft text-success">+18%</span>
+        </div>
+        <p class="text-muted small fw-bold text-uppercase mb-1">Chiffre d'Affaires</p>
+        <h3 class="fw-bold mb-0 text-dark">{{ formatCurrency(stats.revenue) }}</h3>
+      </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+      <div class="metric-card bg-white shadow-sm p-4 rounded-4 h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="icon-box bg-danger-soft text-danger">
+            <span class="ion-ios-alert"></span>
+          </div>
+          <span class="badge bg-danger">Urgents</span>
+        </div>
+        <p class="text-muted small fw-bold text-uppercase mb-1">Signalements ouverts</p>
+        <h3 class="fw-bold mb-0 text-danger">{{ stats.openReports }}</h3>
+      </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+      <div class="metric-card bg-white shadow-sm p-4 rounded-4 h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="icon-box bg-secondary-soft text-secondary">
+            <span class="ion-ios-business"></span>
+          </div>
+          <span class="badge bg-success-soft text-success">+3%</span>
+        </div>
+        <p class="text-muted small fw-bold text-uppercase mb-1">Entreprises Actives</p>
+        <h3 class="fw-bold mb-0 text-dark">{{ formatNumber(stats.activeCompanies) }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <!-- Platform Growth Chart -->
+    <div class="col-lg-8">
+      <div class="content-card shadow-sm bg-white rounded-4 p-4 h-100">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h5 class="fw-bold text-dark mb-0">Croissance de la plateforme</h5>
+          <select class="form-select form-select-sm w-auto rounded-pill bg-light border-0" (change)="onPeriodChange($event)">
+            <option value="7 derniers jours">7 derniers jours</option>
+            <option value="30 derniers jours">30 derniers jours</option>
+            <option value="Ce mois">Ce mois</option>
+          </select>
+        </div>
+        <div class="chart-container d-flex align-items-end justify-content-around pb-3 border-bottom position-relative" style="height: 250px;">
+          <!-- Loading State -->
+          <div *ngIf="growthLoading" class="w-100 h-100 d-flex flex-column justify-content-center align-items-center position-absolute top-0 start-0 bg-white">
+             <div class="spinner-border text-primary" role="status"></div>
+             <p class="text-muted small mt-2">Chargement...</p>
+          </div>
+
+          <!-- Error State -->
+          <div *ngIf="growthError && !growthLoading" class="w-100 h-100 d-flex flex-column justify-content-center align-items-center text-center position-absolute top-0 start-0 bg-white">
+             <span class="ion-ios-warning fs-1 text-danger mb-2"></span>
+             <p class="text-muted fw-bold mb-2">Impossible de charger les données de croissance</p>
+             <button class="btn btn-sm btn-outline-primary rounded-pill fw-bold" (click)="retryGrowthData()">Réessayer</button>
+          </div>
+
+          <!-- Empty State -->
+          <div *ngIf="isGrowthEmpty && !growthLoading && !growthError" class="w-100 h-100 d-flex flex-column justify-content-center align-items-center text-center position-absolute top-0 start-0 bg-white">
+             <span class="ion-ios-stats fs-1 text-muted opacity-25 mb-2"></span>
+             <p class="text-muted fw-bold">Aucune donnée de croissance disponible</p>
+          </div>
+
+          <!-- Chart Data -->
+          <ng-container *ngIf="!growthLoading && !growthError && !isGrowthEmpty">
+            <div class="bar-wrapper text-center" *ngFor="let data of chartData" style="height: 100%; display: flex; flex-direction: column; justify-content: flex-end; width: 10%;">
+              <div class="bar bg-primary rounded-top" [style.height]="data.height" [title]="data.value"></div>
+              <span class="small text-muted mt-2 fw-bold">{{ data.label }}</span>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin Alerts (À valider) -->
+    <div class="col-lg-4">
+      <div class="content-card shadow-sm bg-white rounded-4 p-4 h-100">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h5 class="fw-bold text-dark mb-0">À valider</h5>
+          <span class="badge bg-warning text-dark">{{ validations.length }}</span>
+        </div>
+        <div class="alert-list">
+          <div *ngFor="let item of validations" class="alert-item d-flex align-items-center gap-3 p-3 bg-light rounded-4 mb-3 border-start border-warning border-4">
+            <div class="icon-circle bg-white text-warning shadow-sm">
+              <span [class]="item.type === 'Chauffeur' ? 'ion-ios-person' : (item.type === 'Véhicule' ? 'ion-ios-car' : 'ion-ios-document')"></span>
+            </div>
+            <div class="flex-grow-1 overflow-hidden">
+              <span class="fw-bold text-dark d-block text-truncate">{{ item.name }}</span>
+              <span class="tiny text-muted d-block text-truncate">{{ item.type }} - {{ item.priority }}</span>
+            </div>
+            <button class="btn btn-sm btn-light border text-primary rounded-pill px-3 fw-bold shadow-sm" (click)="openModal('validation', item)">Voir</button>
+          </div>
+        </div>
+        <button class="btn btn-light w-100 text-primary fw-bold mt-2" routerLink="/admin/validations">
+          Aller aux validations <span class="ion-ios-arrow-round-forward ms-1"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <!-- Activité récente -->
+    <div class="col-lg-4">
+      <div class="content-card shadow-sm bg-white rounded-4 p-4 h-100">
+        <h5 class="fw-bold text-dark mb-4">Activité récente</h5>
+        <div class="activity-timeline">
+          <div *ngFor="let act of activities" class="d-flex gap-3 mb-3 pb-3 border-bottom border-light">
+            <div class="icon-circle bg-primary-soft text-primary flex-shrink-0" style="width: 36px; height: 36px;">
+              <span [class]="act.icon"></span>
+            </div>
+            <div>
+              <p class="mb-0 fw-bold text-dark fs-14">{{ act.title }}</p>
+              <p class="text-muted small mb-1">{{ act.desc }}</p>
+              <span class="tiny text-muted"><span class="ion-ios-time me-1"></span>{{ act.time }}</span>
+            </div>
+            <div class="ms-auto">
+              <button class="btn btn-link text-primary p-0 m-0" (click)="openModal('activity', act)"><span class="ion-ios-eye fs-5"></span></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Réclamations récentes -->
+    <div class="col-lg-4">
+      <div class="content-card shadow-sm bg-white rounded-4 p-4 h-100">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h5 class="fw-bold text-dark mb-0">Réclamations récentes</h5>
+        </div>
+        <div class="complaints-list">
+          <div *ngFor="let comp of complaints" class="bg-light p-3 rounded-4 mb-3">
+            <div class="d-flex justify-content-between mb-2">
+              <span class="fw-bold text-dark fs-14">{{ comp.type }}</span>
+              <span class="badge" [ngClass]="comp.priority === 'Haute' ? 'bg-danger' : (comp.priority === 'Moyenne' ? 'bg-warning text-dark' : 'bg-secondary')">{{ comp.priority }}</span>
+            </div>
+            <p class="text-muted small mb-2"><span class="ion-ios-person me-1"></span> {{ comp.user }}</p>
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="tiny fw-bold text-primary">{{ comp.status }}</span>
+              <button class="btn btn-sm btn-light border rounded-pill px-3 py-1 text-primary tiny fw-bold" (click)="openModal('complaint', comp)">Voir</button>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-light w-100 text-primary fw-bold mt-2" routerLink="/admin/complaints">
+          Voir réclamations <span class="ion-ios-arrow-round-forward ms-1"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Paiements récents & Actions rapides -->
+    <div class="col-lg-4">
+      <div class="content-card shadow-sm bg-white rounded-4 p-4 mb-4">
+        <h5 class="fw-bold text-dark mb-4">Paiements récents</h5>
+        <div *ngFor="let pay of payments" class="d-flex justify-content-between align-items-center mb-3">
+          <div class="d-flex align-items-center gap-3">
+            <div class="icon-circle bg-success-soft text-success shadow-sm" style="width: 32px; height: 32px;">
+              <span class="ion-ios-cash"></span>
+            </div>
+            <div>
+              <span class="fw-bold text-dark d-block fs-14">{{ pay.type }}</span>
+              <span class="tiny text-muted">{{ pay.date }} - {{ pay.method }}</span>
+            </div>
+          </div>
+          <div class="text-end">
+            <span class="fw-bold text-dark d-block">{{ pay.amount }} DT</span>
+            <button class="btn btn-link text-primary p-0 m-0 tiny fw-bold" (click)="openModal('payment', pay)">Détails</button>
+          </div>
+        </div>
+        <button class="btn btn-light w-100 text-primary fw-bold mt-2" routerLink="/admin/payments">
+          Voir paiements <span class="ion-ios-arrow-round-forward ms-1"></span>
+        </button>
+      </div>
+
+      <!-- Actions Rapides -->
+      <div class="content-card shadow-sm bg-white rounded-4 p-4">
+        <h5 class="fw-bold text-dark mb-3">Actions rapides</h5>
+        <div class="d-flex flex-wrap gap-2">
+          <button class="btn btn-sm btn-primary-soft text-primary fw-bold rounded-pill mb-2" routerLink="/admin/validations">Voir validations</button>
+          <button class="btn btn-sm btn-primary-soft text-primary fw-bold rounded-pill mb-2" routerLink="/admin/users">Gérer utilisateurs</button>
+          <button class="btn btn-sm btn-primary-soft text-primary fw-bold rounded-pill mb-2" routerLink="/admin/vehicles">Voir véhicules</button>
+          <button class="btn btn-sm btn-primary-soft text-primary fw-bold rounded-pill mb-2" routerLink="/admin/services">Voir demandes & services</button>
+          <button class="btn btn-sm btn-success-soft text-success fw-bold rounded-pill mb-2" routerLink="/admin/payments">Voir paiements</button>
+          <button class="btn btn-sm btn-warning-soft text-warning fw-bold rounded-pill mb-2" routerLink="/admin/complaints">Voir réclamations</button>
+          <button class="btn btn-sm btn-danger-soft text-danger fw-bold rounded-pill mb-2" routerLink="/admin/reports">Voir signalements</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Generic Admin Modal -->
+<div class="modal-overlay animate__animated animate__fadeIn" *ngIf="isModalOpen" (click)="closeModal()">
+  <div class="modal-content-wrapper shadow-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+      <h5 class="fw-bold text-dark mb-0">{{ modalTitle }}</h5>
+      <button class="btn btn-light rounded-circle p-2 d-flex" (click)="closeModal()">
+        <span class="ion-ios-close fs-4 text-dark" style="line-height: 1;"></span>
+      </button>
+    </div>
+    
+    <div class="modal-body mb-4" *ngIf="modalData">
+      <div class="mb-3">
+        <span class="tiny text-muted text-uppercase fw-bold d-block mb-1">Type / Titre</span>
+        <span class="fs-5 fw-bold text-dark">{{ modalData.type || modalData.title }}</span>
+      </div>
+      <div class="mb-3">
+        <span class="tiny text-muted text-uppercase fw-bold d-block mb-1">Description / Nom / Montant</span>
+        <span class="text-dark">{{ modalData.name || modalData.desc || modalData.document || (modalData.amount ? formatCurrency(modalData.amount) : '') || modalData.user }}</span>
+      </div>
+      
+      <div class="row">
+        <div class="col-6 mb-3" *ngIf="modalData.user && modalData.type !== modalData.user">
+          <span class="tiny text-muted text-uppercase fw-bold d-block mb-1">Utilisateur / Source</span>
+          <span class="text-dark">{{ modalData.user }}</span>
+        </div>
+        <div class="col-6 mb-3" *ngIf="modalData.method">
+          <span class="tiny text-muted text-uppercase fw-bold d-block mb-1">Méthode</span>
+          <span class="badge bg-light text-dark border">{{ modalData.method }}</span>
+        </div>
+        <div class="col-6 mb-3" *ngIf="modalData.status">
+          <span class="tiny text-muted text-uppercase fw-bold d-block mb-1">Statut</span>
+          <span class="badge bg-light text-dark border">{{ modalData.status }}</span>
+        </div>
+        <div class="col-6 mb-3" *ngIf="modalData.priority">
+          <span class="tiny text-muted text-uppercase fw-bold d-block mb-1">Priorité</span>
+          <span class="badge" [ngClass]="modalData.priority === 'Haute' ? 'bg-danger' : (modalData.priority === 'Moyenne' ? 'bg-warning text-dark' : 'bg-secondary')">{{ modalData.priority }}</span>
+        </div>
+        <div class="col-6 mb-3" *ngIf="modalData.time || modalData.date">
+          <span class="tiny text-muted text-uppercase fw-bold d-block mb-1">Date / Heure</span>
+          <span class="text-dark"><span class="ion-ios-calendar me-1"></span>{{ modalData.time || modalData.date }}</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="modal-footer d-flex gap-2">
+      <button class="btn btn-light fw-bold flex-grow-1 rounded-pill" (click)="closeModal()">Fermer</button>
+      <button class="btn btn-primary fw-bold flex-grow-1 rounded-pill" *ngIf="modalLink" [routerLink]="modalLink" (click)="closeModal()">{{ modalLinkText }}</button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,327 @@
+<div class="requests-container animate__animated animate__fadeIn">
+  <!-- Header -->
+  <header class="page-header mb-4">
+    <div class="header-content">
+      <h2>Demandes reçues</h2>
+      <p>Courses individuelles et inscriptions <strong>covoiturage</strong> en attente de votre réponse.</p>
+    </div>
+    <div class="header-badge">
+      <span class="badge bg-danger">{{ stats.pending }} en attente</span>
+    </div>
+  </header>
+
+  <!-- Success Message -->
+  <div *ngIf="successMessage" class="alert alert-success animate__animated animate__fadeInDown">
+    <span class="ion-md-checkmark-circle me-2"></span> {{ successMessage }}
+  </div>
+
+  <!-- Inbox hint (covoiturage API) -->
+  <div *ngIf="inboxHint && !errorMessage" class="alert alert-warning animate__animated animate__fadeInDown">
+    <span class="ion-md-information-circle me-2"></span> {{ inboxHint }}
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="alert alert-danger animate__animated animate__fadeInDown">
+    <span class="ion-md-alert me-2"></span> {{ errorMessage }}
+    <button class="btn btn-sm btn-outline-danger ms-3" (click)="loadRequests()">Réessayer</button>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="stats-grid mb-4">
+    <div class="stat-card" [class.active]="activeFilter === 'ALL'" (click)="setFilter('ALL')">
+      <span class="stat-label">Toutes</span>
+      <h3 class="stat-value">{{ stats.total }}</h3>
+    </div>
+    <div class="stat-card border-pending" [class.active]="activeFilter === 'PENDING'" (click)="setFilter('PENDING')">
+      <span class="stat-label">En attente</span>
+      <h3 class="stat-value text-warning">{{ stats.pending }}</h3>
+    </div>
+    <div class="stat-card border-accepted" [class.active]="activeFilter === 'ACCEPTED'" (click)="setFilter('ACCEPTED')">
+      <span class="stat-label">Acceptées</span>
+      <h3 class="stat-value text-success">{{ stats.accepted }}</h3>
+    </div>
+    <div class="stat-card border-rejected" [class.active]="activeFilter === 'REJECTED'" (click)="setFilter('REJECTED')">
+      <span class="stat-label">Refusées</span>
+      <h3 class="stat-value text-danger">{{ stats.rejected }}</h3>
+    </div>
+    <div class="stat-card border-cancelled" [class.active]="activeFilter === 'CANCELLED'" (click)="setFilter('CANCELLED')">
+      <span class="stat-label">Annulées</span>
+      <h3 class="stat-value text-secondary">{{ stats.cancelled }}</h3>
+    </div>
+  </div>
+
+  <!-- Type filter (covoiturage vs individuel) -->
+  <div class="type-filter-bar mb-3">
+    <button type="button" class="type-filter-btn" [class.active]="typeFilter === 'ALL'" (click)="setTypeFilter('ALL')">
+      Tous <span class="type-count">{{ stats.total }}</span>
+    </button>
+    <button type="button" class="type-filter-btn" [class.active]="typeFilter === 'COVOITURAGE'" (click)="setTypeFilter('COVOITURAGE')">
+      <span class="request-type-badge request-type-badge--covoiturage">Covoiturage</span>
+      <span class="type-count">{{ countByType('COVOITURAGE') }}</span>
+    </button>
+    <button type="button" class="type-filter-btn" [class.active]="typeFilter === 'INDIVIDUAL'" (click)="setTypeFilter('INDIVIDUAL')">
+      <span class="request-type-badge request-type-badge--individual">Trajet individuel</span>
+      <span class="type-count">{{ countByType('INDIVIDUAL') }}</span>
+    </button>
+  </div>
+
+  <!-- Controls Bar -->
+  <div class="content-card mb-4 controls-bar">
+    <div class="search-box">
+      <span class="ion-md-search icon"></span>
+      <input type="text" [(ngModel)]="searchTerm" (input)="onSearchChange()" placeholder="Rechercher un client, lieu...">
+    </div>
+    <div class="sort-group">
+      <select class="form-select" [(ngModel)]="sortBy" (change)="onSortChange()">
+        <option value="NEWEST">Plus récentes</option>
+        <option value="OLDEST">Plus anciennes</option>
+        <option value="PRICE_DESC">Montant décroissant</option>
+        <option value="PRICE_ASC">Montant croissant</option>
+        <option value="DIST_DESC">Distance décroissante</option>
+        <option value="DIST_ASC">Distance croissante</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status"></div>
+    <p class="mt-3 text-muted">Chargement des demandes...</p>
+  </div>
+
+  <!-- Requests List -->
+  <div class="requests-list" *ngIf="!isLoading">
+    <div class="content-card request-card mb-3 animate__animated animate__fadeInUp" *ngFor="let req of filteredRequests">
+      <div class="card-body">
+        <div class="row align-items-center">
+          <!-- Client Info -->
+          <div class="col-lg-3">
+            <div class="client-profile">
+              <app-profile-avatar
+                class="avatar"
+                [firstName]="req.clientFirstName || ''"
+                [lastName]="req.clientLastName || ''"
+                [name]="req.clientName"
+                [photoUrl]="req.clientPhoto || req.clientAvatar"
+                [size]="48"
+                [showStatus]="false">
+              </app-profile-avatar>
+              <div class="info">
+                <h4 class="name">{{ req.clientName }}</h4>
+                <div class="rating">
+                  <span class="ion-md-star text-warning"></span> {{ req.clientRating }}
+                </div>
+              </div>
+            </div>
+            <div class="status-badge mt-2 d-flex flex-wrap gap-1 align-items-center">
+              <span class="request-type-badge" [ngClass]="getRequestTypeClass(req)">{{ getRequestTypeLabel(req) }}</span>
+              <span class="status-pill" [ngClass]="getStatusClass(req.status)">{{ getStatusLabel(req.status) }}</span>
+            </div>
+          </div>
+
+          <!-- Trip Info -->
+          <div class="col-lg-6">
+            <div class="route-display">
+              <div class="route-point">
+                <span class="dot start"></span>
+                <span class="place">{{ req.from }}</span>
+              </div>
+              <div class="route-line"></div>
+              <div class="route-point">
+                <span class="dot end"></span>
+                <span class="place">{{ req.to }}</span>
+              </div>
+            </div>
+            <div class="trip-meta mt-3">
+              <span class="meta-item"><span class="ion-md-pin icon"></span> {{ req.distance }}</span>
+              <span class="meta-item"><span class="ion-md-time icon"></span> {{ req.duration }}</span>
+              <span class="meta-item"><span class="ion-md-car icon"></span> {{ req.vehicleType }}</span>
+              <span class="meta-item"><span class="ion-md-wallet icon"></span> {{ req.paymentMethod }}</span>
+            </div>
+          </div>
+
+          <!-- Price & Actions -->
+          <div class="col-lg-3 text-end">
+            <div class="price-section mb-3">
+              <span class="label">{{ isSharedBooking(req) ? 'Total réservation' : 'Montant estimé' }}</span>
+              <h3 class="amount text-primary">{{ req.estimatedAmount | number:'1.2-2' }} DT</h3>
+            </div>
+            <div class="actions">
+              <!-- Buttons based on status -->
+              <ng-container [ngSwitch]="req.status">
+                <div *ngSwitchCase="'PENDING'" class="d-flex gap-2 justify-content-end">
+                  <button class="btn btn-sm btn-light" (click)="openDetails(req)">Détails</button>
+                  <button class="btn btn-sm btn-outline-info" (click)="goToChat(req)">Contacter</button>
+                  <button class="btn btn-sm btn-danger" (click)="openRejectModal(req)">Refuser</button>
+                  <button class="btn btn-sm btn-success" (click)="openAcceptModal(req)">Accepter</button>
+                </div>
+                <div *ngSwitchCase="'ACCEPTED'" class="d-flex gap-2 justify-content-end">
+                  <button class="btn btn-sm btn-light" (click)="openDetails(req)">Détails</button>
+                  <button class="btn btn-sm btn-outline-info" (click)="goToChat(req)">Contacter</button>
+                  <button class="btn btn-sm btn-primary" (click)="goToTrips(req)">Voir trajet</button>
+                </div>
+                <div *ngSwitchDefault>
+                  <button class="btn btn-sm btn-light" (click)="openDetails(req)">Détails</button>
+                </div>
+              </ng-container>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="filteredRequests.length === 0" class="text-center py-5 empty-state">
+      <span class="ion-md-notifications-off text-muted mb-3" style="font-size: 4rem; display: block;"></span>
+      <h4>Aucune demande trouvée</h4>
+      <p class="text-muted">Il n'y a aucune demande correspondant à vos critères.</p>
+      <button class="btn btn-link" (click)="setFilter('ALL'); searchTerm = ''; applyFilters()">Réinitialiser</button>
+    </div>
+  </div>
+
+  <!-- Company Requests Section -->
+  <div class="mt-5 pt-4 border-top" *ngIf="companyRequests.length > 0">
+    <h3 class="fw-bold mb-4"><span class="ion-md-briefcase text-primary me-2"></span> Demandes d'Entreprises</h3>
+    <div class="row g-4">
+      <div class="col-xl-6" *ngFor="let creq of companyRequests">
+        <div class="content-card request-card mb-0 h-100 d-flex flex-column animate__animated animate__fadeInUp">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="fw-bold text-dark m-0">{{ creq.companyName }}</h5>
+              <span class="badge rounded-pill px-3 py-2" 
+                    [ngClass]="{'bg-warning text-dark': creq.status==='PENDING_DRIVER', 'bg-success': creq.status==='ACCEPTED_DRIVER', 'bg-danger': creq.status==='REJECTED_DRIVER'}">
+                {{ creq.status === 'PENDING_DRIVER' ? 'En attente' : creq.status === 'ACCEPTED_DRIVER' ? 'Acceptée' : 'Refusée' }}
+              </span>
+            </div>
+            <div class="row g-3 mb-3">
+              <div class="col-6"><div class="small text-muted mb-1">Type</div> <strong>{{ creq.type === 'DRIVER_WITH_CAR' ? 'Chauffeur' : 'Service Mixte' }}</strong></div>
+              <div class="col-6"><div class="small text-muted mb-1">Mission</div> <strong class="text-primary">{{ creq.missionType || creq.description }}</strong></div>
+              <div class="col-6"><div class="small text-muted mb-1">Période</div> <strong>{{ creq.startDate }} au {{ creq.endDate }}</strong></div>
+              <div class="col-6"><div class="small text-muted mb-1">Budget Max</div> <strong class="text-success fs-5">{{ creq.budget || 'N/A' }} <small>DT</small></strong></div>
+            </div>
+            <div class="p-3 bg-light rounded-3 mb-4 small text-muted border" *ngIf="creq.comment || creq.contactPerson">
+              <span class="ion-md-quote me-1"></span> "{{ creq.comment || creq.contactPerson }}"
+            </div>
+            <div class="d-flex gap-2 mt-auto" *ngIf="creq.status === 'PENDING_DRIVER'">
+              <button class="btn btn-success flex-grow-1" (click)="respondCompanyRequest(creq.id, 'ACCEPTED_DRIVER')">Accepter</button>
+              <button class="btn btn-outline-danger flex-grow-1" (click)="respondCompanyRequest(creq.id, 'REJECTED_DRIVER')">Refuser</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Details Modal -->
+  <div class="modal-overlay" *ngIf="showDetailsModal" (click)="closeDetails()">
+    <div class="modal-card animate__animated animate__zoomIn" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h3>Détails de la demande</h3>
+          <span class="request-type-badge mt-1 d-inline-block" *ngIf="selectedRequest" [ngClass]="getRequestTypeClass(selectedRequest)">
+            {{ getRequestTypeLabel(selectedRequest) }}
+          </span>
+        </div>
+        <button class="close-btn" (click)="closeDetails()">&times;</button>
+      </div>
+      <div class="modal-body" *ngIf="selectedRequest">
+        <div class="client-hero mb-4">
+          <app-profile-avatar
+            class="avatar-lg"
+            [firstName]="selectedRequest.clientFirstName || ''"
+            [lastName]="selectedRequest.clientLastName || ''"
+            [name]="selectedRequest.clientName"
+            [photoUrl]="selectedRequest.clientPhoto || selectedRequest.clientAvatar"
+            [size]="72"
+            [shape]="'rounded'"
+            [showStatus]="false">
+          </app-profile-avatar>
+          <div class="hero-info">
+            <h4>{{ selectedRequest.clientName }}</h4>
+            <div class="rating-badge"><span class="ion-md-star"></span> {{ selectedRequest.clientRating }}</div>
+          </div>
+        </div>
+        <div class="details-grid">
+          <div class="detail-item">
+            <span class="label">Itinéraire</span>
+            <div class="route-box">
+              <p><strong>De:</strong> {{ selectedRequest.from }}</p>
+              <p><strong>À:</strong> {{ selectedRequest.to }}</p>
+            </div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-box">
+              <span class="label">Distance</span>
+              <span class="value">{{ selectedRequest.distance }}</span>
+            </div>
+            <div class="detail-box">
+              <span class="label">Durée</span>
+              <span class="value">{{ selectedRequest.duration }}</span>
+            </div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-box">
+              <span class="label">Véhicule</span>
+              <span class="value">{{ selectedRequest.vehicleType }}</span>
+            </div>
+            <div class="detail-box">
+              <span class="label">Paiement</span>
+              <span class="value">{{ selectedRequest.paymentMethod }}</span>
+            </div>
+          </div>
+          <div class="detail-item mt-3">
+            <span class="label">Message du client</span>
+            <p class="client-msg">"{{ selectedRequest.clientMessage || 'Pas de message.' }}"</p>
+          </div>
+          <div class="alert alert-info py-2 small mb-3" *ngIf="isSharedBooking(selectedRequest)">
+            Inscription à votre trajet partagé — acceptez ou refusez pour confirmer la place du passager.
+          </div>
+          <div class="price-footer">
+            <span class="label">{{ isSharedBooking(selectedRequest) ? 'Total réservation' : 'Montant total estimé' }}</span>
+            <span class="value fs-4 text-primary">{{ selectedRequest.estimatedAmount | number:'1.2-2' }} DT</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-primary w-100" (click)="closeDetails()">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Accept Modal -->
+  <div class="modal-overlay" *ngIf="showAcceptModal" (click)="closeAcceptModal()">
+    <div class="modal-card mini-modal animate__animated animate__fadeInUp" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="text-success">Accepter la demande</h3>
+      </div>
+      <div class="modal-body text-center" *ngIf="selectedRequest">
+        <p>Voulez-vous accepter la demande de <strong>{{ selectedRequest.clientName }}</strong> ?</p>
+        <div class="trip-summary p-3 bg-light rounded-3 mb-3">
+          <div class="small text-muted">{{ selectedRequest.from }} → {{ selectedRequest.to }}</div>
+          <div class="fw-bold mt-1">{{ selectedRequest.estimatedAmount }} DT</div>
+        </div>
+      </div>
+      <div class="modal-footer d-flex gap-2">
+        <button class="btn btn-light flex-grow-1" (click)="closeAcceptModal()">Annuler</button>
+        <button class="btn btn-success flex-grow-1" (click)="confirmAccept()">Confirmer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reject Modal -->
+  <div class="modal-overlay" *ngIf="showRejectModal" (click)="closeRejectModal()">
+    <div class="modal-card mini-modal animate__animated animate__fadeInUp" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="text-danger">Refuser la demande</h3>
+      </div>
+      <div class="modal-body text-center" *ngIf="selectedRequest">
+        <p>Voulez-vous vraiment refuser la demande de <strong>{{ selectedRequest.clientName }}</strong> ?</p>
+        <textarea class="form-control mt-3" placeholder="Raison du refus (optionnel)"></textarea>
+      </div>
+      <div class="modal-footer d-flex gap-2">
+        <button class="btn btn-light flex-grow-1" (click)="closeRejectModal()">Annuler</button>
+        <button class="btn btn-danger flex-grow-1" (click)="confirmReject()">Confirmer le refus</button>
+      </div>
+    </div>
+  </div>
+</div>

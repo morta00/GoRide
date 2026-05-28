@@ -1,0 +1,153 @@
+<div class="dashboard-wrapper">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <span class="ion-ios-car me-2"></span>
+      <h2 class="m-0 fw-900">Go<span>Ride</span></h2>
+    </div>
+
+    <ul class="nav-menu">
+      <li class="nav-item">
+        <a href="#" class="nav-link active">
+          <span class="ion-ios-apps"></span>
+          <span>Tableau de bord</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#" class="nav-link">
+          <span class="ion-ios-navigate"></span>
+          <span>Mes Trajets</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#" class="nav-link">
+          <span class="ion-ios-cash"></span>
+          <span>Revenus</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#" class="nav-link">
+          <span class="ion-ios-car"></span>
+          <span>Véhicule</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#" class="nav-link">
+          <span class="ion-ios-notifications"></span>
+          <span>Notifications</span>
+        </a>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer mt-auto">
+      <a href="javascript:void(0)" class="nav-link text-danger" (click)="logout()">
+        <span class="ion-ios-log-out"></span>
+        <span>Déconnexion</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="dashboard-header">
+      <div class="welcome-text">
+        <h1>Bonjour, {{ user?.firstName || 'Chauffeur' }}! 👋</h1>
+        <p>Prêt pour vos trajets d'aujourd'hui ?</p>
+      </div>
+
+      <div class="header-actions d-flex align-items-center gap-4">
+        <div class="status-toggle">
+          <div class="status-dot"></div>
+          <span class="fw-bold small">En Ligne</span>
+          <span class="ion-ios-arrow-down small"></span>
+        </div>
+
+        <div class="profile-preview d-flex align-items-center gap-3 cursor-pointer">
+          <img src="assets/images/person_1.jpg" class="rounded-circle shadow-sm" width="45" height="45" alt="Profile">
+        </div>
+      </div>
+    </header>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon icon-blue">
+          <span class="ion-ios-wallet"></span>
+        </div>
+        <div class="stat-info">
+          <span>Gains Aujourd'hui</span>
+          <h3>145.00 DT</h3>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon icon-green">
+          <span class="ion-ios-checkmark-circle"></span>
+        </div>
+        <div class="stat-info">
+          <span>Trajets Terminés</span>
+          <h3>12</h3>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon icon-orange">
+          <span class="ion-ios-star"></span>
+        </div>
+        <div class="stat-info">
+          <span>Note Globale</span>
+          <h3>4.9/5</h3>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active/Recent Rides -->
+    <section class="activity-section">
+      <div class="section-header">
+        <h2>Trajets Récents</h2>
+        <a href="#" class="btn-view-all">Voir tout</a>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead>
+            <tr>
+              <th>ID Trajet</th>
+              <th>Date</th>
+              <th>Passager</th>
+              <th>Destination</th>
+              <th>Montant</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="fw-bold">#GR-8821</td>
+              <td class="text-muted">Aujourd'hui, 14:30</td>
+              <td>Amine J.</td>
+              <td>Lac 2, Tunis</td>
+              <td class="fw-bold text-success">15.50 DT</td>
+              <td><span class="ride-status status-completed">Terminé</span></td>
+            </tr>
+            <tr>
+              <td class="fw-bold">#GR-8819</td>
+              <td class="text-muted">Aujourd'hui, 12:15</td>
+              <td>Sarra B.</td>
+              <td>La Marsa</td>
+              <td class="fw-bold text-success">22.00 DT</td>
+              <td><span class="ride-status status-completed">Terminé</span></td>
+            </tr>
+            <tr>
+              <td class="fw-bold">#GR-8815</td>
+              <td class="text-muted">Hier, 18:45</td>
+              <td>Mohamed L.</td>
+              <td>Ariana</td>
+              <td class="fw-bold text-success">10.00 DT</td>
+              <td><span class="ride-status status-completed">Terminé</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>

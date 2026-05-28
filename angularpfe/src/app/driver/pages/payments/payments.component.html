@@ -1,0 +1,304 @@
+<div class="payments-page animate__animated animate__fadeIn">
+  <div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="page-title">Paiements</h2>
+      <p class="page-subtitle text-muted">Gérez votre solde, vos retraits et vos versements GoRide.</p>
+    </div>
+    <button class="btn-primary-withdraw" (click)="openWithdrawModal()">
+      <span class="ion-md-cash me-2"></span> Demander un retrait
+    </button>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-grid mb-5">
+    <div class="summary-card">
+      <div class="card-icon bg-blue-soft text-blue"><span class="ion-md-wallet"></span></div>
+      <div class="card-info">
+        <span class="label">Solde disponible</span>
+        <h3 class="value">{{ summary.availableBalance | number:'1.2-2' }} <small>TND</small></h3>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="card-icon bg-orange-soft text-orange"><span class="ion-md-time"></span></div>
+      <div class="card-info">
+        <span class="label">Revenus en attente</span>
+        <h3 class="value">{{ summary.pendingEarnings | number:'1.2-2' }} <small>TND</small></h3>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="card-icon bg-green-soft text-green"><span class="ion-md-trending-up"></span></div>
+      <div class="card-info">
+        <span class="label">Total retiré</span>
+        <h3 class="value">{{ summary.totalWithdrawn | number:'1.2-2' }} <small>TND</small></h3>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="card-icon bg-purple-soft text-purple"><span class="ion-md-calendar"></span></div>
+      <div class="card-info">
+        <span class="label">Prochain versement</span>
+        <h3 class="value-date">{{ summary.nextPayout | date:'dd MMM yyyy' }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Left: Transactions -->
+    <div class="col-lg-8">
+      <div class="content-card">
+        <div class="card-header d-flex justify-content-between align-items-center mb-4">
+          <h4 class="card-title mb-0">Historique des transactions</h4>
+          
+          <div class="header-filters d-flex gap-2">
+            <div class="search-input-wrapper">
+              <span class="ion-md-search search-icon"></span>
+              <input type="text" [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="Référence, méthode..." class="filter-input">
+            </div>
+            <select [(ngModel)]="typeFilter" (change)="applyFilters()" class="filter-select">
+              <option value="ALL">Tous les types</option>
+              <option value="VERSEMEMENT_RECU">Versements</option>
+              <option value="RETRAIT_DEMANDE">Retraits</option>
+              <option value="BONUS">Bonus</option>
+              <option value="AJUSTEMENT">Ajustements</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table custom-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Référence</th>
+                <th>Type</th>
+                <th>Montant</th>
+                <th>Méthode</th>
+                <th>Statut</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let tx of filteredTransactions" class="tx-row animate__animated animate__fadeIn">
+                <td class="small">{{ tx.date | date:'dd/MM/yyyy HH:mm' }}</td>
+                <td class="fw-bold">{{ tx.reference }}</td>
+                <td>
+                  <span class="type-indicator" [ngClass]="tx.type.toLowerCase()">
+                    {{ getTypeLabel(tx.type) }}
+                  </span>
+                </td>
+                <td class="fw-bold" [class.text-red]="tx.type === 'RETRAIT_DEMANDE'" [class.text-green]="tx.type !== 'RETRAIT_DEMANDE'">
+                  {{ tx.type === 'RETRAIT_DEMANDE' ? '-' : '+' }}{{ tx.amount | number:'1.2-2' }} TND
+                </td>
+                <td class="small">{{ tx.method }}</td>
+                <td>
+                  <span class="status-badge" [ngClass]="tx.status.toLowerCase()">
+                    {{ getStatusLabel(tx.status) }}
+                  </span>
+                </td>
+                <td class="text-end">
+                  <div class="d-flex justify-content-end gap-2">
+                    <button class="btn-action-tx" (click)="viewDetails(tx)" title="Détails">
+                      <span class="ion-md-information-circle-outline"></span>
+                    </button>
+                    <button class="btn-action-tx primary" *ngIf="tx.status === 'PAID'" (click)="viewReceipt(tx)" title="Reçu">
+                      <span class="ion-md-document"></span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="filteredTransactions.length === 0">
+                <td colspan="7" class="text-center py-5 text-muted">
+                  <span class="ion-md-information-circle-outline d-block mb-2" style="font-size: 2rem;"></span>
+                  Aucune transaction trouvée.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Payout Method -->
+    <div class="col-lg-4">
+      <div class="content-card mb-4">
+        <h4 class="card-title mb-3">Méthode de versement principale</h4>
+        <div class="payout-method-box" *ngIf="payoutMethod">
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <div class="method-icon-circle">
+              <span [class]="payoutMethod.method === 'd17' ? 'ion-md-phone-portrait' : 'ion-md-card'"></span>
+            </div>
+            <div class="method-info">
+              <span class="method-type">{{ payoutMethod.typeLabel }}</span>
+              <span class="method-status verified"><span class="ion-md-checkmark-circle me-1"></span>Vérifié</span>
+            </div>
+          </div>
+          <div class="method-details mb-4">
+            <div class="detail-row">
+              <span class="label">Titulaire :</span>
+              <span class="value">{{ payoutMethod.holder }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Numéro :</span>
+              <span class="value">{{ payoutMethod.number }}</span>
+            </div>
+          </div>
+          <button class="btn-outline-modify w-100" routerLink="/driver/profile" [queryParams]="{tab: 'payments'}">
+            Modifier méthode
+          </button>
+        </div>
+        <div class="text-center py-3" *ngIf="!payoutMethod">
+          <p class="text-muted small">Aucune méthode configurée.</p>
+          <button class="btn btn-primary btn-sm" routerLink="/driver/profile" [queryParams]="{tab: 'payments'}">Configurer</button>
+        </div>
+      </div>
+
+      <!-- Quick Tips -->
+      <div class="content-card bg-blue-soft border-0">
+        <h5 class="fw-bold mb-3"><span class="ion-md-bulb me-2"></span>Conseil financier</h5>
+        <p class="small mb-0">
+          Les virements bancaires sont traités sous 48h ouvrables. Pour des retraits plus rapides, utilisez **D17 Poste**.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: WITHDRAWAL -->
+<div class="modal-overlay" *ngIf="showWithdrawModal" (click)="showWithdrawModal = false">
+  <div class="modal-content-centered animate__animated animate__zoomIn" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="mb-0">Demander un retrait</h3>
+      <button class="close-btn" (click)="showWithdrawModal = false">&times;</button>
+    </div>
+    <form [formGroup]="withdrawForm" (ngSubmit)="confirmWithdrawal()">
+      <div class="modal-body">
+        <div class="available-balance-hint mb-4">
+          <span class="text-muted">Solde disponible :</span>
+          <span class="fw-bold ms-2">{{ summary.availableBalance | number:'1.2-2' }} TND</span>
+        </div>
+
+        <div class="form-group mb-3">
+          <label class="form-label-small">Montant (TND)</label>
+          <input type="number" formControlName="amount" class="modal-input-premium" placeholder="0.00">
+          <div class="error-msg" *ngIf="withdrawForm.get('amount')?.errors?.['max']">
+            Le montant dépasse votre solde disponible.
+          </div>
+        </div>
+
+        <div class="form-group mb-3">
+          <label class="form-label-small">Méthode de versement</label>
+          <input type="text" formControlName="method" class="modal-input-premium readonly" readonly>
+        </div>
+
+        <div class="form-group mb-0">
+          <label class="form-label-small">Note optionnelle</label>
+          <textarea formControlName="note" class="modal-textarea-premium" placeholder="Ex: Retrait urgent"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary-custom" (click)="showWithdrawModal = false">Annuler</button>
+        <button type="submit" class="btn-primary-custom" [disabled]="withdrawForm.invalid || isSubmitting">
+          <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+          Confirmer le retrait
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: TRANSACTION DETAILS -->
+<div class="modal-overlay" *ngIf="showDetailsModal" (click)="showDetailsModal = false">
+  <div class="modal-content-centered animate__animated animate__fadeInUp" (click)="$event.stopPropagation()">
+    <div class="modal-header border-0 pb-0">
+      <button class="close-btn" (click)="showDetailsModal = false">&times;</button>
+    </div>
+    <div class="modal-body text-center pt-0" *ngIf="selectedTransaction">
+      <div class="tx-icon-big mx-auto mb-3" [ngClass]="selectedTransaction.type.toLowerCase()">
+        <span class="ion-md-document"></span>
+      </div>
+      <h3 class="mb-1">{{ getTypeLabel(selectedTransaction.type) }}</h3>
+      <p class="text-muted small mb-4">Réf: {{ selectedTransaction.reference }}</p>
+
+      <div class="tx-details-list">
+        <div class="tx-detail-row">
+          <span>Date</span>
+          <span class="fw-bold">{{ selectedTransaction.date | date:'dd MMM yyyy, HH:mm' }}</span>
+        </div>
+        <div class="tx-detail-row">
+          <span>Montant</span>
+          <span class="fw-bold" [class.text-red]="selectedTransaction.type === 'RETRAIT_DEMANDE'">
+            {{ selectedTransaction.amount | number:'1.2-2' }} TND
+          </span>
+        </div>
+        <div class="tx-detail-row">
+          <span>Méthode</span>
+          <span class="fw-bold">{{ selectedTransaction.method }}</span>
+        </div>
+        <div class="tx-detail-row">
+          <span>Statut</span>
+          <span class="status-badge" [ngClass]="selectedTransaction.status.toLowerCase()">
+            {{ getStatusLabel(selectedTransaction.status) }}
+          </span>
+        </div>
+        <div class="tx-detail-row" *ngIf="selectedTransaction.note">
+          <span>Note</span>
+          <span class="text-muted small">{{ selectedTransaction.note }}</span>
+        </div>
+      </div>
+      
+      <button class="btn-primary-custom w-100 mt-4" (click)="showDetailsModal = false">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: RECEIPT -->
+<div class="modal-overlay" *ngIf="showReceiptModal" (click)="showReceiptModal = false">
+  <div class="modal-content-centered receipt-modal animate__animated animate__zoomIn" (click)="$event.stopPropagation()">
+    <div class="receipt-paper" *ngIf="selectedTransaction">
+      <div class="receipt-header text-center">
+        <div class="goride-logo-receipt mb-2">GoRide <small>Pay</small></div>
+        <h4 class="mb-0">REÇU DE TRANSACTION</h4>
+        <p class="small text-muted">Document officiel de versement</p>
+      </div>
+
+      <div class="receipt-divider"></div>
+
+      <div class="receipt-body">
+        <div class="receipt-row">
+          <span class="label">Date :</span>
+          <span class="value">{{ selectedTransaction.date | date:'dd/MM/yyyy' }}</span>
+        </div>
+        <div class="receipt-row">
+          <span class="label">Référence :</span>
+          <span class="value">{{ selectedTransaction.reference }}</span>
+        </div>
+        <div class="receipt-row">
+          <span class="label">Type :</span>
+          <span class="value">{{ getTypeLabel(selectedTransaction.type) }}</span>
+        </div>
+        <div class="receipt-row">
+          <span class="label">Bénéficiaire :</span>
+          <span class="value">Amine Jebali</span>
+        </div>
+        
+        <div class="receipt-total mt-4">
+          <span class="label">MONTANT TOTAL</span>
+          <span class="total-value">{{ selectedTransaction.amount | number:'1.2-2' }} TND</span>
+        </div>
+      </div>
+
+      <div class="receipt-divider"></div>
+
+      <div class="receipt-footer text-center">
+        <div class="qr-placeholder mb-3">
+          <span class="ion-md-qr-scanner"></span>
+        </div>
+        <p class="x-small text-muted mb-0">ID Transaction: {{ selectedTransaction.id }}</p>
+        <p class="x-small text-muted">Ce document fait foi de preuve de versement.</p>
+        <button class="btn-download-receipt mt-3" (click)="downloadReceipt()">
+          <span class="ion-md-download me-2"></span> Télécharger PDF
+        </button>
+      </div>
+    </div>
+    <button class="close-btn-receipt" (click)="showReceiptModal = false">&times;</button>
+  </div>
+</div>

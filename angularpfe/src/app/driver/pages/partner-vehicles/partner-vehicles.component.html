@@ -1,0 +1,200 @@
+<div class="partner-vehicles-container">
+  <!-- Header -->
+  <header class="page-header mb-4">
+    <div class="header-content">
+      <h2>Louer une voiture pour travailler</h2>
+      <p>Choisissez un véhicule partenaire GoRide et bénéficiez d'un tarif chauffeur réduit.</p>
+    </div>
+  </header>
+
+  <!-- Search & Filters -->
+  <div class="content-card filters-bar mb-4 p-3">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <div class="search-input-group">
+          <span class="ion-md-search icon"></span>
+          <input type="text" class="form-control" placeholder="Rechercher par modèle, ville, agence..." [(ngModel)]="searchTerm" (input)="applyFilters()">
+        </div>
+      </div>
+      <div class="col-md-3">
+        <select class="form-select" [(ngModel)]="sortBy" (change)="applyFilters()">
+          <option value="PRICE_ASC">Prix croissant</option>
+          <option value="PRICE_DESC">Prix décroissant</option>
+          <option value="RATING">Meilleures notes</option>
+          <option value="RECENT">Plus récents</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <button class="btn btn-outline-primary w-100" (click)="loadVehicles()">
+          <span class="ion-md-refresh me-2"></span> Actualiser
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status"></div>
+    <p class="mt-3 text-muted">Recherche des véhicules disponibles...</p>
+  </div>
+
+  <!-- Vehicles Grid -->
+  <div class="row g-4" *ngIf="!isLoading">
+    <div class="col-md-6 col-lg-4 animate__animated animate__fadeInUp" *ngFor="let v of filteredVehicles">
+      <div class="vehicle-card shadow-sm h-100">
+        <div class="card-img-wrapper">
+          <img *ngIf="v.image" [src]="v.image" alt="Car" class="card-img" (error)="onImageError(v, $event)">
+          <div *ngIf="!v.image" class="card-img card-img-placeholder d-flex align-items-center justify-content-center">
+            <span class="ion-ios-car"></span>
+          </div>
+          <div class="discount-badge">-{{ v.discount }}%</div>
+          <div class="category-tag">{{ v.category }}</div>
+        </div>
+        
+        <div class="card-body p-3">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <h5 class="vehicle-name m-0">{{ v.name }}</h5>
+            <div class="rating-badge"><span class="ion-md-star me-1"></span>{{ v.rating }}</div>
+          </div>
+          
+          <p class="location-text text-muted small mb-3">
+            <span class="ion-md-pin me-1"></span>{{ v.location }} · <span class="fw-bold">{{ v.agency }}</span>
+          </p>
+          
+          <div class="specs-mini mb-3">
+            <span><i class="ion-md-settings me-1"></i>{{ v.type }}</span>
+            <span><i class="ion-md-flash me-1"></i>{{ v.fuel }}</span>
+            <span><i class="ion-md-people me-1"></i>{{ v.seats }}</span>
+          </div>
+          
+          <div class="price-display p-2 rounded-3 bg-light mb-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="text-muted small">Prix normal</span>
+              <span class="text-decoration-line-through small">{{ v.dailyPrice }} DT/j</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-1">
+              <span class="fw-bold text-primary">Tarif Chauffeur</span>
+              <span class="fs-5 fw-extrabold text-primary">{{ v.driverPrice }} DT <small class="fw-normal">/ jour</small></span>
+            </div>
+          </div>
+          
+          <div class="card-actions d-flex gap-2">
+            <button class="btn btn-light flex-grow-1" (click)="openDetails(v)">Détails</button>
+            <button class="btn btn-primary flex-grow-1" (click)="openConfirm(v)">Louer pour travailler</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Empty State (No vehicles at all) -->
+    <div *ngIf="vehicles.length === 0" class="col-12 text-center py-5">
+      <div class="empty-state">
+        <span class="ion-md-car mb-3" style="font-size: 4rem; color: #cbd5e1; display: block;"></span>
+        <h4>Aucun véhicule partenaire disponible pour le moment.</h4>
+        <p class="text-muted">Veuillez repasser plus tard ou actualiser la page.</p>
+      </div>
+    </div>
+
+    <!-- Empty State (Search filter returned no match) -->
+    <div *ngIf="vehicles.length > 0 && filteredVehicles.length === 0" class="col-12 text-center py-5">
+      <div class="empty-state">
+        <span class="ion-md-car mb-3" style="font-size: 4rem; color: #cbd5e1; display: block;"></span>
+        <h4>Aucun véhicule trouvé</h4>
+        <p class="text-muted">Essayez de modifier vos critères de recherche.</p>
+        <button class="btn btn-link" (click)="searchTerm = ''; applyFilters()">Voir tous les véhicules</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modals outside animated layout so position:fixed centers on viewport -->
+<div class="app-modal-overlay" *ngIf="showDetailsModal" (click)="closeDetails()">
+    <div class="modal-card modal-lg animate__animated animate__zoomIn" (click)="$event.stopPropagation()">
+      <div class="modal-header border-0 pb-0">
+        <h3>Détails du véhicule</h3>
+        <button class="close-btn" (click)="closeDetails()">&times;</button>
+      </div>
+      <div class="modal-body" *ngIf="selectedVehicle">
+        <div class="row">
+          <div class="col-md-6">
+            <img *ngIf="selectedVehicle.image" [src]="selectedVehicle.image" class="img-fluid rounded-4 shadow-sm mb-3" alt="Car" (error)="onImageError(selectedVehicle, $event)">
+            <div *ngIf="!selectedVehicle.image" class="img-fluid rounded-4 shadow-sm mb-3 bg-light d-flex align-items-center justify-content-center" style="min-height: 180px; font-size: 48px; color: #cbd5e1;">
+              <span class="ion-ios-car"></span>
+            </div>
+            <div class="specs-grid-detailed">
+              <div class="spec-detail-box"><span class="label">Catégorie</span><span class="val">{{ selectedVehicle.category }}</span></div>
+              <div class="spec-detail-box"><span class="label">Transmission</span><span class="val">{{ selectedVehicle.type }}</span></div>
+              <div class="spec-detail-box"><span class="label">Carburant</span><span class="val">{{ selectedVehicle.fuel }}</span></div>
+              <div class="spec-detail-box"><span class="label">Places</span><span class="val">{{ selectedVehicle.seats }}</span></div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <h2 class="mb-1">{{ selectedVehicle.name }}</h2>
+            <div class="text-muted mb-3"><span class="ion-md-business me-2"></span>Propriétaire : <strong>{{ selectedVehicle.agency }}</strong></div>
+            
+            <div class="description-box mb-4">
+              <h6>Description</h6>
+              <p class="text-muted small">{{ selectedVehicle.description }}</p>
+            </div>
+            
+            <div class="pricing-summary p-3 bg-light rounded-4 mb-4">
+              <div class="d-flex justify-content-between mb-2">
+                <span>Prix normal public</span>
+                <span>{{ selectedVehicle.dailyPrice }} DT / jour</span>
+              </div>
+              <div class="d-flex justify-content-between mb-2 text-danger">
+                <span>Réduction Chauffeur Partenaire</span>
+                <span>-{{ selectedVehicle.discount }}%</span>
+              </div>
+              <div class="d-flex justify-content-between pt-2 border-top border-secondary-subtle">
+                <span class="fw-bold">Votre tarif spécial</span>
+                <span class="fw-extrabold text-primary fs-4">{{ selectedVehicle.driverPrice }} DT / jour</span>
+              </div>
+            </div>
+            
+            <div class="conditions-box mb-4">
+              <h6 class="small fw-bold text-uppercase"><span class="ion-md-information-circle me-2"></span>Conditions de location</h6>
+              <ul class="small text-muted ps-3 mb-0">
+                <li>Usage exclusivement professionnel avec GoRide</li>
+                <li>Assurance tous risques incluse</li>
+                <li>Entretien périodique à la charge du partenaire</li>
+                <li>Kilométrage illimité sur le territoire national</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer border-0">
+        <button class="btn btn-light px-4" (click)="closeDetails()">Fermer</button>
+        <button class="btn btn-primary px-4" (click)="openConfirm(selectedVehicle!)">Louer pour travailler</button>
+      </div>
+    </div>
+  </div>
+
+<div class="app-modal-overlay" *ngIf="showConfirmModal" (click)="closeConfirm()">
+    <div class="modal-card mini-modal animate__animated animate__fadeInUp" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Confirmer la location</h3>
+      </div>
+      <div class="modal-body text-center" *ngIf="selectedVehicle">
+        <div class="confirm-icon mb-3"><span class="ion-md-checkmark-circle text-success" style="font-size: 3rem;"></span></div>
+        <p>Voulez-vous louer le véhicule <strong>{{ selectedVehicle.name }}</strong> pour travailler ?</p>
+        <div class="trip-summary p-3 bg-light rounded-3 mb-3">
+          <div class="small text-muted">Tarif journalier chauffeur</div>
+          <div class="fw-extrabold fs-4 text-primary">{{ selectedVehicle.driverPrice }} DT</div>
+          <div class="small text-success mt-1">Économisez {{ selectedVehicle.dailyPrice - selectedVehicle.driverPrice }} DT par jour</div>
+        </div>
+        <div class="alert alert-warning small text-start">
+          En confirmant, ce véhicule deviendra votre <strong>véhicule de travail actif</strong> sur la plateforme.
+        </div>
+      </div>
+      <div class="modal-footer d-flex gap-2">
+        <button class="btn btn-light flex-grow-1" (click)="closeConfirm()">Annuler</button>
+        <button class="btn btn-success flex-grow-1" (click)="confirmRent()" [disabled]="isProcessing">
+          <span *ngIf="!isProcessing">Confirmer la location</span>
+          <span *ngIf="isProcessing" class="spinner-border spinner-border-sm me-2"></span>
+        </button>
+      </div>
+    </div>
+  </div>

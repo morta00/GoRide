@@ -1,0 +1,209 @@
+<div class="history-page animate__animated animate__fadeIn">
+  <div class="page-header mb-4">
+    <h2 class="page-title">Historique</h2>
+    <p class="page-subtitle text-muted">Consultez toutes vos activités passées : trajets, revenus, paiements et avis.</p>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid mb-5">
+    <div class="stat-card">
+      <div class="stat-icon bg-green-soft text-green"><span class="ion-md-checkmark-circle"></span></div>
+      <div class="stat-info">
+        <span class="label">Trajets terminés</span>
+        <h3 class="value">{{ summary.completedTrips }}</h3>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon bg-red-soft text-red"><span class="ion-md-close-circle"></span></div>
+      <div class="stat-info">
+        <span class="label">Trajets annulés</span>
+        <h3 class="value">{{ summary.cancelledTrips }}</h3>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon bg-blue-soft text-blue"><span class="ion-md-wallet"></span></div>
+      <div class="stat-info">
+        <span class="label">Revenus générés</span>
+        <h3 class="value">{{ summary.totalEarnings | number:'1.2-2' }} <small>DT</small></h3>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon bg-orange-soft text-orange"><span class="ion-md-star"></span></div>
+      <div class="stat-info">
+        <span class="label">Avis reçus</span>
+        <h3 class="value">{{ summary.totalReviews }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters & Search -->
+  <div class="content-card mb-4">
+    <div class="filter-bar">
+      <div class="search-box">
+        <span class="ion-md-search search-icon"></span>
+        <input type="text" [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="Rechercher par titre, montant, statut...">
+      </div>
+      
+      <div class="filter-selects">
+        <select [(ngModel)]="typeFilter" (change)="applyFilters()" class="custom-select">
+          <option value="ALL">Tous les types</option>
+          <option value="TRIPS">Trajets</option>
+          <option value="REQUESTS">Demandes</option>
+          <option value="EARNINGS">Revenus</option>
+          <option value="PAYMENTS">Paiements</option>
+          <option value="VEHICLES">Véhicules</option>
+          <option value="REVIEWS">Avis</option>
+        </select>
+
+        <select [(ngModel)]="statusFilter" (change)="applyFilters()" class="custom-select">
+          <option value="ALL">Tous les statuts</option>
+          <option value="COMPLETED">Terminé</option>
+          <option value="CANCELLED">Annulé</option>
+          <option value="ACCEPTED">Accepté</option>
+          <option value="REJECTED">Refusé</option>
+          <option value="PAID">Payé</option>
+          <option value="PENDING">En attente</option>
+          <option value="ACTIVE">Actif</option>
+        </select>
+
+        <select [(ngModel)]="sortOrder" (change)="applyFilters()" class="custom-select">
+          <option value="recent">Plus récent</option>
+          <option value="older">Plus ancien</option>
+          <option value="amount_desc">Montant décroissant</option>
+          <option value="amount_asc">Montant croissant</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- History List -->
+  <div class="history-list">
+    <div *ngFor="let item of filteredHistory" class="history-item-card animate__animated animate__fadeInUp">
+      <div class="item-icon-wrapper" [ngClass]="item.type.toLowerCase()">
+        <span [class]="item.icon"></span>
+      </div>
+      
+      <div class="item-main">
+        <div class="item-header">
+          <h4 class="item-title">{{ item.title }}</h4>
+          <span class="item-date">{{ item.date | date:'dd MMM yyyy, HH:mm' }}</span>
+        </div>
+        <p class="item-desc">{{ item.description }}</p>
+      </div>
+
+      <div class="item-meta">
+        <div class="item-status">
+          <span class="status-badge" [ngClass]="item.status.toLowerCase()">
+            {{ getStatusLabel(item.status) }}
+          </span>
+        </div>
+        <div class="item-amount" *ngIf="item.amount">
+          <span class="amount-val">{{ item.amount | number:'1.2-2' }} DT</span>
+        </div>
+      </div>
+
+      <div class="item-actions">
+        <button class="btn-details" (click)="openDetails(item)">
+          <span class="ion-md-information-circle-outline me-2"></span> Détails
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="filteredHistory.length === 0" class="empty-state text-center py-5">
+      <span class="ion-md-information-circle-outline d-block mb-3" style="font-size: 3rem; color: #cbd5e1;"></span>
+      <p class="text-muted">Aucun élément d'historique ne correspond à vos critères.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Détails -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-container-centered animate__animated animate__zoomIn" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="header-icon" [ngClass]="selectedItem?.type?.toLowerCase()">
+        <span [class]="selectedItem?.icon"></span>
+      </div>
+      <div class="header-text">
+        <h3 class="mb-0">{{ selectedItem?.title }}</h3>
+        <p class="mb-0 text-muted small">{{ selectedItem?.date | date:'dd MMM yyyy, HH:mm' }}</p>
+      </div>
+      <button class="btn-close" (click)="closeModal()">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="detail-section">
+        <label>Description</label>
+        <p>{{ selectedItem?.description }}</p>
+      </div>
+
+      <div class="detail-row">
+        <div class="detail-col">
+          <label>Type</label>
+          <span>{{ getTypeLabel(selectedItem?.type || '') }}</span>
+        </div>
+        <div class="detail-col">
+          <label>Statut</label>
+          <span class="status-badge" [ngClass]="selectedItem?.status?.toLowerCase()">
+            {{ getStatusLabel(selectedItem?.status || '') }}
+          </span>
+        </div>
+      </div>
+
+      <div class="detail-section mt-4" *ngIf="selectedItem?.amount">
+        <label>Montant</label>
+        <h4 class="amount-display text-blue">{{ selectedItem?.amount | number:'1.2-2' }} DT</h4>
+      </div>
+
+      <!-- Metadata Sections -->
+      <div class="metadata-container mt-4 pt-3 border-top" *ngIf="selectedItem?.metadata">
+        <h5 class="section-title mb-3">Informations complémentaires</h5>
+        
+        <!-- Metadata: Trip -->
+        <div class="meta-grid" *ngIf="selectedItem?.type === 'TRIP_COMPLETED' || selectedItem?.type === 'TRIP_CANCELLED'">
+          <div class="meta-box"><strong>Départ:</strong> {{ selectedItem?.metadata.departure }}</div>
+          <div class="meta-box"><strong>Arrivée:</strong> {{ selectedItem?.metadata.arrival }}</div>
+          <div class="meta-box"><strong>Passager:</strong> {{ selectedItem?.metadata.passenger }}</div>
+          <div class="meta-box"><strong>Distance:</strong> {{ selectedItem?.metadata.distance }}</div>
+          <div class="meta-box"><strong>Durée:</strong> {{ selectedItem?.metadata.duration }}</div>
+          <div class="meta-box"><strong>Véhicule:</strong> {{ selectedItem?.metadata.vehicle }}</div>
+        </div>
+
+        <!-- Metadata: Earning -->
+        <div class="meta-grid" *ngIf="selectedItem?.type === 'EARNING_CREATED'">
+          <div class="meta-box"><strong>Montant brut:</strong> {{ selectedItem?.metadata.grossAmount }} DT</div>
+          <div class="meta-box"><strong>Commission:</strong> {{ selectedItem?.metadata.commission }} DT</div>
+          <div class="meta-box"><strong>Gain net:</strong> {{ selectedItem?.metadata.netAmount }} DT</div>
+          <div class="meta-box"><strong>Méthode:</strong> {{ selectedItem?.metadata.paymentMethod }}</div>
+        </div>
+
+        <!-- Metadata: Vehicle -->
+        <div class="meta-grid" *ngIf="selectedItem?.type === 'VEHICLE_RENTED'">
+          <div class="meta-box"><strong>Modèle:</strong> {{ selectedItem?.metadata.model }}</div>
+          <div class="meta-box"><strong>Agence:</strong> {{ selectedItem?.metadata.agency }}</div>
+          <div class="meta-box"><strong>Prix/Jour:</strong> {{ selectedItem?.metadata.pricePerDay }} DT</div>
+          <div class="meta-box"><strong>Début:</strong> {{ selectedItem?.metadata.startDate | date:'dd/MM/yyyy' }}</div>
+        </div>
+
+        <!-- Metadata: Review -->
+        <div class="meta-grid" *ngIf="selectedItem?.type === 'REVIEW_RECEIVED'">
+          <div class="meta-box"><strong>Client:</strong> {{ selectedItem?.metadata.client }}</div>
+          <div class="meta-box"><strong>Note:</strong> {{ selectedItem?.metadata.rating }}/5</div>
+          <div class="meta-box full-width"><strong>Commentaire:</strong> {{ selectedItem?.metadata.comment }}</div>
+          <div class="meta-box"><strong>Trajet:</strong> {{ selectedItem?.metadata.trip }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary rounded-pill px-4" (click)="closeModal()">Fermer</button>
+      <button *ngIf="selectedItem?.type === 'VEHICLE_RENTED' || selectedItem?.type === 'VEHICLE_RENTAL_COMPLETED'" 
+              class="btn btn-primary rounded-pill px-4" (click)="goToRelated(selectedItem!)">
+        {{ hasRentalReview(selectedItem!) ? 'Voir mon avis' : 'Laisser un avis' }}
+      </button>
+      <button *ngIf="selectedItem?.type !== 'VEHICLE_RENTED' && selectedItem?.type !== 'VEHICLE_RENTAL_COMPLETED'"
+              class="btn btn-primary rounded-pill px-4" (click)="goToRelated(selectedItem!)">
+        Voir l'élément lié
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,247 @@
+<div class="admin-payments animate__animated animate__fadeIn" (click)="activeDropdownId = null">
+  
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold text-dark mb-1">Paiements & Factures</h2>
+      <p class="text-muted">Suivez les paiements, factures, commissions et remboursements de la plateforme.</p>
+    </div>
+    
+    <div class="d-flex align-items-center gap-3">
+      <div *ngIf="serviceFilterId" class="badge bg-primary-soft text-primary p-2 px-3 rounded-pill d-flex align-items-center gap-2 border border-primary border-opacity-10">
+        <span class="small fw-bold">Service: {{ serviceFilterId }}</span>
+        <button class="btn btn-link p-0 text-primary d-flex" (click)="clearServiceFilter()">
+          <span class="ion-ios-close-circle fs-5"></span>
+        </button>
+      </div>
+
+      <div class="search-wrapper">
+        <div class="input-group shadow-sm border-0 rounded-pill bg-white overflow-hidden">
+          <span class="input-group-text bg-white border-0 ps-3">
+            <span class="ion-ios-search text-primary"></span>
+          </span>
+          <input type="text" class="form-control border-0 py-2 shadow-none" 
+                 placeholder="Paiement, facture, client..." 
+                 [(ngModel)]="searchTerm" (ngModelChange)="applyFilters()">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-2">
+      <div class="metric-card bg-white shadow-sm p-3 rounded-4 border-start border-primary border-4 h-100">
+        <p class="text-muted tiny fw-bold text-uppercase mb-1">Encaissé</p>
+        <h4 class="fw-bold mb-0 text-dark">{{ (stats.totalEncashed ?? 0) | number:'1.0-0':'fr-FR' }} DT</h4>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="metric-card bg-white shadow-sm p-3 rounded-4 border-start border-success border-4 h-100">
+        <p class="text-muted tiny fw-bold text-uppercase mb-1">Réussis</p>
+        <h4 class="fw-bold mb-0 text-success">{{ stats.successCount }}</h4>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="metric-card bg-white shadow-sm p-3 rounded-4 border-start border-warning border-4 h-100">
+        <p class="text-muted tiny fw-bold text-uppercase mb-1">Factures Attente</p>
+        <h4 class="fw-bold mb-0 text-warning">{{ stats.pendingInvoices }}</h4>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="metric-card bg-white shadow-sm p-3 rounded-4 border-start border-info border-4 h-100">
+        <p class="text-muted tiny fw-bold text-uppercase mb-1">Remboursements</p>
+        <h4 class="fw-bold mb-0 text-info">{{ stats.refundsCount }}</h4>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="metric-card bg-white shadow-sm p-3 rounded-4 border-start border-dark border-4 h-100">
+        <p class="text-muted tiny fw-bold text-uppercase mb-1">Commissions</p>
+        <h4 class="fw-bold mb-0 text-dark">{{ (stats.totalCommissions ?? 0) | number:'1.0-0':'fr-FR' }} DT</h4>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="metric-card bg-white shadow-sm p-3 rounded-4 border-start border-danger border-4 h-100">
+        <p class="text-muted tiny fw-bold text-uppercase mb-1">Échoués</p>
+        <h4 class="fw-bold mb-0 text-danger">{{ stats.failedCount }}</h4>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs Navigation -->
+  <div class="nav nav-tabs border-0 gap-2 mb-4">
+    <button class="nav-link border-0 rounded-pill px-4 fw-bold" [class.active]="activeTab === 'transactions'" (click)="switchTab('transactions')">Transactions</button>
+    <button class="nav-link border-0 rounded-pill px-4 fw-bold" [class.active]="activeTab === 'invoices'" (click)="switchTab('invoices')">Factures</button>
+    <button class="nav-link border-0 rounded-pill px-4 fw-bold" [class.active]="activeTab === 'refunds'" (click)="switchTab('refunds')">Remboursements</button>
+    <button class="nav-link border-0 rounded-pill px-4 fw-bold" [class.active]="activeTab === 'commissions'" (click)="switchTab('commissions')">Commissions</button>
+  </div>
+
+  <!-- Content Card -->
+  <div class="content-card shadow-sm bg-white rounded-4 p-4">
+    
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+      <div class="d-flex flex-wrap gap-2">
+        <ng-container *ngIf="activeTab !== 'invoices'">
+          <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="transactionFilter === 'ALL' ? 'btn-primary' : 'btn-light border'" (click)="transactionFilter = 'ALL'; filterTransactions()">Tous</button>
+          <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="transactionFilter === 'PAID' ? 'btn-outline-primary' : 'btn-light border'" (click)="transactionFilter = 'PAID'; filterTransactions()">Payés</button>
+        </ng-container>
+        <ng-container *ngIf="activeTab === 'invoices'">
+          <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="invoiceFilter === 'ALL' ? 'btn-primary' : 'btn-light border'" (click)="invoiceFilter = 'ALL'; filterInvoices()">Toutes</button>
+          <button class="btn btn-sm fw-bold rounded-pill" [ngClass]="invoiceFilter === 'PENDING' ? 'btn-outline-primary' : 'btn-light border'" (click)="invoiceFilter = 'PENDING'; filterInvoices()">Attente</button>
+        </ng-container>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <select class="form-select form-select-sm rounded-pill" [(ngModel)]="currentSort" (change)="applyFilters()">
+          <option value="NEWEST">Plus récents</option>
+          <option value="AMOUNT_DESC">Montant ↓</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Transactions Table -->
+    <div class="table-responsive" *ngIf="activeTab !== 'invoices'" style="overflow: visible !important; min-height: 300px;">
+      <table class="table table-hover align-middle">
+        <thead>
+          <tr>
+            <th>Transaction</th>
+            <th>Payeur / Bénéficiaire</th>
+            <th class="text-center">Montant</th>
+            <th class="text-center">Statut</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let t of filteredTransactions">
+            <td>
+              <span class="fw-bold small d-block">{{ getTypeLabel(t.type) }}</span>
+              <span class="tiny text-muted d-block">{{ t.displayId || t.transactionId || t.id }}</span>
+            </td>
+            <td>
+              <span class="small fw-bold d-block">{{ t.payerName }}</span>
+              <span class="small text-primary">{{ t.receiverName }}</span>
+            </td>
+            <td class="text-center">
+              <span class="fw-bold">{{ t.amount }} DT</span>
+            </td>
+            <td class="text-center">
+              <span class="badge rounded-pill px-3 py-1" [ngClass]="getStatusClass(t.status)">{{ getStatusLabel(t.status) }}</span>
+            </td>
+            <td class="text-end">
+              <div class="d-flex justify-content-end gap-2" style="position: relative;">
+                <button class="btn btn-sm btn-primary rounded-pill px-3 fw-bold" (click)="openPaymentDetails(t)">Détails</button>
+                
+                <div class="dropdown-wrapper">
+                  <button class="btn btn-sm btn-light border rounded-pill px-2" (click)="toggleDropdown(t.displayId || t.id, $event)">
+                    <span class="ion-ios-more"></span>
+                  </button>
+                  
+                  <!-- CUSTOM DROPDOWN -->
+                  <div class="custom-dropdown shadow-lg rounded-4 p-2 bg-white animate__animated animate__fadeIn" 
+                       *ngIf="activeDropdownId === (t.displayId || t.id)"
+                       (click)="$event.stopPropagation()"
+                       style="position: absolute; right: 0; top: 35px; z-index: 9999; min-width: 180px; border: 1px solid #eee;">
+                    <div class="dropdown-item p-2 rounded-3 small fw-bold pointer" style="cursor: pointer;" *ngIf="t.status === 'PAID'">Voir reçu</div>
+                    <div class="dropdown-item p-2 rounded-3 small fw-bold pointer" style="cursor: pointer;" *ngIf="t.status === 'PENDING'" (click)="markAsPaid(t, 'payment')">Marquer payé</div>
+                    <div class="dropdown-item p-2 rounded-3 small fw-bold pointer text-danger" style="cursor: pointer;" *ngIf="t.status === 'PENDING'" (click)="cancelPayment(t)">Annuler</div>
+                    <div class="dropdown-divider my-1"></div>
+                    <div class="dropdown-item p-2 rounded-3 small fw-bold pointer" style="cursor: pointer;" (click)="goToSupport(t.id)">Support technique</div>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Empty State for Transactions -->
+      <div *ngIf="filteredTransactions.length === 0" class="text-center py-5">
+        <span class="ion-ios-filing fs-1 text-muted opacity-25 d-block mb-3"></span>
+        <h5 class="fw-bold text-muted">Aucun paiement enregistré</h5>
+        <p class="text-muted small">Les transactions apparaîtront ici.</p>
+      </div>
+    </div>
+
+    <!-- Invoices Table -->
+    <div class="table-responsive" *ngIf="activeTab === 'invoices'" style="overflow: visible !important; min-height: 300px;">
+      <table class="table table-hover align-middle">
+        <thead>
+          <tr>
+            <th>Facture</th>
+            <th>Client</th>
+            <th class="text-center">Total TTC</th>
+            <th class="text-center">Statut</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let i of filteredInvoices">
+            <td><span class="fw-bold small d-block">{{ i.invoiceNumber }}</span></td>
+            <td><span class="small fw-bold">{{ i.clientName }}</span></td>
+            <td class="text-center fw-bold">{{ i.total }} DT</td>
+            <td class="text-center">
+              <span class="badge rounded-pill px-3 py-1" [ngClass]="getStatusClass(i.status)">{{ getStatusLabel(i.status) }}</span>
+            </td>
+            <td class="text-end">
+              <div class="d-flex justify-content-end gap-2" style="position: relative;">
+                <button class="btn btn-sm btn-primary rounded-pill px-3 fw-bold" (click)="openInvoiceDetails(i)">Détails</button>
+                <div class="dropdown-wrapper">
+                  <button class="btn btn-sm btn-light border rounded-pill px-2" (click)="toggleDropdown(i.id, $event)">
+                    <span class="ion-ios-more"></span>
+                  </button>
+                  <div class="custom-dropdown shadow-lg rounded-4 p-2 bg-white animate__animated animate__fadeIn" 
+                       *ngIf="activeDropdownId === i.id"
+                       (click)="$event.stopPropagation()"
+                       style="position: absolute; right: 0; top: 35px; z-index: 9999; min-width: 180px; border: 1px solid #eee;">
+                    <div class="dropdown-item p-2 rounded-3 small fw-bold pointer" style="cursor: pointer;" (click)="printInvoice()">Télécharger PDF</div>
+                    <div class="dropdown-item p-2 rounded-3 small fw-bold pointer text-success" style="cursor: pointer;" *ngIf="i.status !== 'PAID'" (click)="markAsPaid(i, 'invoice')">Marquer payée</div>
+                    <div class="dropdown-divider my-1"></div>
+                    <div class="dropdown-item p-2 rounded-3 small fw-bold pointer" style="cursor: pointer;" (click)="goToService(i.relatedServiceId)">Voir service</div>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Empty State for Invoices -->
+      <div *ngIf="filteredInvoices.length === 0" class="text-center py-5">
+        <span class="ion-ios-filing fs-1 text-muted opacity-25 d-block mb-3"></span>
+        <h5 class="fw-bold text-muted">Aucune facture enregistrée</h5>
+        <p class="text-muted small">Les factures apparaîtront ici.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modals (Simple versions) -->
+<div class="modal-overlay" *ngIf="showPaymentModal" (click)="closePaymentModal()">
+  <div class="modal-content-wrapper shadow-lg bg-white p-4" style="max-width: 500px; z-index: 10000;" (click)="$event.stopPropagation()">
+    <h5 class="fw-bold border-bottom pb-2">Transaction #{{ selectedPayment?.id }}</h5>
+    <div class="py-3" *ngIf="selectedPayment">
+      <p>Payeur: <b>{{ selectedPayment.payerName }}</b></p>
+      <p>Bénéficiaire: <b>{{ selectedPayment.receiverName }}</b></p>
+      <p>Montant: <b class="text-success">{{ selectedPayment.amount }} DT</b></p>
+      <p>Statut: <span class="badge rounded-pill" [ngClass]="getStatusClass(selectedPayment.status)">{{ getStatusLabel(selectedPayment.status) }}</span></p>
+    </div>
+    <div class="d-flex gap-2 mt-3">
+      <button class="btn btn-light rounded-pill flex-grow-1" (click)="closePaymentModal()">Fermer</button>
+      <button class="btn btn-primary rounded-pill flex-grow-1" (click)="goToSupport(selectedPayment?.id)">Support</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showInvoiceModal" (click)="closeInvoiceModal()">
+  <div class="modal-content-wrapper shadow-lg bg-white p-4" style="max-width: 500px; z-index: 10000;" (click)="$event.stopPropagation()">
+    <h5 class="fw-bold border-bottom pb-2">Facture {{ selectedInvoice?.invoiceNumber }}</h5>
+    <div class="py-3" *ngIf="selectedInvoice">
+      <p>Client: <b>{{ selectedInvoice.clientName }}</b></p>
+      <p>Montant Total: <b class="text-success">{{ selectedInvoice.total }} DT</b></p>
+      <p>Échéance: <b>{{ selectedInvoice.dueDate }}</b></p>
+      <p>Statut: <span class="badge rounded-pill" [ngClass]="getStatusClass(selectedInvoice.status)">{{ getStatusLabel(selectedInvoice.status) }}</span></p>
+    </div>
+    <div class="d-flex gap-2 mt-3">
+      <button class="btn btn-light rounded-pill flex-grow-1" (click)="closeInvoiceModal()">Fermer</button>
+      <button class="btn btn-success rounded-pill flex-grow-1" *ngIf="selectedInvoice?.status !== 'PAID'" (click)="markAsPaid(selectedInvoice, 'invoice')">Payer</button>
+    </div>
+  </div>
+</div>

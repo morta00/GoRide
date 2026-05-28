@@ -1,0 +1,28 @@
+<aside class="sidebar shadow-sm">
+  <div class="sidebar-brand">
+    <app-logo [roleBadge]="activeRoleLabelKey | translate"></app-logo>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section" *ngFor="let section of menuSections">
+      <p class="section-title">{{ section.titleKey | translate }}</p>
+      <a *ngFor="let item of section.items" 
+         [routerLink]="item.route" 
+         routerLinkActive="active" 
+         class="nav-item">
+        <span [class]="item.icon + ' icon'"></span>
+        <span class="label">{{ item.labelKey | translate }}</span>
+        <span *ngIf="getBadgeCount(item.id || '') > 0" class="badge" [ngClass]="item.badgeClass || 'badge-primary'">
+          {{ getBadgeCount(item.id || '') }}
+        </span>
+      </a>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <button class="btn-outline-danger w-100" (click)="logout()">
+      <span class="ion-ios-log-out me-2"></span>
+      <span>{{ 'CLIENT.MENU.LOGOUT' | translate }}</span>
+    </button>
+  </div>
+</aside>

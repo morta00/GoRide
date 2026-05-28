@@ -1,0 +1,1721 @@
+<div class="profile-container">
+
+  <div class="mb-4" *ngIf="showStandaloneLogo">
+    <app-logo [roleBadge]="standaloneRoleBadge"></app-logo>
+  </div>
+  
+  <!-- Success Toast -->
+  <div class="success-toast" *ngIf="saveSuccess">
+    <span class="ion-md-checkmark-circle"></span>
+    Modifications enregistrées avec succès !
+  </div>
+
+  <!-- Hero Header -->
+  <div class="profile-hero-card">
+    <div class="hero-bg-shape"></div>
+    <div class="hero-content">
+      <div class="hero-left">
+        <div class="avatar-wrapper">
+          <app-profile-avatar 
+            [firstName]="user?.firstName || ''" 
+            [lastName]="user?.lastName || ''" 
+            [photoUrl]="user?.photoUrl" 
+            [size]="120"
+            [showStatus]="true">
+          </app-profile-avatar>
+          
+          <!-- Actions on Avatar -->
+          <div class="avatar-actions-overlay">
+            <div class="avatar-action-badge edit-badge" (click)="triggerPhotoUpload()" title="Changer la photo">
+              <span class="ion-md-camera"></span>
+            </div>
+            <div class="avatar-action-badge delete-badge" *ngIf="user?.photoUrl" (click)="removePhoto()" title="Supprimer la photo">
+              <span class="ion-md-trash"></span>
+            </div>
+          </div>
+        </div>
+        <div class="hero-info">
+          <h2 class="hero-name">
+            {{ user?.firstName }} {{ user?.lastName }}
+            <span class="verified-badge"><span class="ion-md-checkmark"></span></span>
+          </h2>
+          <div class="hero-email">
+            <span class="ion-md-mail"></span> {{ user?.email }}
+          </div>
+          <div class="hero-badges">
+            <span class="badge badge-role"><span class="ion-md-person"></span> {{ activeRole }}</span>
+            <span class="badge badge-verified"><span class="ion-md-checkmark-circle"></span> Vérifié</span>
+            <span class="badge badge-driver-online" *ngIf="isDriverContext" [class.is-online]="driverIsOnline">
+              <span class="status-dot-hero"></span>
+              {{ driverIsOnline ? 'En ligne' : 'Hors ligne' }}
+            </span>
+            <span class="badge badge-driver-mode" *ngIf="isDriverContext">
+              <span class="ion-md-car"></span> {{ driverWorkModeLabel }}
+            </span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="hero-right">
+        <button class="btn-primary" (click)="editProfile()">
+          <span class="ion-md-create me-2"></span> Modifier le profil
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs Navigation -->
+  <div class="tabs-wrapper animate__animated animate__fadeIn">
+    <button *ngFor="let section of (searchTerm ? filteredSections : allSections)" 
+            class="tab-btn" 
+            [class.active]="activeTab === section.route" 
+            (click)="activeTab = section.route">
+      <span [class]="section.icon"></span> {{ section.name.split(' ')[0] }}
+      <span class="unread-badge" *ngIf="section.route === 'notifications' && unreadNotificationsCount > 0">{{ unreadNotificationsCount }}</span>
+    </button>
+    
+    <!-- Message si aucun onglet ne correspond -->
+    <div class="no-tabs-found py-2 px-4 text-muted small" *ngIf="searchTerm && filteredSections.length === 0">
+      <span class="ion-md-information-circle-outline me-2"></span> Aucun onglet ne correspond à "{{ searchTerm }}"
+    </div>
+  </div>
+
+  <div class="tab-content-container" *ngIf="infoForm">
+    
+    <!-- TAB: INFORMATIONS -->
+    <div class="tab-pane" *ngIf="activeTab === 'info'" id="personal-info-section">
+      <div class="layout-grid">
+        
+        <!-- Left Column: Form -->
+        <div class="layout-left">
+          <div class="content-card info-card" [class.editing-mode]="isEditing">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <div class="card-title-wrapper">
+                <div class="icon-box icon-blue"><span class="ion-md-person"></span></div>
+                <div>
+                  <h3 class="card-title">Informations Personnelles</h3>
+                  <p class="card-subtitle">Gérez vos coordonnées et informations privées</p>
+                </div>
+              </div>
+
+              <!-- ACTIONS -->
+              <div class="header-actions">
+                <button type="button" class="btn-primary-mini" *ngIf="!isEditing || !infoForm.dirty" (click)="toggleEdit()">
+                  <span class="ion-md-create me-2"></span> {{ isEditing ? 'Annuler' : 'Modifier' }}
+                </button>
+                <div class="d-flex gap-2" *ngIf="isEditing && infoForm.dirty">
+                  <button type="button" class="btn-cancel-mini" (click)="toggleEdit()" [disabled]="submitStatus !== 'idle'">
+                    Réinitialiser
+                  </button>
+                  <button type="submit" form="infoForm" class="btn-save-mini" [disabled]="submitStatus !== 'idle'">
+                    Enregistrer
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="alert alert-danger py-2 small mb-3" *ngIf="saveErrorMessage">
+              {{ saveErrorMessage }}
+            </div>
+
+            <form id="infoForm" [formGroup]="infoForm" (ngSubmit)="saveInfo()" class="modern-form">
+              <div class="form-grid">
+                <!-- Prénom -->
+                <div class="form-group" [class.has-error]="infoForm.get('firstName')?.invalid && infoForm.get('firstName')?.touched">
+                  <label>Prénom</label>
+                  <div class="input-wrapper">
+                    <span class="ion-md-person input-icon"></span>
+                    <input type="text" formControlName="firstName" class="form-input" [readonly]="!isEditing" placeholder="Ex: Jean">
+                  </div>
+                </div>
+
+                <!-- Nom -->
+                <div class="form-group" [class.has-error]="infoForm.get('lastName')?.invalid && infoForm.get('lastName')?.touched">
+                  <label>Nom</label>
+                  <div class="input-wrapper">
+                    <span class="ion-md-person input-icon"></span>
+                    <input type="text" formControlName="lastName" class="form-input" [readonly]="!isEditing" placeholder="Ex: Dupont">
+                  </div>
+                </div>
+
+                <!-- Genre -->
+                <div class="form-group">
+                  <label>Genre</label>
+                  <div class="input-wrapper" [class.select-mode]="isEditing">
+                    <span class="ion-md-transgender input-icon"></span>
+                    <select formControlName="gender" class="form-input select-input" *ngIf="isEditing">
+                      <option value="">Non précisé</option>
+                      <option value="Homme">Homme</option>
+                      <option value="Femme">Femme</option>
+                      <option value="Autre">Autre</option>
+                    </select>
+                    <input type="text" [value]="infoForm.get('gender')?.value || 'Non précisé'" class="form-input" readonly *ngIf="!isEditing">
+                  </div>
+                </div>
+
+                <!-- Date de naissance -->
+                <div class="form-group">
+                  <label>Date de naissance</label>
+                  <div class="input-wrapper">
+                    <span class="ion-md-calendar input-icon"></span>
+                    <input type="date" formControlName="birthDate" class="form-input" *ngIf="isEditing">
+                    <input type="text" [value]="(infoForm.get('birthDate')?.value | date:'dd/MM/yyyy') || 'Non précisée'" class="form-input" readonly *ngIf="!isEditing">
+                  </div>
+                </div>
+
+                <!-- Langue -->
+                <div class="form-group">
+                  <label>Langue préférée</label>
+                  <div class="input-wrapper" [class.select-mode]="isEditing">
+                    <span class="ion-md-globe input-icon"></span>
+                    <select formControlName="preferredLanguage" class="form-input select-input" *ngIf="isEditing">
+                      <option value="FR">Français (FR)</option>
+                      <option value="EN">English (EN)</option>
+                      <option value="AR">العربية (AR)</option>
+                    </select>
+                    <input type="text" [value]="(infoForm.get('preferredLanguage')?.value === 'AR' ? 'PROFILE.LANG_AR' : (infoForm.get('preferredLanguage')?.value === 'EN' ? 'PROFILE.LANG_EN' : 'PROFILE.LANG_FR')) | translate" class="form-input" readonly *ngIf="!isEditing">
+                  </div>
+                </div>
+
+                <!-- Ville -->
+                <div class="form-group">
+                  <label>Ville principale</label>
+                  <div class="input-wrapper" [class.select-mode]="isEditing">
+                    <span class="ion-md-navigate input-icon"></span>
+                    <select formControlName="city" class="form-input select-input" *ngIf="isEditing">
+                      <option *ngFor="let city of tunisianCities" [value]="city">{{ city }}</option>
+                    </select>
+                    <input type="text" formControlName="city" class="form-input" readonly *ngIf="!isEditing">
+                  </div>
+                </div>
+
+                <!-- Téléphone -->
+                <div class="form-group">
+                  <label>Numéro de téléphone</label>
+                  <div class="input-wrapper">
+                    <span class="ion-md-call input-icon"></span>
+                    <input type="text" formControlName="phone" class="form-input" [readonly]="!isEditing">
+                  </div>
+                </div>
+
+                <!-- Email -->
+                <div class="form-group full-width">
+                  <label>Adresse Email</label>
+                  <div class="input-wrapper readonly-field">
+                    <span class="ion-md-mail input-icon"></span>
+                    <input type="email" formControlName="email" class="form-input" readonly>
+                    <span class="lock-icon"><span class="ion-md-lock"></span></span>
+                  </div>
+                </div>
+
+                <!-- Adresse -->
+                <div class="form-group full-width">
+                  <label>Adresse de résidence</label>
+                  <div class="input-wrapper">
+                    <span class="ion-md-pin input-icon"></span>
+                    <input type="text" formControlName="address" class="form-input" [readonly]="!isEditing">
+                  </div>
+                </div>
+
+                <!-- Chauffeur : informations professionnelles -->
+                <ng-container *ngIf="isDriverContext">
+                  <div class="form-group full-width driver-section-divider">
+                    <div class="driver-pro-title">
+                      <span class="ion-md-ribbon icon-orange"></span>
+                      Informations professionnelles
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label>Numéro de permis</label>
+                    <div class="input-wrapper">
+                      <span class="ion-md-card input-icon"></span>
+                      <input type="text" formControlName="licenseNumber" class="form-input" [readonly]="!isEditing" placeholder="Ex: 12345678">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label>Expérience (années)</label>
+                    <div class="input-wrapper">
+                      <span class="ion-md-time input-icon"></span>
+                      <input type="number" formControlName="drivingExperienceYears" class="form-input" [readonly]="!isEditing" min="0">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label>Mode de travail</label>
+                    <div class="input-wrapper" [class.select-mode]="isEditing">
+                      <span class="ion-md-briefcase input-icon"></span>
+                      <select formControlName="workMode" class="form-input select-input" *ngIf="isEditing">
+                        <option value="INDEPENDENT">Indépendant</option>
+                        <option value="COMPANY">En entreprise</option>
+                      </select>
+                      <input type="text" [value]="driverWorkModeLabel" class="form-input" readonly *ngIf="!isEditing">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label>Disponibilité</label>
+                    <div class="input-wrapper" [class.select-mode]="isEditing">
+                      <span class="ion-md-radio-button-on input-icon"></span>
+                      <select formControlName="availabilityStatus" class="form-input select-input" *ngIf="isEditing">
+                        <option value="AVAILABLE">Disponible</option>
+                        <option value="BUSY">Occupé</option>
+                        <option value="OFFLINE">Hors ligne</option>
+                      </select>
+                      <input type="text" [value]="driverAvailabilityLabel" class="form-input" readonly *ngIf="!isEditing">
+                    </div>
+                  </div>
+                  <div class="form-group full-width" *ngIf="driverProfile">
+                    <label>Note &amp; trajets</label>
+                    <div class="driver-stats-inline">
+                      <span><span class="ion-md-star text-warning"></span> {{ driverProfile.rating | number:'1.1-1' }}</span>
+                      <span><span class="ion-md-flag"></span> {{ driverProfile.totalTrips }} trajets</span>
+                    </div>
+                  </div>
+                  <div class="form-group full-width">
+                    <label>Biographie</label>
+                    <div class="input-wrapper">
+                      <span class="ion-md-quote input-icon"></span>
+                      <textarea formControlName="driverBio" class="form-input" rows="3" [readonly]="!isEditing" placeholder="Présentez votre expérience..."></textarea>
+                    </div>
+                  </div>
+                </ng-container>
+              </div>
+              
+              <div class="last-modified-discreet mt-5" *ngIf="!isEditing">
+                Dernière modification : <span>{{ lastModified }}</span>
+              </div>
+            </form>
+          </div>
+
+          <!-- Card: Gestion des Rôles (PREMIUM OVERHAUL) -->
+          <div class="content-card info-card mt-4" *ngIf="showRolesManagement()">
+            <div class="card-header d-flex justify-content-between align-items-center mb-0 pb-0 border-0">
+              <div class="card-title-wrapper">
+                <div class="icon-box icon-purple"><span class="ion-md-people"></span></div>
+                <div>
+                  <h3 class="card-title">Gestion des Rôles</h3>
+                  <p class="card-subtitle">Activez de nouvelles fonctionnalités selon vos besoins</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-body px-0">
+              <div class="roles-selection-grid">
+                
+                <!-- Rôle : PASSAGER (Trajet) -->
+                <div class="role-selection-card" [class.active]="authService.getActiveRole() === 'ROLE_USER'">
+                  <div class="role-icon-circle bg-blue-soft">
+                    <span class="ion-md-walk"></span>
+                  </div>
+                  <h4>Passager</h4>
+                  <p>Réservez des trajets (Covoiturage ou Taxi) et déplacez-vous facilement.</p>
+                  
+                  <!-- Cas 1: L'utilisateur n'a pas le rôle -->
+                  <button *ngIf="!authService.hasRole('USER')" class="btn-role-action btn-add-role" (click)="addRole('USER')" [disabled]="isSubmitting">
+                    <span class="ion-md-add-circle"></span> Activer ce rôle
+                  </button>
+
+                  <!-- Cas 2: L'utilisateur a le rôle mais il n'est pas actif -->
+                  <button *ngIf="authService.hasRole('USER') && authService.getActiveRole() !== 'ROLE_USER'" class="btn-role-action btn-add-role bg-blue-soft text-primary border" (click)="switchRole('ROLE_USER')">
+                    <span class="ion-md-swap"></span> Basculer vers ce rôle
+                  </button>
+
+                  <!-- Cas 3: Option de suppression -->
+                  <button *ngIf="authService.hasRole('USER') && authService.getActiveRole() !== 'ROLE_USER' && (user?.roles?.length || 0) > 1" 
+                          class="btn btn-link text-danger small mt-2 p-0 text-decoration-none" (click)="removeRole('ROLE_USER')" [disabled]="isSubmitting">
+                    Désactiver ce rôle
+                  </button>
+                </div>
+
+                <!-- Rôle : LOCATAIRE (Véhicule) — masqué pour les chauffeurs -->
+                <div class="role-selection-card" *ngIf="shouldShowRoleCard('CLIENT')" [class.active]="authService.getActiveRole() === 'ROLE_CLIENT'">
+                  <div class="role-icon-circle bg-green-soft">
+                    <span class="ion-md-key"></span>
+                  </div>
+                  <h4>Locataire</h4>
+                  <p>Louez des véhicules pour une durée déterminée et conduisez vous-même.</p>
+                  
+                  <!-- Cas 1: L'utilisateur n'a pas le rôle -->
+                  <button *ngIf="!authService.hasRole('CLIENT')" class="btn-role-action btn-add-role" (click)="addRole('CLIENT')" [disabled]="isSubmitting">
+                    <span class="ion-md-add-circle"></span> Activer ce rôle
+                  </button>
+
+                  <!-- Cas 2: L'utilisateur a le rôle mais il n'est pas actif -->
+                  <button *ngIf="authService.hasRole('CLIENT') && authService.getActiveRole() !== 'ROLE_CLIENT'" class="btn-role-action btn-add-role bg-green-soft text-green border" (click)="switchRole('ROLE_CLIENT')">
+                    <span class="ion-md-swap"></span> Basculer vers ce rôle
+                  </button>
+
+                  <!-- Cas 3: Option de suppression -->
+                  <button *ngIf="authService.hasRole('CLIENT') && authService.getActiveRole() !== 'ROLE_CLIENT' && (user?.roles?.length || 0) > 1" 
+                          class="btn btn-link text-danger small mt-2 p-0 text-decoration-none" (click)="removeRole('ROLE_CLIENT')" [disabled]="isSubmitting">
+                    Désactiver ce rôle
+                  </button>
+                </div>
+
+                <!-- Rôle : DRIVER -->
+                <div class="role-selection-card" [class.active]="authService.getActiveRole() === 'ROLE_DRIVER'">
+                  <div class="role-icon-circle bg-orange-soft">
+                    <span class="ion-md-car"></span>
+                  </div>
+                  <h4>Chauffeur</h4>
+                  <p>Proposez vos services de conduite et générez des revenus supplémentaires.</p>
+                  
+                  <button *ngIf="!authService.hasRole('DRIVER')" class="btn-role-action btn-add-role" (click)="addRole('DRIVER')" [disabled]="isSubmitting">
+                    <span class="ion-md-add-circle"></span> Activer ce rôle
+                  </button>
+
+                  <button *ngIf="authService.hasRole('DRIVER') && authService.getActiveRole() !== 'ROLE_DRIVER'" class="btn-role-action btn-add-role bg-orange-soft text-orange border" (click)="switchRole('ROLE_DRIVER')">
+                    <span class="ion-md-swap"></span> Basculer vers ce rôle
+                  </button>
+
+                  <button *ngIf="authService.hasRole('DRIVER') && authService.getActiveRole() !== 'ROLE_DRIVER' && (user?.roles?.length || 0) > 1" 
+                          class="btn btn-link text-danger small mt-2 p-0 text-decoration-none" (click)="removeRole('ROLE_DRIVER')" [disabled]="isSubmitting">
+                    Désactiver ce rôle
+                  </button>
+                </div>
+
+                <!-- Rôle : FLEET_OWNER -->
+                <div class="role-selection-card" [class.active]="authService.getActiveRole() === 'ROLE_FLEET_OWNER'">
+                  <div class="role-icon-circle bg-purple-soft">
+                    <span class="ion-md-business"></span>
+                  </div>
+                  <h4>Flotte</h4>
+                  <p>Gérez plusieurs véhicules et suivez vos réservations professionnelles.</p>
+                  
+                  <button *ngIf="!authService.hasRole('FLEET_OWNER')" class="btn-role-action btn-add-role" (click)="addRole('FLEET_OWNER')" [disabled]="isSubmitting">
+                    <span class="ion-md-add-circle"></span> Activer ce rôle
+                  </button>
+
+                  <button *ngIf="authService.hasRole('FLEET_OWNER') && authService.getActiveRole() !== 'ROLE_FLEET_OWNER'" class="btn-role-action btn-add-role bg-purple-soft text-purple border" (click)="switchRole('ROLE_FLEET_OWNER')">
+                    <span class="ion-md-swap"></span> Basculer vers ce rôle
+                  </button>
+
+                  <button *ngIf="authService.hasRole('FLEET_OWNER') && authService.getActiveRole() !== 'ROLE_FLEET_OWNER' && (user?.roles?.length || 0) > 1" 
+                          class="btn btn-link text-danger small mt-2 p-0 text-decoration-none" (click)="removeRole('ROLE_FLEET_OWNER')" [disabled]="isSubmitting">
+                    Désactiver ce rôle
+                  </button>
+                </div>
+
+                <!-- Rôle : COMPANY (Entreprise) -->
+                <div class="role-selection-card" [class.active]="authService.getActiveRole() === 'ROLE_COMPANY'">
+                  <div class="role-icon-circle bg-cyan-soft">
+                    <span class="ion-md-briefcase"></span>
+                  </div>
+                  <h4>Entreprise</h4>
+                  <p>Solutions de mobilité pour collaborateurs et facturation centralisée.</p>
+                  
+                  <button *ngIf="!authService.hasRole('COMPANY')" class="btn-role-action btn-add-role" (click)="addRole('COMPANY')" [disabled]="isSubmitting">
+                    <span class="ion-md-add-circle"></span> Activer ce rôle
+                  </button>
+
+                  <button *ngIf="authService.hasRole('COMPANY') && authService.getActiveRole() !== 'ROLE_COMPANY'" class="btn-role-action btn-add-role bg-cyan-soft text-cyan border" (click)="switchRole('ROLE_COMPANY')">
+                    <span class="ion-md-swap"></span> Basculer vers ce rôle
+                  </button>
+
+                  <button *ngIf="authService.hasRole('COMPANY') && authService.getActiveRole() !== 'ROLE_COMPANY' && (user?.roles?.length || 0) > 1" 
+                          class="btn btn-link text-danger small mt-2 p-0 text-decoration-none" (click)="removeRole('COMPANY')" [disabled]="isSubmitting">
+                    Désactiver ce rôle
+                  </button>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Danger Zone -->
+          <div class="content-card danger-zone-card mt-4">
+            <div class="card-header-mini mb-3">
+              <h4 class="mini-title text-danger">Zone de danger</h4>
+            </div>
+            <p class="text-discreet mb-4">
+              La suppression de votre compte est définitive. Toutes vos données seront effacées.
+            </p>
+            <button class="btn-danger-light" (click)="confirmDeleteAccount()">
+              <span class="ion-md-trash"></span> Supprimer mon compte
+            </button>
+          </div>
+        </div>
+
+        <div class="layout-right">
+          <div class="right-column-gap">
+            <!-- Card 1: Account Health -->
+            <div class="content-card health-card interactive-health">
+              <div class="card-header-mini">
+                <h4 class="mini-title">Sécurité du compte</h4>
+                <div class="score-wrapper">
+                  <span class="security-level status-high">Élevée</span>
+                  <span class="security-score">85%</span>
+                </div>
+              </div>
+              <div class="health-progress-bar">
+                <div class="progress-fill" style="width: 85%"></div>
+              </div>
+              <p class="health-tip mt-3">
+                <span class="ion-md-bulb"></span>
+                Complétez votre sécurité en activant la double authentification
+              </p>
+              <div class="health-details mt-4 mb-4">
+                <div class="health-item checked clickable" (click)="activeTab = 'info'">
+                  <span class="ion-md-checkmark-circle"></span>
+                  <span>Email vérifié</span>
+                  <span class="ion-ios-arrow-forward ml-auto opacity-0 item-arrow"></span>
+                </div>
+                <div class="health-item checked clickable" (click)="activeTab = 'security'">
+                  <span class="ion-md-checkmark-circle"></span>
+                  <span>Mot de passe robuste</span>
+                  <span class="ion-ios-arrow-forward ml-auto opacity-0 item-arrow"></span>
+                </div>
+                <div class="health-item pending">
+                  <span class="ion-md-alert"></span>
+                  <span>Double authentification (2FA)</span>
+                </div>
+              </div>
+              <button class="btn-cta-security w-100" (click)="activeTab = 'security'">
+                <span class="ion-md-shield"></span> Sécuriser mon compte
+              </button>
+            </div>
+
+            <!-- Card 2: Quick Actions -->
+            <div class="content-card quick-actions-premium">
+              <h4 class="card-title mb-4">Paramètres rapides</h4>
+              <div class="premium-actions-list">
+                <button class="p-action-row" (click)="activeTab = 'security'">
+                  <div class="p-icon-container bg-blue-soft">
+                    <span class="ion-md-key"></span>
+                  </div>
+                  <div class="p-text-container">
+                    <span class="p-label">Mot de passe</span>
+                    <span class="p-sublabel">Changer votre accès</span>
+                  </div>
+                  <span class="ion-ios-arrow-forward p-arrow-icon"></span>
+                </button>
+
+                <button class="p-action-row" (click)="activeTab = 'payments'">
+                  <div class="p-icon-container bg-green-soft">
+                    <span class="ion-md-card"></span>
+                  </div>
+                  <div class="p-text-container">
+                    <span class="p-label">Paiement</span>
+                    <span class="p-sublabel">Gérer vos cartes</span>
+                  </div>
+                  <span class="ion-ios-arrow-forward p-arrow-icon"></span>
+                </button>
+
+                <button class="p-action-row" (click)="activeTab = 'preferences'">
+                  <div class="p-icon-container bg-purple-soft">
+                    <span class="ion-md-options"></span>
+                  </div>
+                  <div class="p-text-container">
+                    <span class="p-label">Préférences</span>
+                    <span class="p-sublabel">Personnaliser mon expérience</span>
+                  </div>
+                  <span class="ion-ios-arrow-forward p-arrow-icon"></span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: SÉCURITÉ -->
+    <div class="tab-pane" *ngIf="activeTab === 'security'" id="security-section">
+      <div class="tab-header-custom mb-4 animate__animated animate__fadeIn">
+        <h2 class="tab-main-title">Sécurité et Confidentialité</h2>
+        <p class="tab-main-desc">Gérez vos mots de passe, la double authentification et vos sessions actives.</p>
+      </div>
+
+      <div class="layout-grid">
+        <div class="layout-left">
+          <div class="content-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <div class="card-title-wrapper">
+                <div class="icon-box icon-blue"><span class="ion-md-key"></span></div>
+                <h3 class="card-title">Mot de passe</h3>
+              </div>
+
+              <div class="header-actions" *ngIf="securityForm.dirty">
+                <button type="button" class="btn-cancel-mini" (click)="cancelForm('security')" [disabled]="isSubmitting">
+                  Annuler
+                </button>
+                <button type="submit" form="securityForm" class="btn-save-mini" [disabled]="!securityForm.valid || isSubmitting">
+                  <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+                  Enregistrer
+                </button>
+              </div>
+            </div>
+            
+            <form [formGroup]="securityForm" (ngSubmit)="updateSecurity()" class="modern-form">
+              <div class="form-group max-w-md">
+                <label>Mot de passe actuel</label>
+                <div class="input-wrapper">
+                  <span class="ion-md-key input-icon"></span>
+                  <input [type]="showCurrentPassword ? 'text' : 'password'" formControlName="currentPassword" class="form-input" placeholder="••••••••">
+                  <button type="button" class="password-toggle" (click)="showCurrentPassword = !showCurrentPassword" title="Afficher/Masquer">
+                    <span [class]="showCurrentPassword ? 'ion-md-eye-off' : 'ion-md-eye'"></span>
+                  </button>
+                </div>
+              </div>
+              <div class="form-group max-w-md mt-4">
+                <label>Nouveau mot de passe</label>
+                <div class="input-wrapper">
+                  <span class="ion-md-lock input-icon text-blue"></span>
+                  <input [type]="showNewPassword ? 'text' : 'password'" formControlName="newPassword" class="form-input" placeholder="Nouveau mot de passe (8+ car.)">
+                  <button type="button" class="password-toggle" (click)="showNewPassword = !showNewPassword" title="Afficher/Masquer">
+                    <span [class]="showNewPassword ? 'ion-md-eye-off' : 'ion-md-eye'"></span>
+                  </button>
+                </div>
+
+                <!-- Indicateur de force -->
+                <div class="strength-meter-container" *ngIf="securityForm.get('newPassword')?.value">
+                  <div class="strength-meter-bar">
+                    <div class="strength-fill" [style.width.%]="passwordStrength" [ngClass]="strengthClass"></div>
+                  </div>
+                  <div class="strength-text">
+                    Force : <span [ngClass]="strengthClass">{{ strengthLabel }}</span>
+                  </div>
+                </div>
+
+                <!-- Validation en temps réel -->
+                <div class="real-time-validation">
+                  <p class="validation-helper">Utilisez au moins 8 caractères avec chiffres et symboles</p>
+                  <div class="validation-list">
+                    <div class="v-item" [class.v-valid]="passwordChecks.length">
+                      <span [class]="passwordChecks.length ? 'ion-md-checkmark-circle' : 'ion-md-radio-button-off'"></span>
+                      8+ caractères
+                    </div>
+                    <div class="v-item" [class.v-valid]="passwordChecks.number">
+                      <span [class]="passwordChecks.number ? 'ion-md-checkmark-circle' : 'ion-md-radio-button-off'"></span>
+                      Chiffres
+                    </div>
+                    <div class="v-item" [class.v-valid]="passwordChecks.symbol">
+                      <span [class]="passwordChecks.symbol ? 'ion-md-checkmark-circle' : 'ion-md-radio-button-off'"></span>
+                      Symboles
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group max-w-md mt-4">
+                <label>Confirmer le nouveau mot de passe</label>
+                <div class="input-wrapper">
+                  <span class="ion-md-checkmark-circle-outline input-icon text-green"></span>
+                  <input [type]="showConfirmPassword ? 'text' : 'password'" formControlName="confirmPassword" class="form-input" placeholder="Confirmer le mot de passe">
+                  <button type="button" class="password-toggle" (click)="showConfirmPassword = !showConfirmPassword" title="Afficher/Masquer">
+                    <span [class]="showConfirmPassword ? 'ion-md-eye-off' : 'ion-md-eye'"></span>
+                  </button>
+                </div>
+                <div class="error-text mt-2" *ngIf="securityForm.hasError('mismatch') && securityForm.get('confirmPassword')?.touched">
+                  <span class="ion-md-alert me-1"></span> Les mots de passe ne correspondent pas.
+                </div>
+              </div>
+              
+            </form>
+
+            <!-- Last Update Hint -->
+            <div class="last-update-hint mt-4 pt-3 border-top">
+              <span class="ion-md-time me-2"></span>
+              Dernière modification : <span class="fw-bold text-muted">{{ formatLastPasswordUpdate() }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="layout-right">
+          <!-- 2FA Card -->
+          <div class="content-card mb-4 2fa-card" [class.enabled]="user?.twoFactorEnabled">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <div class="card-title-wrapper">
+                <div class="icon-box" [class.icon-green]="user?.twoFactorEnabled" [class.icon-gray]="!user?.twoFactorEnabled">
+                  <span class="ion-md-shield"></span>
+                </div>
+                <h3 class="card-title">Authentification 2FA</h3>
+              </div>
+              <span class="status-badge" [class.badge-active]="user?.twoFactorEnabled" [class.badge-inactive]="!user?.twoFactorEnabled">
+                <span class="dot"></span>
+                {{ user?.twoFactorEnabled ? 'Activé' : 'Désactivé' }}
+              </span>
+            </div>
+
+            <div class="card-body-custom mt-3">
+              <p class="text-discreet small mb-4">
+                {{ user?.twoFactorEnabled 
+                  ? 'Votre compte est protégé par une double authentification. Une couche de sécurité supplémentaire est requise pour chaque connexion.' 
+                  : 'Ajoutez une couche de sécurité supplémentaire en utilisant une application comme Google Authenticator pour générer des codes de vérification.' }}
+              </p>
+
+              <!-- Error Message Inline with Retry -->
+              <div class="error-box animate__animated animate__fadeIn mb-4" *ngIf="twoFactorError">
+                <div class="d-flex align-items-center justify-content-between w-100">
+                  <div class="d-flex align-items-center">
+                    <span class="ion-md-alert me-2" style="font-size: 1.2rem;"></span>
+                    <span>{{ twoFactorError }}</span>
+                  </div>
+                  <button class="btn-retry-mini" (click)="retry2FA()" *ngIf="!is2FALoading">
+                    <span class="ion-md-refresh me-1"></span> Réessayer
+                  </button>
+                </div>
+              </div>
+
+              <!-- Enable 2FA UI (Setup) -->
+              <div class="setup-2fa-section mt-4 animate__animated animate__fadeIn" *ngIf="show2FASetup">
+                <div class="qr-code-wrapper text-center mb-4 p-4 bg-white border-radius-20 border shadow-sm">
+                  <img [src]="qrCodeUrl" alt="QR Code 2FA" class="qr-image" *ngIf="qrCodeUrl">
+                  <div class="qr-loader" *ngIf="!qrCodeUrl || is2FALoading">
+                    <span class="spinner-border text-primary"></span>
+                  </div>
+                </div>
+                
+                <div class="setup-instructions mb-4">
+                  <div class="step-item mb-3">
+                    <span class="step-number">1</span>
+                    <p class="small mb-0">Scannez ce QR Code avec <strong>Google Authenticator</strong> ou une application TOTP.</p>
+                  </div>
+                  <div class="step-item mb-3">
+                    <span class="step-number">2</span>
+                    <p class="small mb-0">
+                      Clé secrète (si scan impossible) : <br>
+                      <code class="secret-key">{{ twoFactorSecret }}</code>
+                    </p>
+                  </div>
+                  <div class="step-item">
+                    <span class="step-number">3</span>
+                    <p class="small mb-0">Saisissez le code à 6 chiffres affiché sur votre application :</p>
+                  </div>
+                </div>
+
+                <div class="verification-input-wrapper mb-4">
+                  <input type="text" [(ngModel)]="twoFactorCode" class="form-input text-center letter-spacing-large" 
+                         maxlength="6" placeholder="000000" [disabled]="is2FALoading">
+                </div>
+
+                <div class="d-flex gap-3">
+                  <button class="btn-cancel-mini w-100" (click)="show2FASetup = false; twoFactorError = null" [disabled]="is2FALoading">Annuler</button>
+                  <button class="btn-primary-mini w-100" [disabled]="twoFactorCode.length !== 6 || is2FALoading" (click)="verifyAndEnable2FA()">
+                    <span *ngIf="!is2FALoading">Activer</span>
+                    <span *ngIf="is2FALoading" class="spinner-border spinner-border-sm"></span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Default Actions View -->
+              <div class="actions-2fa mt-4" *ngIf="!show2FASetup">
+                <button class="btn-primary-mini w-100 py-3" *ngIf="!user?.twoFactorEnabled" (click)="init2FASetup()" [disabled]="is2FALoading">
+                  <span *ngIf="!is2FALoading"><span class="ion-md-add-circle me-2"></span> Activer Google Authenticator</span>
+                  <span *ngIf="is2FALoading" class="spinner-border spinner-border-sm"></span>
+                </button>
+                
+                <button class="btn-outline-danger w-100 py-3 d-flex align-items-center justify-content-center" *ngIf="user?.twoFactorEnabled" (click)="disable2FA()" [disabled]="is2FALoading">
+                  <span *ngIf="!is2FALoading">
+                    <span class="ion-md-remove-circle me-2"></span> Désactiver la double authentification
+                  </span>
+                  <span *ngIf="is2FALoading" class="spinner-border spinner-border-sm"></span>
+                </button>
+                
+                <p class="text-center mt-3 small text-muted" *ngIf="!user?.twoFactorEnabled">
+                  <span class="ion-md-information-circle-outline me-1"></span>
+                  Protégez votre compte en quelques secondes.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="content-card">
+            <div class="card-header d-flex justify-content-between align-items-center pb-0">
+              <div class="card-title-wrapper">
+                <div class="icon-box icon-red"><span class="ion-md-time"></span></div>
+                <h3 class="card-title mb-0">Historique des connexions</h3>
+              </div>
+            </div>
+            <div class="sessions-history mt-4">
+              <div class="session-item">
+                <div class="session-icon icon-blue"><span class="ion-md-desktop"></span></div>
+                <div class="session-details">
+                  <strong>Windows 11 • Chrome</strong>
+                  <span>Tunis, Tunisie • Il y a 2 heures</span>
+                </div>
+                <div class="session-actions">
+                  <div class="session-status text-green me-3">Active</div>
+                  <button class="btn-icon-logout" title="Déconnecter cet appareil" (click)="logoutThisDevice('current')">
+                    <span class="ion-md-power"></span>
+                  </button>
+                </div>
+              </div>
+              <div class="session-item">
+                <div class="session-icon text-gray"><span class="ion-md-phone-portrait"></span></div>
+                <div class="session-details">
+                  <strong>iPhone 13 • Safari</strong>
+                  <span>Sousse, Tunisie • Hier à 14:30</span>
+                </div>
+                <div class="session-actions">
+                  <div class="session-status text-gray me-3">Déconnectée</div>
+                  <button class="btn-icon-logout disabled" title="Déjà déconnecté">
+                    <span class="ion-md-checkmark"></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="mt-4 pt-3 border-top">
+              <button class="btn-outline-danger w-100 py-2 d-flex align-items-center justify-content-center" (click)="logoutAllDevices()">
+                <span class="ion-md-log-out me-2"></span> Se déconnecter de tous les appareils
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: DOCUMENTS -->
+    <div class="tab-pane" *ngIf="activeTab === 'documents' && authService.getActiveRole() !== 'ROLE_USER'" id="documents-section">
+      <div class="tab-header-custom mb-4 animate__animated animate__fadeIn">
+        <h2 class="tab-main-title">{{ authService.getActiveRole() === 'ROLE_COMPANY' ? 'Mes documents entreprise' : 'Mes Documents' }}</h2>
+        <p class="tab-main-desc">
+          {{ authService.getActiveRole() === 'ROLE_COMPANY' 
+             ? 'Gérez les documents officiels de votre entreprise pour valider vos demandes de services.' 
+             : 'Gérez vos documents officiels pour faciliter vos locations de véhicules.' }}
+        </p>
+      </div>
+
+      <!-- COMPANY VIEW -->
+      <div class="layout-grid" *ngIf="authService.getActiveRole() === 'ROLE_COMPANY'">
+        <div class="layout-left">
+          <!-- Required Documents -->
+          <div class="content-card mb-4">
+            <div class="card-header border-0 pb-0">
+              <h3 class="card-title fw-bold"><span class="ion-md-alert text-warning me-2"></span>Documents obligatoires</h3>
+            </div>
+            <div class="documents-list-grid mt-4">
+              <div class="document-item-card" *ngFor="let doc of companyDocuments | slice:0:5">
+                <div class="doc-icon-wrapper" [ngClass]="'status-' + doc.status">
+                  <span class="ion-md-document"></span>
+                </div>
+                <div class="doc-details">
+                  <div class="d-flex justify-content-between align-items-start mb-1">
+                    <h4 class="doc-name">{{ doc.name }}</h4>
+                    <span class="doc-status-badge" [ngClass]="doc.status">
+                      <span class="dot"></span>
+                      {{ doc.status === 'VERIFIED' ? 'Vérifié' : (doc.status === 'PENDING' ? 'En attente' : (doc.status === 'REJECTED' ? 'Refusé' : 'Non ajouté')) }}
+                    </span>
+                  </div>
+                  <p class="doc-desc">{{ doc.description }}</p>
+                  <div class="doc-actions mt-3">
+                    <button class="btn-doc-action" *ngIf="doc.status !== 'NOT_UPLOADED'" (click)="viewCompanyDocument(doc)">Voir</button>
+                    <button class="btn-doc-action" *ngIf="doc.status !== 'NOT_UPLOADED'" (click)="docInput.click()">Remplacer</button>
+                    <button class="btn-doc-action primary" *ngIf="doc.status === 'NOT_UPLOADED'" (click)="docInput.click()">Ajouter</button>
+                    <input #docInput type="file" style="display:none" (change)="uploadCompanyDocument(doc, $event)" accept=".pdf,.jpg,.jpeg,.png">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Optional Documents -->
+          <div class="content-card">
+            <div class="card-header border-0 pb-0">
+              <h3 class="card-title fw-bold"><span class="ion-md-options text-muted me-2"></span>Documents optionnels</h3>
+            </div>
+            <div class="documents-list-grid mt-4">
+              <div class="document-item-card" *ngFor="let doc of companyDocuments | slice:5">
+                <div class="doc-icon-wrapper" [ngClass]="'status-' + doc.status">
+                  <span class="ion-md-document"></span>
+                </div>
+                <div class="doc-details">
+                  <div class="d-flex justify-content-between align-items-start mb-1">
+                    <h4 class="doc-name">{{ doc.name }}</h4>
+                    <span class="doc-status-badge" [ngClass]="doc.status">
+                      <span class="dot"></span>
+                      {{ doc.status === 'VERIFIED' ? 'Vérifié' : (doc.status === 'PENDING' ? 'En attente' : 'Non ajouté') }}
+                    </span>
+                  </div>
+                  <p class="doc-desc">{{ doc.description }}</p>
+                  <div class="doc-actions mt-3">
+                    <button class="btn-doc-action" *ngIf="doc.status !== 'NOT_UPLOADED'" (click)="viewCompanyDocument(doc)">Voir</button>
+                    <button class="btn-doc-action" *ngIf="doc.status !== 'NOT_UPLOADED'" (click)="docInput.click()">Remplacer</button>
+                    <button class="btn-doc-action primary" *ngIf="doc.status === 'NOT_UPLOADED'" (click)="docInput.click()">Ajouter</button>
+                    <input #docInput type="file" style="display:none" (change)="uploadCompanyDocument(doc, $event)" accept=".pdf,.jpg,.jpeg,.png">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="layout-right">
+          <!-- Folder Progress -->
+          <div class="content-card health-card mb-4">
+            <div class="card-header-mini">
+              <h4 class="mini-title">Progression du dossier</h4>
+              <div class="score-wrapper">
+                <span class="security-level" [ngClass]="companyDocProgress >= 80 ? 'status-high' : 'status-medium'">
+                  {{ companyDocProgress === 100 ? 'Complet' : (companyDocProgress >= 80 ? 'Presque complet' : 'En cours') }}
+                </span>
+                <span class="security-score">{{ companyDocProgress }}%</span>
+              </div>
+            </div>
+            <div class="health-progress-bar mt-2">
+              <div class="progress-fill" [style.width.%]="companyDocProgress" [style.background]="companyDocProgress === 100 ? '#10b981' : '#3b82f6'"></div>
+            </div>
+            <p class="health-tip mt-3">
+              <span class="ion-md-bulb" [style.color]="companyDocProgress === 100 ? '#10b981' : '#3b82f6'"></span>
+              {{ companyDocProgress === 100 ? 'Votre dossier est complet.' : 'Veuillez ajouter les documents obligatoires manquants.' }}
+            </p>
+          </div>
+
+          <!-- Upload Zone -->
+          <div class="content-card upload-zone-card">
+            <h4 class="mini-title mb-3">Ajouter un nouveau document</h4>
+            <div class="upload-drop-area" (click)="globalDocInput.click()">
+              <span class="ion-md-cloud-upload upload-icon"></span>
+              <p class="upload-text">Cliquez pour téléverser</p>
+              <p class="upload-hint">Formats acceptés : PDF, JPG, PNG</p>
+              <p class="upload-limit">Taille maximale : 5 Mo</p>
+            </div>
+            <input #globalDocInput type="file" style="display: none" accept=".pdf,.jpg,.jpeg,.png">
+          </div>
+        </div>
+      </div>
+
+      <!-- STANDARD USER VIEW -->
+      <div class="layout-grid" *ngIf="authService.getActiveRole() !== 'ROLE_COMPANY'">
+        <!-- Left Column: Documents List -->
+        <div class="layout-left">
+          <div class="content-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <div class="card-title-wrapper">
+                <div class="icon-box icon-blue"><span class="ion-md-document"></span></div>
+                <div>
+                  <h3 class="card-title">Documents de location</h3>
+                  <p class="card-subtitle">Ajoutez et vérifiez vos documents pour accélérer la validation de vos réservations.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="documents-list-grid mt-4">
+              <div class="document-item-card" *ngFor="let doc of documents">
+                <div class="doc-icon-wrapper" [ngClass]="'status-' + doc.status">
+                  <span [class]="doc.icon"></span>
+                </div>
+                <div class="doc-details">
+                  <div class="d-flex justify-content-between align-items-start mb-1">
+                    <h4 class="doc-name">{{ doc.name }}</h4>
+                    <span class="doc-status-badge" [ngClass]="doc.status">
+                      <span class="dot"></span>
+                      {{ doc.status === 'verified' ? 'Vérifié' : (doc.status === 'pending' ? 'En attente' : 'Non ajouté') }}
+                    </span>
+                  </div>
+                  <p class="doc-desc">{{ doc.description }}</p>
+                  <div class="doc-actions mt-3">
+                    <button class="btn-doc-action" *ngIf="doc.status !== 'missing'">Voir</button>
+                    <button class="btn-doc-action" *ngIf="doc.status !== 'missing'">Remplacer</button>
+                    <button class="btn-doc-action primary" *ngIf="doc.status === 'missing'" (click)="triggerFileUpload()">Ajouter</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Progress & Upload -->
+        <div class="layout-right">
+          <!-- Folder Progress -->
+          <div class="content-card health-card mb-4">
+            <div class="card-header-mini">
+              <h4 class="mini-title">Progression du dossier</h4>
+              <div class="score-wrapper">
+                <span class="security-level status-high">Presque complet</span>
+                <span class="security-score">80%</span>
+              </div>
+            </div>
+            <div class="health-progress-bar mt-2">
+              <div class="progress-fill" style="width: 80%; background: #10b981;"></div>
+            </div>
+            <p class="health-tip mt-3">
+              <span class="ion-md-bulb" style="color: #10b981;"></span>
+              Votre dossier est presque complet.
+            </p>
+          </div>
+
+          <!-- Upload Zone -->
+          <div class="content-card upload-zone-card">
+            <h4 class="mini-title mb-3">Ajouter un document</h4>
+            <div class="upload-drop-area" (click)="triggerFileUpload()">
+              <span class="ion-md-cloud-upload upload-icon"></span>
+              <p class="upload-text">Cliquez pour téléverser</p>
+              <p class="upload-hint">Formats acceptés : PDF, JPG, PNG</p>
+              <p class="upload-limit">Taille maximale : 5 Mo</p>
+            </div>
+            <input type="file" id="file-upload-input" style="display: none" (change)="onFileSelected($event)" accept=".pdf,.jpg,.jpeg,.png">
+            
+            <div class="selected-file-info mt-3 animate__animated animate__fadeIn" *ngIf="selectedFileName">
+              <span class="ion-md-checkmark-circle text-green me-2"></span>
+              <span class="small fw-bold">{{ selectedFileName }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+
+    <!-- OTHERS TABS (Placeholder structure) -->
+    <!-- PAYMENTS TAB -->
+    <div class="tab-pane" *ngIf="activeTab === 'payments'" id="payments-section">
+      <div class="tab-header-custom mb-4 animate__animated animate__fadeIn">
+        <h2 class="tab-main-title">Moyens de paiement</h2>
+        <p class="tab-main-desc">Gérez vos méthodes de paiement et préférences GoRide.</p>
+      </div>
+
+      <div class="content-card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <div class="card-title-wrapper">
+            <div class="icon-box icon-blue"><span class="ion-md-wallet"></span></div>
+            <h3 class="card-title">Choisir un moyen de paiement</h3>
+          </div>
+        </div>
+
+        <div class="payment-methods-grid mt-4" *ngIf="authService.getActiveRole() !== 'ROLE_COMPANY'">
+          <!-- Option 1: Cash -->
+          <div class="payment-card" [class.selected]="selectedPaymentMethod === 'cash'" (click)="selectedPaymentMethod = 'cash'">
+            <div class="payment-icon icon-orange"><span class="ion-md-cash"></span></div>
+            <div class="payment-info">
+              <span class="payment-name">Paiement sur place</span>
+              <span class="payment-desc">Payez directement au chauffeur</span>
+            </div>
+            <div class="selection-indicator">
+              <span class="ion-md-checkmark-circle"></span>
+            </div>
+          </div>
+
+          <!-- Option 2: Card -->
+          <div class="payment-card" [class.selected]="selectedPaymentMethod === 'card'" (click)="selectedPaymentMethod = 'card'">
+            <div class="payment-icon icon-blue"><span class="ion-md-card"></span></div>
+            <div class="payment-info">
+              <span class="payment-name">Carte bancaire tunisienne</span>
+              <span class="payment-desc">Cartes locales uniquement</span>
+            </div>
+            <div class="selection-indicator">
+              <span class="ion-md-checkmark-circle"></span>
+            </div>
+          </div>
+
+          <!-- Option 3: D17 -->
+          <div class="payment-card" [class.selected]="selectedPaymentMethod === 'd17'" (click)="selectedPaymentMethod = 'd17'">
+            <div class="payment-icon icon-purple"><span class="ion-md-phone-portrait"></span></div>
+            <div class="payment-info">
+              <span class="payment-name">D17 (Poste Tunisienne)</span>
+              <span class="payment-desc">Idéal pour les étudiants</span>
+            </div>
+            <div class="selection-indicator">
+              <span class="ion-md-checkmark-circle"></span>
+            </div>
+          </div>
+
+          <!-- Option 4: GoRide Card -->
+          <div class="payment-card" [class.selected]="selectedPaymentMethod === 'goride'" (click)="selectedPaymentMethod = 'goride'">
+            <div class="payment-icon icon-green"><span class="ion-md-star"></span></div>
+            <div class="payment-info">
+              <span class="payment-name">Carte GoRide</span>
+              <span class="payment-desc">Paiement via votre portefeuille GoRide</span>
+            </div>
+            <div class="selection-indicator">
+              <span class="ion-md-checkmark-circle"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dynamic Payment Details -->
+        <div class="payment-details-container mt-5 animate__animated animate__fadeIn">
+          
+          <!-- COMPANY ROLE SPECIFIC VIEW -->
+          <div *ngIf="authService.getActiveRole() === 'ROLE_COMPANY' && companyPaymentSettings" class="company-payment-sync-box border-top pt-4">
+            <h5 class="fw-bold mb-4">Moyens de paiement entreprise (Synchronisés)</h5>
+            <div class="row g-3">
+              <div class="col-md-4" *ngFor="let method of companyPaymentSettings.methods">
+                <div class="company-method-card p-3 border rounded-4 text-center h-100 clickable"
+                     [class.border-primary]="companyPaymentSettings.preferredPaymentMethod === method.label"
+                     [class.bg-soft-primary]="companyPaymentSettings.preferredPaymentMethod === method.label"
+                     (click)="saveCompanyPaymentPreference(method.label)">
+                  <div class="icon-box mx-auto mb-3" [class.icon-blue]="companyPaymentSettings.preferredPaymentMethod === method.label">
+                    <span [class]="method.id === 'CARD_COMPANY' ? 'ion-md-card' : (method.id === 'BANK_TRANSFER' ? 'ion-md-business' : 'ion-md-wallet')"></span>
+                  </div>
+                  <h6 class="fw-bold mb-1">{{ method.label }}</h6>
+                  <p class="text-muted small mb-3">{{ method.details }}</p>
+                  <span class="badge rounded-pill px-3" 
+                        [ngClass]="companyPaymentSettings.preferredPaymentMethod === method.label ? 'bg-primary text-white' : 'bg-light text-muted'">
+                    {{ companyPaymentSettings.preferredPaymentMethod === method.label ? 'Préférée' : 'Activer' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="mt-4 p-3 bg-light rounded-4 d-flex align-items-center gap-3">
+              <div class="icon-box icon-blue sm"><span class="ion-md-sync"></span></div>
+              <p class="small text-muted mb-0">Ces préférences sont automatiquement partagées avec votre tableau de bord financier **Paiements & Factures**.</p>
+            </div>
+          </div>
+
+          <!-- STANDARD USER PAYMENT DETAILS -->
+          <ng-container *ngIf="authService.getActiveRole() !== 'ROLE_COMPANY'">
+            <div [ngSwitch]="selectedPaymentMethod">
+              <!-- Case: Cash -->
+              <div *ngSwitchCase="'cash'" class="payment-detail-box bg-light">
+                <div class="d-flex align-items-center gap-3">
+                  <div class="icon-box icon-orange"><span class="ion-md-information-circle"></span></div>
+                  <div>
+                    <h6 class="mb-1 fw-bold">Paiement en espèces</h6>
+                    <p class="mb-0 small text-muted">Prévoyez l'appoint si possible pour faciliter le rendu de monnaie.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Case: Card -->
+              <div *ngSwitchCase="'card'" class="payment-detail-box border p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <h6 class="mb-0 fw-bold"><span class="ion-md-card me-2 text-blue"></span>Informations de la carte locale</h6>
+              <div class="tunisia-badge small px-2 py-1 bg-light border-radius-8">
+                🇹🇳 Tunisie uniquement
+              </div>
+            </div>
+
+            <form [formGroup]="paymentForm" class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">Banque</label>
+                <select formControlName="bank" class="form-input"
+                  [class.input-valid]="paymentForm.get('bank')?.valid && paymentForm.get('bank')?.touched"
+                  [class.input-invalid]="paymentForm.get('bank')?.invalid && paymentForm.get('bank')?.touched">
+                  <option value="" disabled selected>Sélectionnez votre banque</option>
+                  <option *ngFor="let bank of tunisianBanks" [value]="bank.id">{{ bank.name }}</option>
+                </select>
+                <div class="field-error" *ngIf="paymentForm.get('bank')?.invalid && paymentForm.get('bank')?.touched">
+                  <span class="ion-md-alert-circle me-1"></span> Veuillez sélectionner votre banque
+                </div>
+              </div>
+              <div class="col-md-6 d-flex align-items-end justify-content-center">
+                <div class="bank-logo-placeholder" *ngIf="paymentForm.get('bank')?.value">
+                  <span class="small text-muted d-block text-center mb-1">Banque sélectionnée</span>
+                  <div class="selected-bank-logo">
+                    {{ paymentForm.get('bank')?.value | uppercase }}
+                  </div>
+                </div>
+              </div>
+              
+              <div class="col-12">
+                <label class="form-label small fw-bold">Nom sur la carte</label>
+                <div class="input-wrapper">
+                  <input type="text" formControlName="cardHolder" class="form-input" id="cardHolderInput"
+                    [class.input-valid]="paymentForm.get('cardHolder')?.valid && paymentForm.get('cardHolder')?.touched"
+                    [class.input-invalid]="paymentForm.get('cardHolder')?.invalid && paymentForm.get('cardHolder')?.touched"
+                    placeholder="Nom tel qu'indiqué sur la carte">
+                  <span class="input-icon-right ion-md-checkmark-circle text-success" *ngIf="paymentForm.get('cardHolder')?.valid && paymentForm.get('cardHolder')?.touched"></span>
+                </div>
+                <div class="field-error" *ngIf="paymentForm.get('cardHolder')?.invalid && paymentForm.get('cardHolder')?.touched">
+                  <span class="ion-md-alert-circle me-1"></span> Nom requis
+                </div>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label small fw-bold">Numéro de carte</label>
+                <div class="input-wrapper">
+                  <input type="text" formControlName="cardNumber" class="form-input" id="cardNumberInput"
+                    [class.input-valid]="paymentForm.get('cardNumber')?.valid && paymentForm.get('cardNumber')?.touched"
+                    [class.input-invalid]="paymentForm.get('cardNumber')?.invalid && paymentForm.get('cardNumber')?.touched"
+                    placeholder="1234 5678 9012 3456" inputmode="numeric">
+                  <span class="input-icon-right ion-md-checkmark-circle text-success" *ngIf="paymentForm.get('cardNumber')?.valid && paymentForm.get('cardNumber')?.touched"></span>
+                  <span class="input-icon-right ion-md-close-circle text-danger" *ngIf="paymentForm.get('cardNumber')?.invalid && paymentForm.get('cardNumber')?.touched"></span>
+                </div>
+                <div class="field-success text-success small mt-1 fw-bold" *ngIf="paymentForm.get('cardNumber')?.valid && paymentForm.get('cardNumber')?.value?.length === 19">
+                  <span class="ion-md-checkmark-circle me-1"></span> Carte valide
+                </div>
+                <div class="field-error" *ngIf="paymentForm.get('cardNumber')?.invalid && paymentForm.get('cardNumber')?.touched">
+                  <span class="ion-md-alert-circle me-1"></span> Numéro de carte invalide (16 chiffres requis)
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">Expiration (MM/AA)</label>
+                <div class="input-wrapper">
+                  <input type="text" formControlName="cardExpiry" class="form-input" id="cardExpiryInput"
+                    [class.input-valid]="paymentForm.get('cardExpiry')?.valid && paymentForm.get('cardExpiry')?.touched"
+                    [class.input-invalid]="paymentForm.get('cardExpiry')?.invalid && paymentForm.get('cardExpiry')?.touched"
+                    placeholder="MM/AA" inputmode="numeric">
+                  <span class="input-icon-right ion-md-checkmark-circle text-success" *ngIf="paymentForm.get('cardExpiry')?.valid && paymentForm.get('cardExpiry')?.touched"></span>
+                </div>
+                <div class="field-error" *ngIf="paymentForm.get('cardExpiry')?.hasError('expiredDate') && paymentForm.get('cardExpiry')?.touched">
+                  <span class="ion-md-alert-circle me-1"></span> Date expirée
+                </div>
+                <div class="field-error" *ngIf="paymentForm.get('cardExpiry')?.hasError('invalidMonth') && paymentForm.get('cardExpiry')?.touched">
+                  <span class="ion-md-alert-circle me-1"></span> Mois invalide (01-12)
+                </div>
+                <div class="field-error" *ngIf="paymentForm.get('cardExpiry')?.invalid && !paymentForm.get('cardExpiry')?.hasError('expiredDate') && !paymentForm.get('cardExpiry')?.hasError('invalidMonth') && paymentForm.get('cardExpiry')?.touched">
+                  <span class="ion-md-alert-circle me-1"></span> Date invalide (ex : 12/27)
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">CVV</label>
+                <div class="input-wrapper">
+                  <input type="text" formControlName="cardCvv" class="form-input" id="cardCvvInput"
+                    [class.input-valid]="paymentForm.get('cardCvv')?.valid && paymentForm.get('cardCvv')?.touched"
+                    [class.input-invalid]="paymentForm.get('cardCvv')?.invalid && paymentForm.get('cardCvv')?.touched"
+                    placeholder="123" inputmode="numeric" maxlength="3">
+                  <span class="input-icon-right ion-md-checkmark-circle text-success" *ngIf="paymentForm.get('cardCvv')?.valid && paymentForm.get('cardCvv')?.touched"></span>
+                </div>
+                <small class="form-text text-muted">3 chiffres au dos de la carte</small>
+                <div class="field-error" *ngIf="paymentForm.get('cardCvv')?.invalid && paymentForm.get('cardCvv')?.touched">
+                  <span class="ion-md-alert-circle me-1"></span> CVV invalide (3 chiffres requis)
+                </div>
+              </div>
+            </form>
+
+            <div class="mt-4 p-3 bg-light border-radius-12 d-flex align-items-center gap-3">
+              <div class="icon-box icon-green sm"><span class="ion-md-checkmark-circle"></span></div>
+              <span class="small text-muted">Paiement sécurisé conforme aux normes de la Banque Centrale de Tunisie.</span>
+            </div>
+          </div>
+
+          <!-- Case: D17 (Fintech Overhaul) -->
+          <div *ngSwitchCase="'d17'" class="payment-detail-box fintech-box border p-4">
+            
+            <!-- Header with enlarged logo -->
+            <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom-dashed">
+              <div class="d-flex align-items-center">
+                <div class="d17-premium-badge me-3">
+                  <img src="assets/img/d17-logo.png" alt="D17" class="d17-logo-xl">
+                </div>
+                <div>
+                  <h5 class="mb-0 fw-bold">Paiement Mobile D17</h5>
+                  <p class="mb-0 small text-muted">Liez votre compte Poste Tunisienne</p>
+                </div>
+              </div>
+              <div class="security-tag">
+                <span class="ion-md-lock me-1"></span> Sécurisé
+              </div>
+            </div>
+
+            <!-- STEP 1: Numéro de téléphone -->
+            <div class="step-container animate__animated animate__fadeIn" *ngIf="d17Step === 1">
+              <div class="form-group mb-4">
+                <label class="form-label small fw-bold text-uppercase letter-spacing-1">Numéro de téléphone</label>
+                <div class="input-wrapper-fintech" 
+                     [class.input-valid]="paymentForm.get('d17Phone')?.valid && paymentForm.get('d17Phone')?.touched"
+                     [class.input-error]="(paymentForm.get('d17Phone')?.invalid && paymentForm.get('d17Phone')?.touched) || (d17Error && d17Step === 1)">
+                  <span class="ion-md-phone-portrait input-icon-fintech"></span>
+                  <input type="text" [formControl]="$any(paymentForm).get('d17Phone')" class="form-input-fintech" 
+                         placeholder="Ex : 28 056 922" id="d17PhoneInput">
+                </div>
+                
+                <!-- Error Messages -->
+                <div class="error-hint animate__animated animate__fadeIn" *ngIf="paymentForm.get('d17Phone')?.hasError('required') && paymentForm.get('d17Phone')?.touched">
+                  <span class="ion-md-alert me-1"></span> Le numéro est obligatoire
+                </div>
+                <div class="error-hint animate__animated animate__fadeIn" *ngIf="paymentForm.get('d17Phone')?.hasError('pattern') && paymentForm.get('d17Phone')?.touched">
+                  <span class="ion-md-alert me-1"></span> Numéro invalide (8 chiffres requis)
+                </div>
+                <div class="error-hint animate__animated animate__headShake" *ngIf="d17Error && d17Step === 1 && !paymentForm.get('d17Phone')?.errors">
+                  <span class="ion-md-alert me-1"></span> {{ d17Error }}
+                </div>
+              </div>
+              <p class="text-discreet small">
+                Vous recevrez un code de confirmation par SMS pour valider votre identité.
+              </p>
+            </div>
+
+            <!-- STEP 2: Vérification OTP -->
+            <div class="step-container animate__animated animate__fadeInRight" *ngIf="d17Step === 2">
+              <div class="otp-instruction mb-4 pt-3 border-top-light">
+                <div class="d-flex align-items-center gap-2 text-blue mb-2">
+                  <span class="ion-md-paper-plane"></span>
+                  <span class="fw-bold">Code envoyé !</span>
+                </div>
+                <p class="small text-muted">Saisissez le code OTP reçu au <span class="text-dark fw-bold">{{ paymentForm.get('d17Phone')?.value }}</span></p>
+              </div>
+
+              <div class="form-group mb-4">
+                <label class="form-label small fw-bold">Code reçu par SMS</label>
+                <div class="input-wrapper-fintech" [class.input-error]="d17Error && d17Step === 2">
+                  <span class="ion-md-key input-icon-fintech"></span>
+                  <input type="text" [(ngModel)]="d17VerificationCode" class="form-input-fintech otp-field" 
+                         maxlength="4" placeholder="• • • •" (keyup.enter)="verifyCode()">
+                </div>
+                <div class="error-hint" *ngIf="d17Error && d17Step === 2">
+                  <span class="ion-md-alert me-1"></span> {{ d17Error }}
+                </div>
+              </div>
+              
+              <button class="btn-link-sm" (click)="d17Step = 1; d17Error = null">
+                <span class="ion-md-arrow-back me-1"></span> Modifier le numéro
+              </button>
+            </div>
+
+            <!-- STEP 3: Succès -->
+            <div class="step-container text-center py-4 animate__animated animate__zoomIn" *ngIf="d17Step === 3">
+              <div class="success-circle mb-3 mx-auto">
+                <span class="ion-md-checkmark"></span>
+              </div>
+              <h5 class="fw-bold text-green mb-1">Compte D17 lié avec succès</h5>
+              <p class="text-muted small mb-0">Vos futurs paiements seront prélevés sur ce compte.</p>
+              <div class="linked-phone-pill mt-3 d-inline-block">
+                {{ paymentForm.get('d17Phone')?.value }}
+              </div>
+              <button class="btn-link-sm d-block mx-auto mt-3" (click)="resetD17Flow()">
+                Changer de compte
+              </button>
+            </div>
+
+            <!-- Footer Security Info -->
+            <div class="mt-4 pt-3 border-top-light" *ngIf="d17Step !== 3">
+              <p class="small text-muted mb-0 d-flex align-items-center gap-2">
+                <span class="ion-md-lock text-green"></span>
+                Paiement sécurisé via la Poste Tunisienne (D17)
+              </p>
+            </div>
+          </div>
+
+          <!-- Case: GoRide Card (Blue Premium Design) -->
+          <div *ngSwitchCase="'goride'" class="payment-detail-box goride-blue-card-container p-0 overflow-hidden border-0">
+            <div class="goride-blue-card animate__animated animate__zoomIn">
+              
+              <!-- Card Header: Logo & Balance -->
+              <div class="card-top-row">
+                <div class="card-logo-white">
+                  <span class="ion-md-flash me-2"></span>
+                  <span class="logo-text-white">GoRide <small>Pay</small></span>
+                </div>
+                
+                <div class="balance-badge-glass">
+                  <div class="d-flex flex-column align-items-end">
+                    <span class="badge-label-small">SOLDE</span>
+                    <span class="badge-value-bold">{{ gorideBalance | number:'1.2-2' }} <small>TND</small></span>
+                  </div>
+                  <button class="btn-recharge-round" (click)="rechargeGoRide()" title="Recharger le solde">
+                    <span class="ion-md-add" [class.spin-icon]="isRecharging"></span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Card Middle: Chip & Number -->
+              <div class="card-middle-row my-4">
+                <div class="emv-chip-silver mb-3"></div>
+                <div class="card-number-white">
+                  <span>••••</span> <span>••••</span> <span>••••</span> <span class="highlight-white">1234</span>
+                </div>
+              </div>
+
+              <!-- Card Footer: Holder & Expiry -->
+              <div class="card-bottom-row d-flex justify-content-between align-items-end">
+                <div class="holder-info-white">
+                  <span class="label-tiny">TITULAIRE</span>
+                  <span class="value-name">{{ user?.firstName }} {{ user?.lastName }}</span>
+                </div>
+                <div class="expiry-info-white text-end">
+                  <span class="label-tiny">VALIDE FIN</span>
+                  <span class="value-date">12/28</span>
+                </div>
+              </div>
+
+              <!-- Floating Feedback -->
+              <div class="floating-gain-badge-white" *ngIf="isRecharging">
+                +50 TND
+              </div>
+              
+              <!-- Subtle card texture/glow -->
+              <div class="card-inner-glow"></div>
+            </div>
+            
+            <div class="card-footer-info px-4 py-3 bg-light border-top">
+              <div class="d-flex justify-content-between align-items-center">
+                <p class="small text-muted mb-0">
+                  <span class="ion-md-shield text-blue me-1"></span>
+                  Protection des achats GoRide active.
+                </p>
+                <div class="security-tag-discreet">
+                  <span class="ion-md-lock me-1"></span> Paiement sécurisé
+                </div>
+              </div>
+            </div>
+          </div> <!-- End of goride switch case -->
+            </div> <!-- End of [ngSwitch] -->
+          </ng-container>
+        </div> <!-- End of payment-details-container -->
+
+        <div class="mt-5 pt-4 border-top d-flex justify-content-end" *ngIf="authService.getActiveRole() !== 'ROLE_COMPANY'">
+          <button class="btn-primary-mini px-5" (click)="handleMainPaymentClick()" 
+                  [disabled]="!isPaymentFormValid() || (selectedPaymentMethod === 'd17' && d17Step === 2 && d17VerificationCode.length !== 4) || isSendingCode || isVerifyingCode">
+            <span *ngIf="isSendingCode || isVerifyingCode || isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+            {{ getMainPaymentButtonText() }}
+          </button>
+        </div>
+      </div>
+
+
+    </div>
+
+    <!-- NOTIFICATIONS TAB -->
+    <div class="tab-pane" *ngIf="activeTab === 'notifications'" id="notifications-section">
+      <div class="content-card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <div class="card-title-wrapper">
+            <div class="icon-box icon-purple"><span class="ion-md-notifications"></span></div>
+            <h3 class="card-title">Notifications</h3>
+          </div>
+          <div class="header-actions" *ngIf="notificationsForm.dirty">
+            <button type="button" class="btn-cancel-mini" (click)="cancelForm('notifications')">Annuler</button>
+            <button type="submit" form="notificationsForm" class="btn-save-mini">Enregistrer</button>
+          </div>
+        </div>
+        
+        <form [formGroup]="notificationsForm" (ngSubmit)="updateNotifications()" id="notificationsForm" class="mt-4">
+          <div class="notification-settings">
+            <div class="d-flex justify-content-between align-items-center py-3 border-bottom">
+              <div>
+                <h6 class="mb-0">Emails promotionnels</h6>
+                <p class="text-gray mb-0 small">Recevez nos offres et nouveautés par email</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" formControlName="emailPromo" (change)="onToggleChange('Email promotionnel', $event)">
+                <span class="slider round"></span>
+              </label>
+            </div>
+            <div class="d-flex justify-content-between align-items-center py-3 border-bottom">
+              <div>
+                <h6 class="mb-0">Alertes trajets</h6>
+                <p class="text-gray mb-0 small">Soyez prévenu dès qu'un trajet correspond à vos critères</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" formControlName="emailTrip" (change)="onToggleChange('Alerte trajet', $event)">
+                <span class="slider round"></span>
+              </label>
+            </div>
+            <div class="d-flex justify-content-between align-items-center py-3">
+              <div>
+                <h6 class="mb-0">Notifications Push</h6>
+                <p class="text-gray mb-0 small">Recevez des alertes en temps réel sur votre mobile</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" formControlName="pushNewTrip" (change)="onToggleChange('Notification Push', $event)">
+                <span class="slider round"></span>
+              </label>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Recent Notifications List -->
+      <div class="content-card mt-4 animate__animated animate__fadeInUp">
+        <div class="card-header mb-4">
+          <div class="card-title-wrapper">
+            <div class="icon-box icon-blue"><span class="ion-md-notifications-outline"></span></div>
+            <h3 class="card-title">Notifications récentes</h3>
+          </div>
+        </div>
+
+        <div class="notification-history-list">
+          <div class="notif-item d-flex gap-3 align-items-start py-3 border-bottom-dashed clickable" 
+               *ngFor="let notif of recentNotifications"
+               (click)="markAsRead(notif.id)">
+            <div class="notif-icon-circle" [ngClass]="'bg-soft-' + notif.color">
+              <span [class]="notif.icon" [ngClass]="'text-' + notif.color"></span>
+            </div>
+            <div class="notif-content flex-grow-1">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="notif-label fw-bold" [class.unread-text]="!notif.isRead">{{ notif.label }}</span>
+                <span class="notif-time text-muted x-small">{{ notif.time }}</span>
+              </div>
+              <p class="notif-description small mb-0" [class.unread-text]="!notif.isRead" [class.text-gray]="notif.isRead">{{ notif.description }}</p>
+            </div>
+            <div class="notif-dot" *ngIf="!notif.isRead"></div>
+          </div>
+        </div>
+
+        <button class="btn-text-blue w-100 mt-3 py-2 small" (click)="markAllNotificationsAsRead()">Tout marquer comme lu</button>
+      </div>
+    </div>
+
+    <!-- PREFERENCES TAB -->
+    <div class="tab-pane" *ngIf="activeTab === 'preferences'" id="preferences-section">
+      <div class="content-card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <div class="card-title-wrapper">
+            <div class="icon-box icon-dark"><span class="ion-md-settings"></span></div>
+            <h3 class="card-title">Préférences</h3>
+          </div>
+          
+          <div class="autosave-indicator">
+            <div class="autosave-badge saving" *ngIf="isAutoSaving">
+              <span class="spinner-border spinner-border-sm me-2"></span> Enregistrement...
+            </div>
+            <div class="autosave-badge saved" *ngIf="!isAutoSaving && lastSaved">
+              <span class="ion-md-checkmark-circle me-2"></span> Enregistré automatiquement
+            </div>
+          </div>
+        </div>
+
+        <form [formGroup]="preferencesForm" id="preferencesForm" class="mt-4">
+          <div class="row">
+            <div class="col-md-6 mb-4">
+              <label class="form-label">Langue de l'interface</label>
+              <select class="form-select" formControlName="language" (change)="autoSavePreferences()">
+                <option value="FR">Français (FR)</option>
+                <option value="EN">English (US)</option>
+                <option value="AR">العربية</option>
+              </select>
+            </div>
+            <div class="col-md-6 mb-4">
+              <label class="form-label">Devise</label>
+              <select class="form-select" formControlName="currency" (change)="autoSavePreferences()">
+                <option value="TND">Dinar Tunisien (TND)</option>
+                <option value="EUR">Euro (€)</option>
+                <option value="USD">Dollar ($)</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="theme-selection mt-2">
+            <label class="form-label d-block mb-3">Thème de l'application</label>
+            <div class="theme-grid">
+              <!-- Option Clair -->
+              <div class="theme-option" [class.active]="preferencesForm.get('theme')?.value === 'light'" 
+                   (click)="preferencesForm.patchValue({theme: 'light'}); autoSavePreferences()">
+                <div class="theme-preview light-preview">
+                  <div class="mini-app">
+                    <div class="mini-header"></div>
+                    <div class="mini-content">
+                      <div class="mini-line w-75"></div>
+                      <div class="mini-line w-50"></div>
+                    </div>
+                  </div>
+                </div>
+                <span class="theme-label">Clair</span>
+              </div>
+
+              <!-- Option Sombre -->
+              <div class="theme-option" [class.active]="preferencesForm.get('theme')?.value === 'dark'" 
+                   (click)="preferencesForm.patchValue({theme: 'dark'}); autoSavePreferences()">
+                <div class="theme-preview dark-preview">
+                  <div class="mini-app">
+                    <div class="mini-header"></div>
+                    <div class="mini-content">
+                      <div class="mini-line w-75"></div>
+                      <div class="mini-line w-50"></div>
+                    </div>
+                  </div>
+                </div>
+                <span class="theme-label">Sombre</span>
+              </div>
+
+              <!-- Option Auto -->
+              <div class="theme-option" [class.active]="preferencesForm.get('theme')?.value === 'auto'" 
+                   (click)="preferencesForm.patchValue({theme: 'auto'}); autoSavePreferences()">
+                <div class="theme-preview auto-preview">
+                  <div class="mini-app split-theme">
+                    <div class="side-light"></div>
+                    <div class="side-dark"></div>
+                  </div>
+                </div>
+                <span class="theme-label">Système</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="trip-preferences mt-5 pt-4 border-top">
+            <div class="trip-pref-heading mb-3">
+              <label class="form-label d-block mb-1">Préférences trajets</label>
+              <p class="trip-pref-subtitle mb-0">Choisissez le mode utilisé par défaut pour vos courses et locations.</p>
+            </div>
+            <div class="trip-modes-grid" role="radiogroup" aria-label="Préférences trajets">
+              <button type="button" class="trip-mode-card trip-mode-card--standard"
+                      [class.active]="preferencesForm.get('tripMode')?.value === 'standard'"
+                      [attr.aria-pressed]="preferencesForm.get('tripMode')?.value === 'standard'"
+                      (click)="preferencesForm.patchValue({tripMode: 'standard'}); autoSavePreferences()">
+                <span class="trip-mode-check" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 7"/></svg>
+                </span>
+                <span class="trip-mode-icon trip-mode-icon--standard" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12h14l-1-4H6l-1 4z"/><path d="M4 12v4h16v-4"/><circle cx="7.5" cy="16" r="1.25"/><circle cx="16.5" cy="16" r="1.25"/>
+                  </svg>
+                </span>
+                <span class="trip-mode-name">Standard</span>
+                <span class="trip-mode-desc">Équilibre confort / prix</span>
+              </button>
+
+              <button type="button" class="trip-mode-card trip-mode-card--fast"
+                      [class.active]="preferencesForm.get('tripMode')?.value === 'fast'"
+                      [attr.aria-pressed]="preferencesForm.get('tripMode')?.value === 'fast'"
+                      (click)="preferencesForm.patchValue({tripMode: 'fast'}); autoSavePreferences()">
+                <span class="trip-mode-check" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 7"/></svg>
+                </span>
+                <span class="trip-mode-icon trip-mode-icon--fast" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M13 2L4 14h7l-1 8 10-14H9l4-6z"/>
+                  </svg>
+                </span>
+                <span class="trip-mode-name">Rapide</span>
+                <span class="trip-mode-desc">Priorité à la vitesse</span>
+              </button>
+
+              <button type="button" class="trip-mode-card trip-mode-card--eco"
+                      [class.active]="preferencesForm.get('tripMode')?.value === 'eco'"
+                      [attr.aria-pressed]="preferencesForm.get('tripMode')?.value === 'eco'"
+                      (click)="preferencesForm.patchValue({tripMode: 'eco'}); autoSavePreferences()">
+                <span class="trip-mode-check" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 7"/></svg>
+                </span>
+                <span class="trip-mode-icon trip-mode-icon--eco" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22c4-4 8-7.5 8-12a8 8 0 1 0-16 0c0 4.5 4 8 8 12z"/><path d="M12 10v4M12 8h.01"/>
+                  </svg>
+                </span>
+                <span class="trip-mode-name">Économique</span>
+                <span class="trip-mode-desc">Tarifs réduits</span>
+              </button>
+            </div>
+          </div>
+        </form>
+      </div> <!-- End of tab-pane preferences -->
+  </div> <!-- End of tab-content-container -->
+</div> <!-- End of profile-container -->
+
+<!-- COMPANY DOCUMENT VIEWER MODAL -->
+<div class="modal-overlay animate__animated animate__fadeIn" *ngIf="showCompanyDocModal" (click)="closeCompanyDocModal()">
+  <div class="modal-dialog-custom modal-center animate__animated animate__zoomIn" (click)="$event.stopPropagation()">
+    <div class="modal-header-custom border-0 pb-0">
+      <div class="d-flex align-items-center gap-3">
+        <div class="icon-box icon-blue sm"><span class="ion-md-document"></span></div>
+        <h5 class="mb-0 fw-bold">{{ selectedCompanyDoc?.name }}</h5>
+      </div>
+      <button class="btn-close-modal" (click)="closeCompanyDocModal()">
+        <span class="ion-md-close"></span>
+      </button>
+    </div>
+
+    <div class="modal-body-custom pt-4">
+      <div class="doc-viewer-card p-4 bg-light rounded-4 mb-4 text-center">
+        <div class="mb-3">
+          <i class="ion-md-document display-1 text-muted"></i>
+        </div>
+        <h6 class="fw-bold mb-1">{{ selectedCompanyDoc?.fileName }}</h6>
+        <span class="doc-status-badge" [ngClass]="selectedCompanyDoc?.status">
+          <span class="dot"></span>
+          {{ selectedCompanyDoc?.status === 'VERIFIED' ? 'Vérifié' : (selectedCompanyDoc?.status === 'PENDING' ? 'En attente' : 'Non ajouté') }}
+        </span>
+      </div>
+
+      <div class="doc-info-list g-3 row">
+        <div class="col-6 mb-3">
+          <label class="text-muted small d-block mb-1">Ajouté le</label>
+          <span class="fw-bold">{{ selectedCompanyDoc?.uploadedAt || 'N/A' }}</span>
+        </div>
+        <div class="col-6 mb-3" *ngIf="selectedCompanyDoc?.verifiedAt">
+          <label class="text-muted small d-block mb-1">Vérifié le</label>
+          <span class="fw-bold">{{ selectedCompanyDoc?.verifiedAt }}</span>
+        </div>
+        <div class="col-12" *ngIf="selectedCompanyDoc?.status === 'REJECTED'">
+          <label class="text-danger small d-block mb-1">Motif de refus</label>
+          <div class="p-3 bg-soft-danger text-danger rounded-3">
+            {{ selectedCompanyDoc?.rejectionReason || 'Document illisible ou non conforme.' }}
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-5 d-flex gap-2">
+        <button class="btn btn-light rounded-pill py-3 flex-grow-1 fw-bold" (click)="closeCompanyDocModal()">Fermer</button>
+        <button class="btn btn-primary rounded-pill py-3 flex-grow-1 fw-bold">Télécharger</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RECHARGE MODAL -->
+<div class="modal-overlay animate__animated animate__fadeIn" *ngIf="showRechargeModal">
+  <div class="modal-dialog-custom animate__animated animate__zoomIn">
+    <!-- Modal Header -->
+    <div class="modal-header-custom">
+      <h5 class="mb-0 fw-bold">Recharger mon solde</h5>
+      <button class="btn-close-modal" (click)="closeRechargeModal()">
+        <span class="ion-md-close"></span>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="modal-body-custom">
+      
+      <!-- STEP 1: Amount & Method -->
+      <div *ngIf="rechargeStep === 1">
+        <div class="form-group mb-4">
+          <label class="form-label small fw-bold">Montant à recharger (TND)</label>
+          <div class="amount-input-wrapper">
+            <input type="number" [(ngModel)]="rechargeAmount" class="amount-input" placeholder="0.00">
+            <span class="currency-tag">TND</span>
+          </div>
+        </div>
+
+        <label class="form-label small fw-bold">Choisir la méthode de paiement</label>
+        <div class="recharge-methods-grid mb-4">
+          <div class="method-card" [class.active]="rechargeMethod === 'card'" (click)="rechargeMethod = 'card'">
+            <span class="ion-md-card method-icon"></span>
+            <span class="method-name">Carte Bancaire</span>
+            <div class="check-badge" *ngIf="rechargeMethod === 'card'">
+              <span class="ion-md-checkmark"></span>
+            </div>
+          </div>
+          <div class="method-card" [class.active]="rechargeMethod === 'd17'" (click)="rechargeMethod = 'd17'">
+            <span class="ion-md-phone-portrait method-icon"></span>
+            <span class="method-name">D17 Poste</span>
+            <div class="check-badge" *ngIf="rechargeMethod === 'd17'">
+              <span class="ion-md-checkmark"></span>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-primary-mini w-100 py-3" (click)="rechargeStep = 2" [disabled]="!rechargeAmount || rechargeAmount <= 0">
+          Suivant
+        </button>
+      </div>
+
+      <!-- STEP 2: Details -->
+      <div *ngIf="rechargeStep === 2">
+        <div class="summary-box mb-4">
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted">Montant :</span>
+            <span class="fw-bold">{{ rechargeAmount }} TND</span>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span class="text-muted">Méthode :</span>
+            <span class="fw-bold">{{ rechargeMethod === 'card' ? 'Carte Bancaire' : 'D17' }}</span>
+          </div>
+        </div>
+
+        <!-- Card Form Placeholder -->
+        <div *ngIf="rechargeMethod === 'card'" class="animate__animated animate__fadeIn">
+          <div class="form-group mb-3">
+            <label class="form-label small">Numéro de carte</label>
+            <input type="text" class="form-control" placeholder="•••• •••• •••• ••••">
+          </div>
+          <div class="row">
+            <div class="col-6">
+              <label class="form-label small">Expiration</label>
+              <input type="text" class="form-control" placeholder="MM/YY">
+            </div>
+            <div class="col-6">
+              <label class="form-label small">CVV</label>
+              <input type="password" class="form-control" placeholder="•••">
+            </div>
+          </div>
+        </div>
+
+        <!-- D17 Form Placeholder -->
+        <div *ngIf="rechargeMethod === 'd17'" class="animate__animated animate__fadeIn">
+          <div class="form-group mb-3">
+            <label class="form-label small">Numéro D17</label>
+            <input type="text" class="form-control" placeholder="8 chiffres">
+          </div>
+          <p class="small text-muted">Vous recevrez une demande de confirmation sur votre application D17.</p>
+        </div>
+
+        <div class="mt-4 d-flex gap-2">
+          <button class="btn btn-light flex-grow-1" (click)="rechargeStep = 1">Retour</button>
+          <button class="btn-primary-mini flex-grow-2 py-2" (click)="confirmRecharge()" [disabled]="isProcessingRecharge">
+            <span *ngIf="isProcessingRecharge" class="spinner-border spinner-border-sm me-2"></span>
+            {{ isProcessingRecharge ? 'Traitement...' : 'Confirmer la recharge' }}
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

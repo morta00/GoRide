@@ -1,0 +1,174 @@
+<div class="notifications-page animate__animated animate__fadeIn">
+  <div class="page-header mb-4">
+    <h2 class="page-title">Notifications</h2>
+    <p class="page-subtitle text-muted">Suivez vos alertes importantes : demandes, messages, paiements et activité chauffeur.</p>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid mb-4">
+    <div class="stat-card" (click)="activeFilter = 'ALL'; applyFilters()">
+      <div class="stat-icon bg-blue-soft text-blue"><span class="ion-md-notifications"></span></div>
+      <div class="stat-info">
+        <span class="label">Total</span>
+        <h3 class="value">{{ summary.total }}</h3>
+      </div>
+    </div>
+    <div class="stat-card" (click)="activeFilter = 'UNREAD'; applyFilters()">
+      <div class="stat-icon bg-red-soft text-red"><span class="ion-md-mail-unread"></span></div>
+      <div class="stat-info">
+        <span class="label">Non lues</span>
+        <h3 class="value">{{ summary.unread }}</h3>
+      </div>
+    </div>
+    <div class="stat-card" (click)="activeFilter = 'IMPORTANT'; applyFilters()">
+      <div class="stat-icon bg-orange-soft text-orange"><span class="ion-md-alert"></span></div>
+      <div class="stat-info">
+        <span class="label">Importantes</span>
+        <h3 class="value">{{ summary.important }}</h3>
+      </div>
+    </div>
+    <div class="stat-card" (click)="activeFilter = 'TODAY'; applyFilters()">
+      <div class="stat-icon bg-green-soft text-green"><span class="ion-md-calendar"></span></div>
+      <div class="stat-info">
+        <span class="label">Aujourd'hui</span>
+        <h3 class="value">{{ summary.today }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters Card -->
+  <div class="content-card mb-4">
+    <div class="row g-3">
+      <div class="col-md-4">
+        <div class="search-box">
+          <span class="ion-md-search search-icon"></span>
+          <input type="text" [(ngModel)]="searchTerm" (input)="applyFilters()" class="form-control-custom" placeholder="Rechercher...">
+        </div>
+      </div>
+      <div class="col-md-3">
+        <select [(ngModel)]="typeFilter" (change)="applyFilters()" class="custom-select w-100">
+          <option value="ALL">Tous les types</option>
+          <option value="DEMANDES">Demandes</option>
+          <option value="MESSAGES">Messages</option>
+          <option value="PAIEMENTS">Paiements</option>
+          <option value="REVENUS">Revenus</option>
+          <option value="VEHICULE">Véhicule</option>
+          <option value="AVIS">Avis</option>
+          <option value="ENTREPRISES">Entreprises</option>
+          <option value="DOCUMENTS">Documents</option>
+          <option value="SYSTEME">Système</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <select [(ngModel)]="sortOrder" (change)="applyFilters()" class="custom-select w-100">
+          <option value="recent">Plus récentes</option>
+          <option value="older">Plus anciennes</option>
+          <option value="important">Importantes d'abord</option>
+          <option value="unread">Non lues d'abord</option>
+        </select>
+      </div>
+      <div class="col-md-2 d-flex gap-2">
+        <button class="btn btn-outline-primary btn-sm flex-grow-1" (click)="markAllRead()" title="Tout lire">
+          <span class="ion-md-done-all"></span>
+        </button>
+        <button class="btn btn-outline-danger btn-sm flex-grow-1" (click)="deleteRead()" title="Supprimer lus">
+          <span class="ion-md-trash"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notifications List -->
+  <div class="notifications-list">
+    <div *ngFor="let notif of filteredNotifications" 
+         class="notif-card animate__animated animate__fadeInUp"
+         [class.unread]="!notif.read">
+      
+      <div class="notif-icon-wrapper" [ngClass]="notif.type.toLowerCase()">
+        <span [class]="getIconClass(notif.type)"></span>
+      </div>
+      
+      <div class="notif-content">
+        <div class="d-flex justify-content-between align-items-start mb-1">
+          <h4 class="notif-title">{{ notif.title }}</h4>
+          <span class="notif-date">{{ notif.date | date:'dd MMM, HH:mm' }}</span>
+        </div>
+        <p class="notif-msg text-muted">{{ notif.message }}</p>
+        
+        <div class="notif-meta mt-2 d-flex gap-2">
+          <span class="badge-type" [ngClass]="getGeneralType(notif.type).toLowerCase()">
+            {{ getGeneralType(notif.type) }}
+          </span>
+          <span *ngIf="!notif.read" class="badge-status unread">Non lue</span>
+          <span *ngIf="notif.important" class="badge-status important">Prioritaire</span>
+        </div>
+      </div>
+
+      <div class="notif-actions">
+        <button type="button" class="btn-circle-action" (click)="openDetails(notif); $event.stopPropagation()" title="Détails">
+          <span class="ion-md-information-circle"></span>
+        </button>
+        <button type="button" class="btn-circle-action" (click)="notif.read ? markAsUnread(notif.id) : markAsRead(notif.id); $event.stopPropagation()" [title]="notif.read ? 'Non lu' : 'Lu'">
+          <span [class]="notif.read ? 'ion-md-mail-unread' : 'ion-md-mail'"></span>
+        </button>
+        <button type="button" class="btn-circle-action text-danger" (click)="deleteNotification(notif.id); $event.stopPropagation()" title="Supprimer">
+          <span class="ion-md-trash"></span>
+        </button>
+        <button type="button" class="btn-view-action" (click)="viewAction(notif, $event)">
+          Voir <span class="ion-md-open ms-1"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="filteredNotifications.length === 0" class="empty-state text-center py-5 card">
+      <div class="empty-icon mb-3">
+        <span class="ion-md-notifications-off"></span>
+      </div>
+      <h4>Aucune alerte</h4>
+      <p class="text-muted">Vous n'avez aucune notification pour le moment.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Détails -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-container-centered animate__animated animate__zoomIn" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="header-icon-main" [ngClass]="selectedNotification?.type?.toLowerCase()">
+        <span [class]="getIconClass(selectedNotification?.type || '')"></span>
+      </div>
+      <div class="header-info">
+        <h3 class="mb-0">{{ selectedNotification?.title }}</h3>
+        <span class="text-muted small">{{ selectedNotification?.date | date:'dd MMMM yyyy, HH:mm' }}</span>
+      </div>
+      <button class="close-btn" (click)="closeModal()">&times;</button>
+    </div>
+
+    <div class="modal-body p-4">
+      <div class="msg-box mb-4">
+        <p class="mb-0">{{ selectedNotification?.message }}</p>
+      </div>
+
+      <div class="details-grid">
+        <div class="detail-item">
+          <label>Type</label>
+          <span class="value">{{ getGeneralType(selectedNotification?.type || '') }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Importance</label>
+          <span class="value" [class.text-danger]="selectedNotification?.important">
+            {{ selectedNotification?.important ? 'Haute' : 'Normale' }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer p-3 d-flex justify-content-end gap-3">
+      <button class="btn-secondary-custom" (click)="closeModal()">Fermer</button>
+      <button class="btn-primary-custom" *ngIf="selectedNotification" (click)="viewAction(selectedNotification, $event)">
+        Ouvrir l'élément lié
+      </button>
+    </div>
+  </div>
+</div>

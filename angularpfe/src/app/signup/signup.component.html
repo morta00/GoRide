@@ -1,0 +1,248 @@
+<div class="split-signup-wrapper">
+  
+  <!-- Visual Side (Left) -->
+  <div class="signup-visual-side" [style.backgroundImage]="'url(' + currentVisualData.image + ')'" style="transition: background-image 0.6s ease-in-out;">
+    <div class="visual-overlay"></div>
+    <div class="visual-content">
+      <h1 class="visual-title">{{ currentVisualData.title }} <br><span>{{ currentVisualData.highlight }}</span></h1>
+      <p class="visual-subtitle mt-3">{{ currentVisualData.subtitle }}</p>
+      
+      <ul class="visual-features list-unstyled mt-4">
+        <li class="d-flex align-items-center mb-3" *ngFor="let feature of currentVisualData.features">
+          <div class="feature-icon-wrapper me-3">
+            <span class="ion-md-checkmark" style="color: #2563eb;"></span>
+          </div>
+          <span class="feature-text">{{ feature }}</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Form Side (Right) -->
+  <div class="signup-form-side">
+    <div class="wizard-container-premium">
+      
+      <!-- Back to Home -->
+      <div class="mb-4">
+        <a routerLink="/acceuil" class="back-home-link d-inline-flex align-items-center">
+          <span class="ion-ios-arrow-back" style="margin-right: 12px;"></span> Retour à l'accueil
+        </a>
+      </div>
+
+      <div class="form-logo-v mb-4 text-start">
+        <app-logo></app-logo>
+      </div>
+
+      <!-- STEPPER HORIZONTAL (CAPTURES) -->
+      <div class="stepper-horizontal-container">
+        <div class="stepper-line"></div>
+        <div class="stepper-horizontal">
+          <div class="step-wrapper">
+            <div class="step-item" [class.active]="currentStep === 1" [class.completed]="currentStep > 1"><span>1</span></div>
+            <div class="step-label" [class.active-label]="currentStep === 1">Infos</div>
+          </div>
+          <div class="step-wrapper">
+            <div class="step-item" [class.active]="currentStep === 2" [class.completed]="currentStep > 2"><span>2</span></div>
+            <div class="step-label" [class.active-label]="currentStep === 2">Profil</div>
+          </div>
+          <div class="step-wrapper">
+            <div class="step-item" [class.active]="currentStep === 3" [class.completed]="currentStep > 3"><span>3</span></div>
+            <div class="step-label" [class.active-label]="currentStep === 3">Contact</div>
+          </div>
+          <div class="step-wrapper">
+            <div class="step-item" [class.active]="currentStep === 4" [class.completed]="currentStep > 4"><span>4</span></div>
+            <div class="step-label" [class.active-label]="currentStep === 4">Sécurité</div>
+          </div>
+        </div>
+      </div>
+
+      <form [formGroup]="signupForm" (ngSubmit)="submit()" novalidate>
+        
+        <!-- STEP 1: Infos de base -->
+        <div *ngIf="currentStep === 1" class="step-content animate__animated animate__fadeInRight">
+          <h2 class="fw-bold mb-1" style="color: #1e293b; font-size: 1.8rem;">Créer un compte</h2>
+          <p class="text-muted small mb-5 pb-3">Étape 1/4 Vos informations de base</p>
+          
+          <div class="row g-4">
+            <div class="col-6">
+              <label class="form-label-custom">Prénom</label>
+              <div class="input-with-icon">
+                <span class="ion-ios-person input-icon"></span>
+                <input type="text" class="form-control custom-input" [class.is-invalid]="f['firstName'].invalid && (f['firstName'].dirty || f['firstName'].touched)" [class.is-valid]="f['firstName'].valid && (f['firstName'].dirty || f['firstName'].touched)" formControlName="firstName" placeholder="Prénom">
+                <span class="ion-md-checkmark-circle valid-check-icon" *ngIf="f['firstName'].valid && f['firstName'].dirty"></span>
+              </div>
+              <div class="invalid-feedback small mt-1" *ngIf="f['firstName'].invalid && (f['firstName'].dirty || f['firstName'].touched)">Le prénom est requis.</div>
+            </div>
+            <div class="col-6">
+              <label class="form-label-custom">Nom</label>
+              <div class="input-with-icon">
+                <span class="ion-ios-person input-icon"></span>
+                <input type="text" class="form-control custom-input" [class.is-invalid]="f['lastName'].invalid && (f['lastName'].dirty || f['lastName'].touched)" [class.is-valid]="f['lastName'].valid && (f['lastName'].dirty || f['lastName'].touched)" formControlName="lastName" placeholder="Nom">
+                <span class="ion-md-checkmark-circle valid-check-icon" *ngIf="f['lastName'].valid && f['lastName'].dirty"></span>
+              </div>
+              <div class="invalid-feedback small mt-1" *ngIf="f['lastName'].invalid && (f['lastName'].dirty || f['lastName'].touched)">Le nom est requis.</div>
+            </div>
+          </div>
+          <div class="mt-4 pt-2">
+            <label class="form-label-custom">Adresse e-mail</label>
+            <div class="input-with-icon">
+              <span class="ion-ios-mail input-icon"></span>
+              <input type="email" class="form-control custom-input" 
+                     [class.is-invalid]="f['email'].invalid && (f['email'].dirty || f['email'].touched)" 
+                     [class.is-valid]="f['email'].valid && (f['email'].dirty || f['email'].touched)" 
+                     formControlName="email" 
+                     placeholder="votre@email.com"
+                     (blur)="f['email'].setValue(f['email'].value?.trim()?.toLowerCase() ?? '')">
+              <span class="ion-md-checkmark-circle valid-check-icon" *ngIf="f['email'].valid && f['email'].dirty"></span>
+            </div>
+            <div class="invalid-feedback small mt-1 d-block" *ngIf="f['email'].invalid && (f['email'].dirty || f['email'].touched)">
+              <span *ngIf="f['email'].errors?.['required']">L'adresse email est requise.</span>
+              <span *ngIf="f['email'].errors?.['pattern']">Veuillez entrer une adresse e-mail valide (ex: nom@domaine.com).</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2: Choix du profil -->
+        <div *ngIf="currentStep === 2" class="step-content animate__animated animate__fadeInRight">
+          <h2 class="fw-bold mb-1" style="color: #1e293b; font-size: 1.6rem; text-transform: uppercase;">CHOISISSEZ VOTRE PROFIL</h2>
+          <p class="text-muted small mb-5 pb-3">Étape 2/4 Choisissez votre mode d'utilisation</p>
+          
+          <div class="role-list-container">
+            <div *ngFor="let role of roles" 
+                 class="role-row-card" 
+                 [class.active]="isRoleSelected(role.value)"
+                 (click)="toggleRole(role.value)">
+              <div class="role-row-icon" [style.color]="role.iconColor">
+                <span [ngClass]="role.icon"></span>
+              </div>
+              <div class="role-row-content">
+                <h6>{{ role.label }}</h6>
+                <p>{{ role.desc }}</p>
+              </div>
+              <div class="role-row-radio"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 3: Coordonnées -->
+        <div *ngIf="currentStep === 3" class="step-content animate__animated animate__fadeInRight">
+          <h2 class="fw-bold mb-1" style="color: #1e293b; font-size: 1.8rem;">Coordonnées</h2>
+          <p class="text-muted small mb-5 pb-3">Étape 3/4 Comment vous contacter</p>
+          
+          <div class="mb-4 pb-2">
+            <label class="form-label-custom">Numéro de téléphone</label>
+            <div class="input-with-icon phone-input-capture custom-input" 
+                 [class.border-danger]="f['phone'].invalid && (f['phone'].dirty || f['phone'].touched)" 
+                 [class.border-success]="f['phone'].valid && (f['phone'].dirty || f['phone'].touched)">
+              <span class="ion-ios-call input-icon" style="left: 15px; position: absolute;"></span>
+              <img src="https://flagcdn.com/w40/tn.png" class="country-flag-v" alt="Tunisie" style="margin-left: 25px;">
+              <input type="text" 
+                     style="border: none; background: transparent; width: 100%; outline: none; color: #1e293b;" 
+                     formControlName="phone" 
+                     (blur)="f['phone'].setValue(f['phone'].value?.replace(' ', '') ?? '')"
+                     placeholder="Ex: 98123456">
+              <span class="ion-md-checkmark-circle valid-check-icon" *ngIf="f['phone'].valid && f['phone'].dirty"></span>
+            </div>
+            <div class="text-danger small mt-1 d-block" *ngIf="f['phone'].invalid && (f['phone'].dirty || f['phone'].touched)">
+              <span *ngIf="f['phone'].errors?.['required']">Le numéro de téléphone est requis.</span>
+              <span *ngIf="f['phone'].errors?.['pattern']">Format invalide (8 chiffres ou +216...).</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 4: Sécurité -->
+        <div *ngIf="currentStep === 4" class="step-content animate__animated animate__fadeInRight">
+          <h2 class="fw-bold mb-1" style="color: #1e293b; font-size: 1.8rem;">Sécurité</h2>
+          <p class="text-muted small mb-5 pb-3">Étape 4/4 Sécurisez votre accès</p>
+          
+          <div class="mb-4 pb-2">
+            <label class="form-label-custom">Mot de passe</label>
+            <div class="input-with-icon">
+              <span class="ion-ios-lock input-icon"></span>
+              <input [type]="hidePassword ? 'password' : 'text'" 
+                     class="form-control custom-input pe-password" 
+                     [class.pe-password-valid]="f['password'].valid && f['password'].dirty"
+                     [class.is-invalid]="f['password'].invalid && (f['password'].dirty || f['password'].touched)" 
+                     [class.is-valid]="f['password'].valid && (f['password'].dirty || f['password'].touched)" 
+                     formControlName="password" 
+                     placeholder="Mot de passe">
+              <button type="button" class="password-toggle-icon" (click)="hidePassword = !hidePassword" [attr.aria-label]="hidePassword ? 'Afficher' : 'Masquer'">
+                <span [class]="hidePassword ? 'ion-ios-eye-off' : 'ion-ios-eye'"></span>
+              </button>
+              <span class="ion-md-checkmark-circle valid-check-icon" *ngIf="f['password'].valid && f['password'].dirty"></span>
+            </div>
+            <div class="invalid-feedback small mt-1" *ngIf="f['password'].errors?.['required'] && (f['password'].dirty || f['password'].touched)">Le mot de passe est requis.</div>
+            <div class="invalid-feedback small mt-1" *ngIf="f['password'].errors?.['minlength'] && (f['password'].dirty || f['password'].touched)">Le mot de passe doit faire au moins 8 caractères.</div>
+          </div>
+          <div class="mb-4">
+            <label class="form-label-custom">Confirmer mot de passe</label>
+            <div class="input-with-icon">
+              <span class="ion-ios-checkmark-circle-outline input-icon"></span>
+              <input [type]="hideConfirmPassword ? 'password' : 'text'" 
+                     class="form-control custom-input pe-password" 
+                     [class.pe-password-valid]="f['confirmPassword'].valid && !signupForm.errors?.['mismatch'] && f['confirmPassword'].dirty"
+                     [class.is-invalid]="(f['confirmPassword'].invalid || signupForm.errors?.['mismatch']) && (f['confirmPassword'].dirty || f['confirmPassword'].touched)" 
+                     [class.is-valid]="f['confirmPassword'].valid && !signupForm.errors?.['mismatch'] && (f['confirmPassword'].dirty || f['confirmPassword'].touched)" 
+                     formControlName="confirmPassword" 
+                     placeholder="Confirmer">
+              <button type="button" class="password-toggle-icon" (click)="hideConfirmPassword = !hideConfirmPassword" [attr.aria-label]="hideConfirmPassword ? 'Afficher' : 'Masquer'">
+                <span [class]="hideConfirmPassword ? 'ion-ios-eye-off' : 'ion-ios-eye'"></span>
+              </button>
+              <span class="ion-md-checkmark-circle valid-check-icon" *ngIf="f['confirmPassword'].valid && !signupForm.errors?.['mismatch'] && f['confirmPassword'].dirty"></span>
+            </div>
+            <div class="invalid-feedback small mt-1" *ngIf="f['confirmPassword'].errors?.['required'] && (f['confirmPassword'].dirty || f['confirmPassword'].touched)">Veuillez confirmer votre mot de passe.</div>
+            <div class="invalid-feedback small mt-1" *ngIf="signupForm.errors?.['mismatch'] && (f['confirmPassword'].dirty || f['confirmPassword'].touched)">Les mots de passe ne correspondent pas.</div>
+          </div>
+        </div>
+
+        <!-- Modern Error Alert -->
+        <div *ngIf="errorMessage" class="alert alert-danger d-flex align-items-center py-3 px-4 rounded-4 border-0 shadow-sm mb-4 animate__animated animate__shakeX" 
+             style="background-color: #fef2f2; color: #991b1b; border-left: 5px solid #ef4444 !important;">
+          <div class="d-flex align-items-center justify-content-center bg-white rounded-circle shadow-sm me-3" style="width: 32px; height: 32px; flex-shrink: 0;">
+            <span class="ion-ios-alert text-danger" style="font-size: 1.2rem;"></span>
+          </div>
+          <div class="small fw-bold" style="line-height: 1.4;">{{ errorMessage }}</div>
+        </div>
+
+        <div class="wizard-actions d-flex gap-3 mt-5">
+          <button *ngIf="currentStep > 1" type="button" class="btn btn-outline-light-custom flex-grow-1" (click)="prevStep()">
+            Retour
+          </button>
+          <button *ngIf="currentStep < totalSteps" type="button" class="btn btn-primary-custom flex-grow-1" (click)="nextStep()" [disabled]="!canGoNext()">
+            Suivant
+          </button>
+          <button *ngIf="currentStep === totalSteps" type="submit" class="btn btn-primary-custom flex-grow-1" [disabled]="isSubmitting || signupForm.invalid">
+            <span *ngIf="!isSubmitting">Finaliser</span>
+            <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm"></span>
+          </button>
+        </div>
+
+        <div class="text-center mt-4">
+           <p class="text-muted small mb-4">Déjà inscrit ? <a routerLink="/login" style="color: #2563eb; font-weight: 700; text-decoration: none;">Se connecter</a></p>
+           
+           <div class="security-notice d-flex flex-column align-items-center justify-content-center" style="opacity: 0.85; padding-top: 15px; border-top: 1px solid #f1f5f9;">
+              <div class="d-flex align-items-center mb-1">
+                 <span class="ion-ios-lock" style="color: #64748b; font-size: 1.2rem; margin-right: 8px;"></span>
+                 <span style="font-weight: 700; font-size: 0.85rem; color: #475569;">Vos données sont sécurisées</span>
+              </div>
+              <p class="mb-0" style="font-size: 0.75rem; color: #94a3b8; max-width: 90%; text-align: center;">
+                 Conformément au RGPD, vos informations personnelles sont chiffrées et restent strictement confidentielles.
+              </p>
+           </div>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<!-- Success Toast -->
+<div *ngIf="showSuccess" class="premium-toast success">
+  <div class="premium-toast-icon">
+    <span class="ion-ios-checkmark-circle"></span>
+  </div>
+  <div class="premium-toast-content">
+    <span class="premium-toast-title">Inscription réussie !</span>
+    <p class="premium-toast-message">Bienvenue chez GoRide. Redirection en cours...</p>
+  </div>
+</div>

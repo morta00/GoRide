@@ -1,0 +1,146 @@
+<div class="admin-services animate__animated animate__fadeIn" (click)="closeDropdowns()">
+  
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold text-dark mb-1">Demandes & Services</h2>
+      <p class="text-muted">Suivez toutes les demandes, courses, locations et missions réalisées sur GoRide.</p>
+    </div>
+    <div class="search-wrapper">
+      <div class="input-group shadow-sm border-0 rounded-pill bg-white overflow-hidden">
+        <span class="input-group-text bg-white border-0 ps-3">
+          <span class="ion-ios-search text-primary"></span>
+        </span>
+        <input type="text" class="form-control border-0 py-2 shadow-none" 
+               placeholder="Rechercher un service, client..." 
+               [(ngModel)]="searchTerm" (ngModelChange)="onSearch()">
+      </div>
+    </div>
+  </div>
+
+  <!-- Content Card -->
+  <div class="content-card shadow-sm bg-white rounded-4 p-4">
+    <div class="table-responsive" style="overflow: visible !important; min-height: 350px;">
+      <table class="table table-hover align-middle">
+        <thead>
+          <tr>
+            <th class="text-muted small text-uppercase">Service</th>
+            <th class="text-muted small text-uppercase">Demandeur / Prestataire</th>
+            <th class="text-muted small text-uppercase text-center">Montant</th>
+            <th class="text-muted small text-uppercase text-center">Statut</th>
+            <th class="text-muted small text-uppercase text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of filteredServices">
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <span class="fw-bold d-block text-dark small">{{ getServiceLabel(s.serviceType) }}</span>
+                <span class="badge bg-danger rounded-circle p-1" *ngIf="s.hasComplaint">
+                  <span class="ion-ios-alert tiny text-white"></span>
+                </span>
+              </div>
+              <span class="tiny text-muted d-block">{{ s.id }}</span>
+            </td>
+            <td>
+              <span class="fw-bold small d-block">{{ s.requesterName }}</span>
+              <span class="tiny text-muted d-block">{{ s.providerName || 'À attribuer' }}</span>
+            </td>
+            <td class="text-center fw-bold text-dark">{{ s.amount }} DT</td>
+            <td class="text-center">
+              <span class="badge rounded-pill px-3 py-2" [ngClass]="getStatusClass(s.serviceStatus)">
+                {{ getStatusLabel(s.serviceStatus) }}
+              </span>
+            </td>
+            <td class="text-end">
+              <div class="d-flex justify-content-end gap-2" style="position: relative;">
+                <button class="btn btn-sm btn-primary rounded-pill px-3 fw-bold" (click)="openServiceDetails(s)">Détails</button>
+                
+                <div class="dropdown-wrapper">
+                  <button class="btn btn-sm btn-light border rounded-pill px-2" (click)="toggleDropdown(s.id, $event)">
+                    <span class="ion-ios-more"></span>
+                  </button>
+                  
+                  <div class="custom-dropdown shadow-lg rounded-4 p-2 bg-white animate__animated animate__fadeIn" 
+                       *ngIf="activeDropdownId === s.id"
+                       (click)="$event.stopPropagation()"
+                       style="position: absolute; right: 0; top: 35px; z-index: 9999; min-width: 180px; border: 1px solid #eee;">
+                    <div class="p-2 rounded-3 small fw-bold pointer" style="cursor: pointer;" *ngIf="s.serviceStatus === 'IN_PROGRESS'" (click)="openTracking(s)">Suivre en direct</div>
+                    <div class="p-2 rounded-3 small fw-bold pointer" style="cursor: pointer;" (click)="goToPayments(s.id)">Voir paiement</div>
+                    <div class="p-2 rounded-3 small fw-bold pointer" style="cursor: pointer;" *ngIf="s.serviceType.includes('COMPANY')" (click)="goToInvoice(s.id)">Voir facture</div>
+                    <div class="p-2 rounded-3 small fw-bold pointer text-danger" style="cursor: pointer;" *ngIf="s.hasComplaint" (click)="goToComplaint(s.id)">Voir réclamation</div>
+                    <div class="dropdown-divider my-1"></div>
+                    <div class="p-2 rounded-3 small fw-bold pointer" style="cursor: pointer;" (click)="goToSupport(s.id)">Support technique</div>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Details Modal -->
+<div class="modal-overlay" *ngIf="showDetailsModal" (click)="closeServiceDetails()">
+  <div class="modal-content-wrapper shadow-lg bg-white" style="max-width: 650px; z-index: 10000;" (click)="$event.stopPropagation()">
+    <div class="p-4" *ngIf="selectedService">
+      <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+        <h5 class="fw-bold text-dark mb-0">{{ getServiceTitle(selectedService.serviceType) }}</h5>
+        <button class="btn btn-light rounded-circle" (click)="closeServiceDetails()">X</button>
+      </div>
+      
+      <div class="modal-body mb-4" style="color: #333 !important;">
+        <div class="row g-3">
+          <div class="col-md-6 border-bottom pb-2">
+            <span class="text-muted small d-block">ID Service</span>
+            <span class="fw-bold">{{ selectedService.id || 'Non renseigné' }}</span>
+          </div>
+          <div class="col-md-6 border-bottom pb-2">
+            <span class="text-muted small d-block">Type</span>
+            <span class="fw-bold">{{ getServiceLabel(selectedService.serviceType) }}</span>
+          </div>
+          <div class="col-md-6 border-bottom pb-2">
+            <span class="text-muted small d-block">Demandeur</span>
+            <span class="fw-bold">{{ selectedService.requesterName || 'Non renseigné' }}</span>
+          </div>
+          <div class="col-md-6 border-bottom pb-2">
+            <span class="text-muted small d-block">Prestataire</span>
+            <span class="fw-bold text-primary">{{ selectedService.providerName || 'À attribuer' }}</span>
+          </div>
+          <div class="col-md-6 border-bottom pb-2">
+            <span class="text-muted small d-block">Véhicule</span>
+            <span class="fw-bold">{{ selectedService.vehicleName || 'Non renseigné' }}</span>
+          </div>
+          <div class="col-md-6 border-bottom pb-2">
+            <span class="text-muted small d-block">Montant</span>
+            <span class="fw-bold text-success">{{ selectedService.amount || 0 }} DT</span>
+          </div>
+          <div class="col-md-12 border-bottom pb-2">
+            <span class="text-muted small d-block">Trajet / Ville</span>
+            <span class="fw-bold" *ngIf="selectedService.departure">{{ selectedService.departure }} -> {{ selectedService.destination }}</span>
+            <span class="fw-bold" *ngIf="!selectedService.departure">{{ selectedService.city || 'Non renseigné' }}</span>
+          </div>
+          <div class="col-md-6 border-bottom pb-2">
+            <span class="text-muted small d-block">Statut</span>
+            <span class="fw-bold text-primary">{{ getStatusLabel(selectedService.serviceStatus) }}</span>
+          </div>
+          <div class="col-md-6 border-bottom pb-2">
+            <span class="text-muted small d-block">Priorité</span>
+            <span class="fw-bold">{{ selectedService.priority || 'Normale' }}</span>
+          </div>
+          <div class="col-md-12 border-bottom pb-2">
+            <span class="text-muted small d-block">Créé le</span>
+            <span class="fw-bold small">{{ selectedService.createdAt || 'Non renseigné' }}</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="modal-footer d-flex gap-2 pt-3 border-top mt-3">
+        <button class="btn btn-light fw-bold flex-grow-1 rounded-pill" (click)="closeServiceDetails()">Fermer</button>
+        <button class="btn btn-primary fw-bold flex-grow-1 rounded-pill" (click)="goToSupport(selectedService.id)">Support</button>
+        <button class="btn btn-outline-primary fw-bold flex-grow-1 rounded-pill" *ngIf="selectedService.paymentStatus" (click)="goToPayments(selectedService.id)">Paiement</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,392 @@
+<div class="request-service-page p-4 animate__animated animate__fadeIn">
+  <!-- Header -->
+  <header class="mb-5 d-flex justify-content-between align-items-center">
+    <div>
+      <h1 class="fw-bold text-dark">Demander un service</h1>
+      <p class="text-muted">Choisissez le type de service dont votre entreprise a besoin.</p>
+    </div>
+    <div *ngIf="successMessage" class="alert alert-success rounded-pill px-4 animate__animated animate__bounceIn">
+      <i class="ion-md-checkmark-circle me-2"></i> {{ successMessage }}
+      <button class="btn btn-sm btn-link text-success fw-bold text-decoration-none ms-2" [routerLink]="['/company/requests']">Voir mes demandes</button>
+    </div>
+  </header>
+
+  <!-- 3 Main Cards -->
+  <div class="row g-4 mb-5" *ngIf="activeSection === 'NONE'">
+    <!-- A. Louer des véhicules -->
+    <div class="col-md-4">
+      <div class="service-card h-100 shadow-sm border-0 rounded-4 p-4 text-center clickable" (click)="goToVehicleCatalog()">
+        <div class="icon-circle bg-soft-primary text-primary mb-4 mx-auto">
+          <i class="ion-md-car" style="font-size: 40px;"></i>
+        </div>
+        <h4 class="fw-bold mb-3">Louer des véhicules</h4>
+        <p class="text-muted small mb-4">
+          Parcourez les véhicules proposés par les propriétaires et envoyez une demande selon vos besoins.
+        </p>
+        <button class="btn btn-primary w-100 rounded-pill py-2 fw-bold">Découvrir</button>
+      </div>
+    </div>
+
+    <!-- B. Chauffeurs avec voiture -->
+    <div class="col-md-4">
+      <div class="service-card h-100 shadow-sm border-0 rounded-4 p-4 text-center clickable" (click)="setSection('DRIVERS')">
+        <div class="icon-circle bg-soft-success text-success mb-4 mx-auto">
+          <i class="ion-md-person" style="font-size: 40px;"></i>
+        </div>
+        <h4 class="fw-bold mb-3">Chauffeurs avec voiture</h4>
+        <p class="text-muted small mb-4">
+          Réservez des chauffeurs professionnels avec véhicule pour vos missions d’entreprise.
+        </p>
+        <button class="btn btn-success w-100 rounded-pill py-2 fw-bold text-white">Réserver</button>
+      </div>
+    </div>
+
+    <!-- C. Demande personnalisée -->
+    <div class="col-md-4">
+      <div class="service-card h-100 shadow-sm border-0 rounded-4 p-4 text-center clickable" (click)="setSection('CUSTOM')">
+        <div class="icon-circle bg-soft-info text-info mb-4 mx-auto">
+          <i class="ion-md-options" style="font-size: 40px;"></i>
+        </div>
+        <h4 class="fw-bold mb-3">Demande personnalisée</h4>
+        <p class="text-muted small mb-4">
+          Décrivez votre besoin : nombre de véhicules, durée, ville, budget et type de service.
+        </p>
+        <button class="btn btn-info w-100 rounded-pill py-2 fw-bold text-white">Envoyer ma demande</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION: VEHICLES -->
+  <div *ngIf="activeSection === 'VEHICLES'" class="animate__animated animate__fadeInUp">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <button class="btn btn-outline-dark rounded-pill px-3" (click)="setSection('NONE')">
+        <i class="ion-md-arrow-back me-2"></i> Retour
+      </button>
+      <div class="search-wrapper">
+        <input type="text" [(ngModel)]="vehicleSearch" class="form-control rounded-pill px-4" placeholder="Rechercher un véhicule, ville...">
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-4 col-md-6" *ngFor="let vehicle of filteredVehicles">
+        <div class="card vehicle-card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+          <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+              <div>
+                <h5 class="fw-bold mb-0">{{ vehicle.vehicleName }}</h5>
+                <span class="badge bg-light text-muted rounded-pill">{{ vehicle.category }}</span>
+              </div>
+              <div class="text-end">
+                <span class="text-primary fw-bold d-block">{{ vehicle.pricePerDay }} DT <small class="text-muted">/ jour</small></span>
+                <span class="text-warning small"><i class="ion-md-star me-1"></i>{{ vehicle.rating }}</span>
+              </div>
+            </div>
+            <div class="mb-4">
+              <p class="small text-muted mb-1"><i class="ion-md-business me-2"></i>{{ vehicle.ownerName }}</p>
+              <p class="small text-muted mb-1"><i class="ion-md-pin me-2"></i>{{ vehicle.city }}</p>
+              <p class="small text-success mb-0"><i class="ion-md-checkbox-outline me-2"></i>{{ vehicle.availableQuantity }} disponibles</p>
+            </div>
+            <div class="d-flex flex-wrap gap-2 mb-4">
+              <span class="feature-tag" *ngFor="let feat of vehicle.features">{{ feat }}</span>
+            </div>
+            <div class="row g-2">
+              <div class="col-6">
+                <button class="btn btn-outline-primary w-100 rounded-pill" (click)="openDetails(vehicle, 'VEHICLE')">Détails</button>
+              </div>
+              <div class="col-6">
+                <button class="btn btn-primary w-100 rounded-pill" (click)="openRequestForm(vehicle, 'VEHICLE')">Demander</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION: DRIVERS -->
+  <div *ngIf="activeSection === 'DRIVERS'" class="animate__animated animate__fadeInUp">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <button class="btn btn-outline-dark rounded-pill px-3" (click)="setSection('NONE')">
+        <i class="ion-md-arrow-back me-2"></i> Retour
+      </button>
+      <div class="search-wrapper">
+        <input type="text" [(ngModel)]="driverSearch" class="form-control rounded-pill px-4" placeholder="Rechercher un chauffeur, service...">
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-4 col-md-6" *ngFor="let driver of filteredDrivers">
+        <div class="card driver-card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+          <div class="card-body p-4">
+            <div class="d-flex gap-3 align-items-center mb-4">
+              <div class="avatar-wrapper flex-shrink-0">
+                <div class="avatar-placeholder rounded-circle bg-soft-success text-success fw-bold d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; font-size: 20px;">
+                  {{ driver.driverName[0] }}
+                </div>
+              </div>
+              <div>
+                <h5 class="fw-bold mb-0">{{ driver.driverName }}</h5>
+                <span class="text-muted small">{{ driver.vehicleName }} • {{ driver.vehicleType }}</span>
+              </div>
+            </div>
+            <div class="mb-4">
+              <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted small"><i class="ion-md-pin me-2"></i>{{ driver.city }}</span>
+                <span class="text-warning small"><i class="ion-md-star me-1"></i>{{ driver.rating }}</span>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span class="text-muted small"><i class="ion-md-calendar me-2"></i>{{ driver.availability }}</span>
+                <span class="text-primary fw-bold">{{ driver.pricePerDay }} DT <small class="text-muted">/ j</small></span>
+              </div>
+            </div>
+            <div class="d-flex flex-wrap gap-2 mb-4">
+              <span class="feature-tag bg-soft-success text-success" *ngFor="let s of driver.services">{{ s }}</span>
+            </div>
+            <div class="row g-2">
+              <div class="col-6">
+                <button class="btn btn-outline-success w-100 rounded-pill" (click)="openDetails(driver, 'DRIVER')">Détails</button>
+              </div>
+              <div class="col-6">
+                <button class="btn btn-success w-100 text-white rounded-pill" (click)="openRequestForm(driver, 'DRIVER')">Réserver</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION: CUSTOM REQUEST -->
+  <div *ngIf="activeSection === 'CUSTOM'" class="animate__animated animate__fadeInUp">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 p-5">
+          <div class="d-flex align-items-center mb-4">
+            <button class="btn btn-outline-dark rounded-circle me-4" (click)="setSection('NONE')" style="width: 40px; height: 40px; padding: 0;">
+              <i class="ion-md-arrow-back"></i>
+            </button>
+            <h3 class="fw-bold mb-0">Demande personnalisée</h3>
+          </div>
+          
+          <form (ngSubmit)="submitCustomRequest()" novalidate>
+            <div class="row g-4">
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Type de besoin</label>
+                <select class="form-select rounded-pill px-3" [ngClass]="{'is-invalid border-danger': customErrors.needType}" [(ngModel)]="customRequest.needType" name="needType">
+                  <option value="Véhicules seulement">Véhicules seulement</option>
+                  <option value="Chauffeurs avec voiture">Chauffeurs avec voiture</option>
+                  <option value="Service mixte">Service mixte</option>
+                </select>
+                <div class="text-danger small mt-1" *ngIf="customErrors.needType">{{ customErrors.needType }}</div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Ville</label>
+                <input type="text" class="form-control rounded-pill px-3" [ngClass]="{'is-invalid border-danger': customErrors.city}" [(ngModel)]="customRequest.city" name="city" placeholder="Ex: Tunis, Lac 2">
+                <div class="text-danger small mt-1" *ngIf="customErrors.city">{{ customErrors.city }}</div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Nombre de véhicules</label>
+                <input type="number" class="form-control rounded-pill px-3" [(ngModel)]="customRequest.vehiclesCount" name="vehiclesCount" min="0">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Nombre de chauffeurs</label>
+                <input type="number" class="form-control rounded-pill px-3" [(ngModel)]="customRequest.driversCount" name="driversCount" min="0">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Date début</label>
+                <input type="date" class="form-control rounded-pill px-3" [ngClass]="{'is-invalid border-danger': customErrors.startDate}" [(ngModel)]="customRequest.startDate" name="startDate">
+                <div class="text-danger small mt-1" *ngIf="customErrors.startDate">{{ customErrors.startDate }}</div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Date fin</label>
+                <input type="date" class="form-control rounded-pill px-3" [ngClass]="{'is-invalid border-danger': customErrors.endDate}" [(ngModel)]="customRequest.endDate" name="endDate">
+                <div class="text-danger small mt-1" *ngIf="customErrors.endDate">{{ customErrors.endDate }}</div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Budget estimé (DT)</label>
+                <input type="number" class="form-control rounded-pill px-3" [(ngModel)]="customRequest.budget" name="budget">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Personne de contact</label>
+                <input type="text" class="form-control rounded-pill px-3" [(ngModel)]="customRequest.contactPerson" name="contactPerson">
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-bold">Description du besoin</label>
+                <textarea class="form-control rounded-4 px-3 py-3" [ngClass]="{'is-invalid border-danger': customErrors.description}" [(ngModel)]="customRequest.description" name="description" rows="4" placeholder="Détaillez votre demande pour nous aider à mieux vous répondre..."></textarea>
+                <div class="text-danger small mt-1" *ngIf="customErrors.description">{{ customErrors.description }}</div>
+              </div>
+              <div class="col-12 text-center mt-5">
+                <button type="submit" class="btn btn-info text-white rounded-pill px-5 py-3 fw-bold shadow-sm">Envoyer ma demande personnalisée</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODALS -->
+  <!-- Details Modal -->
+  <div class="modal-overlay" *ngIf="showDetailsModal" (click)="closeModals()">
+    <div class="modal-card-premium animate__animated animate__zoomIn" (click)="$event.stopPropagation()">
+      <div class="modal-header-p p-4 border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0">Informations détaillées</h5>
+        <button class="btn-close-custom" (click)="closeModals()">&times;</button>
+      </div>
+      <div class="modal-body p-4">
+        <div *ngIf="selectedVehicle" class="row g-3">
+          <div class="col-12 text-center mb-3">
+            <i class="ion-md-car text-primary" style="font-size: 60px;"></i>
+            <h4 class="fw-bold mt-2">{{ selectedVehicle.vehicleName }}</h4>
+            <span class="badge bg-soft-primary text-primary rounded-pill">{{ selectedVehicle.category }}</span>
+          </div>
+          <div class="col-6">
+            <label class="text-muted small d-block">PROPRIÉTAIRE</label>
+            <span class="fw-bold">{{ selectedVehicle.ownerName }}</span>
+          </div>
+          <div class="col-6">
+            <label class="text-muted small d-block">VILLE</label>
+            <span class="fw-bold">{{ selectedVehicle.city }}</span>
+          </div>
+          <div class="col-6">
+            <label class="text-muted small d-block">PRIX / JOUR</label>
+            <span class="fw-bold text-primary">{{ selectedVehicle.pricePerDay }} DT</span>
+          </div>
+          <div class="col-6">
+            <label class="text-muted small d-block">STOCK</label>
+            <span class="fw-bold text-success">{{ selectedVehicle.availableQuantity }} véhicules</span>
+          </div>
+          <div class="col-12 mt-4">
+            <label class="text-muted small d-block mb-2">ÉQUIPEMENTS & SERVICES</label>
+            <div class="d-flex flex-wrap gap-2">
+              <span class="feature-tag" *ngFor="let feat of selectedVehicle.features">{{ feat }}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div *ngIf="selectedDriver" class="row g-3">
+          <div class="col-12 text-center mb-3">
+            <div class="avatar-placeholder rounded-circle bg-soft-success text-success fw-bold d-flex align-items-center justify-content-center mx-auto" style="width: 80px; height: 80px; font-size: 30px;">
+              {{ selectedDriver.driverName[0] }}
+            </div>
+            <h4 class="fw-bold mt-3">{{ selectedDriver.driverName }}</h4>
+            <span class="text-muted">{{ selectedDriver.vehicleName }}</span>
+          </div>
+          <div class="col-6">
+            <label class="text-muted small d-block">XP</label>
+            <span class="fw-bold">{{ selectedDriver.tripsCount }} courses</span>
+          </div>
+          <div class="col-6">
+            <label class="text-muted small d-block">NOTE</label>
+            <span class="fw-bold text-warning">{{ selectedDriver.rating }} / 5</span>
+          </div>
+          <div class="col-12 mt-3">
+            <label class="text-muted small d-block mb-2">SERVICES PROPOSÉS</label>
+            <div class="d-flex flex-wrap gap-2">
+              <span class="feature-tag bg-soft-success text-success" *ngFor="let s of selectedDriver.services">{{ s }}</span>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-primary w-100 mt-4 py-3 rounded-pill fw-bold shadow" (click)="closeModals()">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Request Form Modal -->
+  <div class="modal-overlay" *ngIf="showRequestModal" (click)="closeModals()">
+    <div class="modal-card-premium animate__animated animate__fadeInUp" (click)="$event.stopPropagation()">
+      <div class="modal-header-p p-4 border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0">Nouvelle demande</h5>
+        <button class="btn-close-custom" (click)="closeModals()">&times;</button>
+      </div>
+      <div class="modal-body p-4">
+        <!-- Vehicle Form -->
+        <form *ngIf="selectedVehicle" (ngSubmit)="submitVehicleRequest()" novalidate>
+          <div class="row g-3">
+            <div class="col-12 mb-3">
+              <h6 class="fw-bold text-primary">Location : {{ selectedVehicle.vehicleName }}</h6>
+            </div>
+            <div class="col-6">
+              <label class="form-label small fw-bold">Quantité</label>
+              <input type="number" class="form-control rounded-pill px-3" [ngClass]="{'is-invalid border-danger': vehicleErrors.quantity}" [(ngModel)]="vehicleRequest.quantity" name="quantity" min="1" [max]="selectedVehicle.availableQuantity">
+              <div class="text-danger small mt-1" *ngIf="vehicleErrors.quantity">{{ vehicleErrors.quantity }}</div>
+            </div>
+            <div class="col-6">
+              <label class="form-label small fw-bold">Ville</label>
+              <input type="text" class="form-control rounded-pill px-3" [ngClass]="{'is-invalid border-danger': vehicleErrors.city}" [(ngModel)]="vehicleRequest.city" name="city">
+              <div class="text-danger small mt-1" *ngIf="vehicleErrors.city">{{ vehicleErrors.city }}</div>
+            </div>
+            <div class="col-6">
+              <label class="form-label small fw-bold">Date début</label>
+              <input type="date" class="form-control rounded-pill px-3" [ngClass]="{'is-invalid border-danger': vehicleErrors.startDate}" [(ngModel)]="vehicleRequest.startDate" name="startDate">
+              <div class="text-danger small mt-1" *ngIf="vehicleErrors.startDate">{{ vehicleErrors.startDate }}</div>
+            </div>
+            <div class="col-6">
+              <label class="form-label small fw-bold">Date fin</label>
+              <input type="date" class="form-control rounded-pill px-3" [ngClass]="{'is-invalid border-danger': vehicleErrors.endDate}" [(ngModel)]="vehicleRequest.endDate" name="endDate">
+              <div class="text-danger small mt-1" *ngIf="vehicleErrors.endDate">{{ vehicleErrors.endDate }}</div>
+            </div>
+            <div class="col-12">
+              <label class="form-label small fw-bold">Budget souhaité (Optionnel)</label>
+              <input type="number" class="form-control rounded-pill px-3" [(ngModel)]="vehicleRequest.budget" name="budget">
+            </div>
+            <div class="col-12">
+              <label class="form-label small fw-bold">Commentaires</label>
+              <textarea class="form-control rounded-4 px-3" [(ngModel)]="vehicleRequest.comment" name="comment" rows="2"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 mt-4 py-3 rounded-pill fw-bold shadow">Confirmer la demande</button>
+          </div>
+        </form>
+
+        <!-- Driver Form -->
+        <form *ngIf="selectedDriver" (ngSubmit)="submitDriverRequest()" novalidate>
+          <div class="row g-3">
+            <div class="col-12 mb-3">
+              <h6 class="fw-bold text-success">Réservation : {{ selectedDriver.driverName }}</h6>
+            </div>
+            <div class="col-12">
+              <label class="form-label small fw-bold">Type de mission</label>
+              <select class="form-select rounded-pill px-3" [ngClass]="{'is-invalid border-danger': driverErrors.missionType}" [(ngModel)]="driverRequest.missionType" name="missionType">
+                <option value="Transport employés">Transport employés</option>
+                <option value="Missions VIP">Missions VIP</option>
+                <option value="Aéroport">Aéroport</option>
+                <option value="Déplacement pro">Déplacement professionnel</option>
+              </select>
+              <div class="text-danger small mt-1" *ngIf="driverErrors.missionType">{{ driverErrors.missionType }}</div>
+            </div>
+            <div class="col-6">
+              <label class="form-label small fw-bold">Ville</label>
+              <input type="text" class="form-control rounded-pill px-3" [ngClass]="{'is-invalid border-danger': driverErrors.city}" [(ngModel)]="driverRequest.city" name="city">
+              <div class="text-danger small mt-1" *ngIf="driverErrors.city">{{ driverErrors.city }}</div>
+            </div>
+            <div class="col-6">
+              <label class="form-label small fw-bold">Heure début</label>
+              <input type="time" class="form-control rounded-pill px-3" [ngClass]="{'is-invalid border-danger': driverErrors.startTime}" [(ngModel)]="driverRequest.startTime" name="startTime">
+              <div class="text-danger small mt-1" *ngIf="driverErrors.startTime">{{ driverErrors.startTime }}</div>
+            </div>
+            <div class="col-6">
+              <label class="form-label small fw-bold">Date début</label>
+              <input type="date" class="form-control rounded-pill px-3" [ngClass]="{'is-invalid border-danger': driverErrors.startDate}" [(ngModel)]="driverRequest.startDate" name="startDate">
+              <div class="text-danger small mt-1" *ngIf="driverErrors.startDate">{{ driverErrors.startDate }}</div>
+            </div>
+            <div class="col-6">
+              <label class="form-label small fw-bold">Date fin</label>
+              <input type="date" class="form-control rounded-pill px-3" [ngClass]="{'is-invalid border-danger': driverErrors.endDate}" [(ngModel)]="driverRequest.endDate" name="endDate">
+              <div class="text-danger small mt-1" *ngIf="driverErrors.endDate">{{ driverErrors.endDate }}</div>
+            </div>
+            <div class="col-6">
+              <label class="form-label small fw-bold">Nombre de passagers</label>
+              <input type="number" class="form-control rounded-pill px-3" [ngClass]="{'is-invalid border-danger': driverErrors.passengers}" [(ngModel)]="driverRequest.passengers" name="passengers" min="1">
+              <div class="text-danger small mt-1" *ngIf="driverErrors.passengers">{{ driverErrors.passengers }}</div>
+            </div>
+            <div class="col-6">
+              <label class="form-label small fw-bold">Budget max (DT)</label>
+              <input type="number" class="form-control rounded-pill px-3" [(ngModel)]="driverRequest.budget" name="budget">
+            </div>
+            <button type="submit" class="btn btn-success text-white w-100 mt-4 py-3 rounded-pill fw-bold shadow">Confirmer la réservation</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

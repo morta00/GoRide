@@ -1,0 +1,86 @@
+<aside class="sidebar shadow-sm">
+  <div class="sidebar-brand">
+    <app-logo [roleBadge]="'ENTREPRISE'" [badgeBgColor]="'rgba(79, 70, 229, 0.08)'" [badgeTextColor]="'#4f46e5'"></app-logo>
+  </div>
+
+  <nav class="sidebar-nav">
+    <!-- MENU PRINCIPAL -->
+    <div class="nav-section">
+      <p class="section-title">Menu Principal</p>
+      <a routerLink="/company/dashboard" routerLinkActive="active" class="nav-item">
+        <span class="ion-md-apps icon"></span>
+        <span>Tableau de bord</span>
+      </a>
+      <a routerLink="/company/request-service" routerLinkActive="active" class="nav-item">
+        <span class="ion-md-add-circle icon"></span>
+        <span>Demander un service</span>
+      </a>
+      <a routerLink="/company/vehicles-catalog" routerLinkActive="active" class="nav-item">
+        <span class="ion-md-car icon"></span>
+        <span>Louer un véhicule</span>
+      </a>
+      <a routerLink="/company/requests" routerLinkActive="active" class="nav-item">
+        <span class="ion-md-send icon"></span>
+        <span>Demandes en cours</span>
+        <span class="badge bg-warning ms-auto" *ngIf="pendingRequestsCount > 0">{{ pendingRequestsCount }}</span>
+      </a>
+    </div>
+
+    <!-- MES ACTIVITÉS -->
+    <div class="nav-section">
+      <p class="section-title">Mes Activités</p>
+      <a routerLink="/company/history" routerLinkActive="active" class="nav-item">
+        <span class="ion-md-time icon"></span>
+        <span>Historique</span>
+      </a>
+      <a routerLink="/company/reviews" routerLinkActive="active" class="nav-item">
+        <span class="ion-md-star icon"></span>
+        <span>Avis à laisser</span>
+      </a>
+    </div>
+
+    <!-- COMMUNICATION -->
+    <div class="nav-section">
+      <p class="section-title">Communication</p>
+      <a routerLink="/company/conversations" routerLinkActive="active" class="nav-item">
+        <span class="ion-md-chatbubbles icon"></span>
+        <span>Conversations</span>
+        <span class="badge bg-primary ms-auto" *ngIf="conversationsCount > 0">{{ conversationsCount }}</span>
+      </a>
+      <a routerLink="/company/notifications" routerLinkActive="active" class="nav-item">
+        <span class="ion-md-notifications icon"></span>
+        <span>Notifications</span>
+      </a>
+    </div>
+
+    <!-- FINANCES -->
+    <div class="nav-section">
+      <p class="section-title">Finances</p>
+      <a routerLink="/company/payments" routerLinkActive="active" class="nav-item">
+        <span class="ion-md-wallet icon"></span>
+        <span>Paiements & Factures</span>
+        <span class="badge bg-secondary ms-auto" *ngIf="invoicesCount > 0">{{ invoicesCount }}</span>
+      </a>
+    </div>
+
+    <!-- COMPTE ENTREPRISE -->
+    <div class="nav-section">
+      <p class="section-title">Compte Entreprise</p>
+      <a routerLink="/company/profile" routerLinkActive="active" class="nav-item">
+        <span class="ion-md-business icon"></span>
+        <span>Profil entreprise</span>
+      </a>
+      <a routerLink="/company/settings" routerLinkActive="active" class="nav-item">
+        <span class="ion-md-settings icon"></span>
+        <span>Paramètres</span>
+      </a>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <button class="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center gap-2" (click)="logout()">
+      <span class="ion-md-log-out"></span>
+      <span>Déconnexion</span>
+    </button>
+  </div>
+</aside>

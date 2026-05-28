@@ -1,0 +1,294 @@
+<div class="admin-settings animate__animated animate__fadeIn">
+  
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold text-dark mb-1">Paramètres plateforme</h2>
+      <p class="text-muted">Configurez les règles, commissions, validations et options système de GoRide.</p>
+    </div>
+    <div class="d-flex gap-2">
+      <div *ngIf="settings.maintenance?.enabled" class="badge bg-danger p-2 rounded-pill animate__animated animate__pulse animate__infinite">
+        <span class="ion-ios-construct me-1"></span> Mode maintenance activé
+      </div>
+      <button class="btn btn-outline-primary rounded-pill px-4 fw-bold" (click)="exportConfig()">Exporter</button>
+      <button class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" (click)="saveAll()">Tout enregistrer</button>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Sidebar Navigation -->
+    <div class="col-md-3">
+      <div class="nav-card bg-white shadow-sm rounded-4 p-2">
+        <button class="nav-link-btn w-100 text-start p-3 rounded-3 mb-1 transition-all" [class.active]="activeTab === 'general'" (click)="activeTab = 'general'">
+          <span class="ion-ios-settings me-2"></span> Général
+        </button>
+        <button class="nav-link-btn w-100 text-start p-3 rounded-3 mb-1 transition-all" [class.active]="activeTab === 'commissions'" (click)="activeTab = 'commissions'">
+          <span class="ion-ios-cash me-2"></span> Commissions
+        </button>
+        <button class="nav-link-btn w-100 text-start p-3 rounded-3 mb-1 transition-all" [class.active]="activeTab === 'services'" (click)="activeTab = 'services'">
+          <span class="ion-ios-car me-2"></span> Réservations & Services
+        </button>
+        <button class="nav-link-btn w-100 text-start p-3 rounded-3 mb-1 transition-all" [class.active]="activeTab === 'validations'" (click)="activeTab = 'validations'">
+          <span class="ion-ios-checkmark-circle me-2"></span> Validations
+        </button>
+        <button class="nav-link-btn w-100 text-start p-3 rounded-3 mb-1 transition-all" [class.active]="activeTab === 'payments'" (click)="activeTab = 'payments'">
+          <span class="ion-ios-card me-2"></span> Paiements
+        </button>
+        <button class="nav-link-btn w-100 text-start p-3 rounded-3 mb-1 transition-all" [class.active]="activeTab === 'notifications'" (click)="activeTab = 'notifications'">
+          <span class="ion-ios-notifications me-2"></span> Notifications
+        </button>
+        <button class="nav-link-btn w-100 text-start p-3 rounded-3 mb-1 transition-all" [class.active]="activeTab === 'security'" (click)="activeTab = 'security'">
+          <span class="ion-ios-lock me-2"></span> Sécurité
+        </button>
+        <button class="nav-link-btn w-100 text-start p-3 rounded-3 mb-1 transition-all" [class.active]="activeTab === 'maintenance'" (click)="activeTab = 'maintenance'">
+          <span class="ion-ios-construct me-2"></span> Maintenance
+        </button>
+        <hr class="mx-3">
+        <button class="btn btn-link w-100 text-danger text-decoration-none small fw-bold" (click)="resetToDefault()">Réinitialiser par défaut</button>
+      </div>
+    </div>
+
+    <!-- Content Area -->
+    <div class="col-md-9">
+      <div class="content-card bg-white shadow-sm rounded-4 p-4 min-vh-75">
+        
+        <!-- General Settings -->
+        <div *ngIf="activeTab === 'general'" class="animate__animated animate__fadeIn">
+          <h5 class="fw-bold text-dark border-bottom pb-3 mb-4">Général</h5>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Nom de la plateforme</label>
+              <input type="text" class="form-control rounded-pill" [(ngModel)]="settings.general.platformName">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Pays principal</label>
+              <input type="text" class="form-control rounded-pill" [(ngModel)]="settings.general.country">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-bold">Devise</label>
+              <input type="text" class="form-control rounded-pill" [(ngModel)]="settings.general.currency">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-bold">Langue par défaut</label>
+              <select class="form-select rounded-pill" [(ngModel)]="settings.general.language">
+                <option value="Français">Français</option>
+                <option value="Arabe">Arabe</option>
+                <option value="Anglais">Anglais</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-bold">Fuseau horaire</label>
+              <input type="text" class="form-control rounded-pill" [(ngModel)]="settings.general.timezone">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Email support</label>
+              <input type="email" class="form-control rounded-pill" [(ngModel)]="settings.general.supportEmail">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Téléphone support</label>
+              <input type="text" class="form-control rounded-pill" [(ngModel)]="settings.general.supportPhone">
+            </div>
+          </div>
+          <button class="btn btn-primary rounded-pill px-4 fw-bold mt-4" (click)="saveSection('general')">Enregistrer général</button>
+        </div>
+
+        <!-- Commissions Settings -->
+        <div *ngIf="activeTab === 'commissions'" class="animate__animated animate__fadeIn">
+          <h5 class="fw-bold text-dark border-bottom pb-3 mb-4">Commissions</h5>
+          <p class="text-muted small mb-4">Définissez les pourcentages de commission prélevés par la plateforme sur chaque type de service.</p>
+          <div class="row g-4">
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Courses passagers (%)</label>
+              <input type="number" class="form-control rounded-pill" [(ngModel)]="settings.commissions.passengerRide" [class.is-invalid]="errors.commissions?.passengerRide">
+              <div class="invalid-feedback small">{{ errors.commissions?.passengerRide }}</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Trajets collaboratifs (%)</label>
+              <input type="number" class="form-control rounded-pill" [(ngModel)]="settings.commissions.sharedTrip" [class.is-invalid]="errors.commissions?.sharedTrip">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Location véhicules (%)</label>
+              <input type="number" class="form-control rounded-pill" [(ngModel)]="settings.commissions.vehicleRental" [class.is-invalid]="errors.commissions?.vehicleRental">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Chauffeurs avec voiture (%)</label>
+              <input type="number" class="form-control rounded-pill" [(ngModel)]="settings.commissions.companyDriver" [class.is-invalid]="errors.commissions?.companyDriver">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Services entreprises mixtes (%)</label>
+              <input type="number" class="form-control rounded-pill" [(ngModel)]="settings.commissions.companyVehicle" [class.is-invalid]="errors.commissions?.companyVehicle">
+            </div>
+          </div>
+          <button class="btn btn-primary rounded-pill px-4 fw-bold mt-4" (click)="saveSection('commissions')">Enregistrer commissions</button>
+        </div>
+
+        <!-- Services Settings -->
+        <div *ngIf="activeTab === 'services'" class="animate__animated animate__fadeIn">
+          <h5 class="fw-bold text-dark border-bottom pb-3 mb-4">Réservations & Services</h5>
+          <div class="row g-4 mb-4">
+            <div class="col-md-4">
+              <label class="form-label small fw-bold">Délai min Passager (min)</label>
+              <input type="number" class="form-control rounded-pill" [(ngModel)]="settings.services.minDelayPassenger">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-bold">Délai min Location (min)</label>
+              <input type="number" class="form-control rounded-pill" [(ngModel)]="settings.services.minDelayRental">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-bold">Frais annulation (DT)</label>
+              <input type="number" class="form-control rounded-pill" [(ngModel)]="settings.services.lateCancelFee">
+            </div>
+          </div>
+          <h6 class="fw-bold text-dark mb-3 mt-4">Services activés</h6>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="form-check form-switch p-3 border rounded-4">
+                <input class="form-check-input ms-0 me-3" type="checkbox" [(ngModel)]="settings.services.allowImmediate">
+                <label class="form-check-label small fw-bold">Autoriser courses immédiates</label>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-check form-switch p-3 border rounded-4">
+                <input class="form-check-input ms-0 me-3" type="checkbox" [(ngModel)]="settings.services.allowShared">
+                <label class="form-check-label small fw-bold">Autoriser trajets collaboratifs</label>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-check form-switch p-3 border rounded-4">
+                <input class="form-check-input ms-0 me-3" type="checkbox" [(ngModel)]="settings.services.allowRental">
+                <label class="form-check-label small fw-bold">Autoriser locations véhicules</label>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-check form-switch p-3 border rounded-4">
+                <input class="form-check-input ms-0 me-3" type="checkbox" [(ngModel)]="settings.services.allowCompany">
+                <label class="form-check-label small fw-bold">Autoriser demandes entreprises</label>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-primary rounded-pill px-4 fw-bold mt-4" (click)="saveSection('services')">Enregistrer services</button>
+        </div>
+
+        <!-- Validations Settings -->
+        <div *ngIf="activeTab === 'validations'" class="animate__animated animate__fadeIn">
+          <h5 class="fw-bold text-dark border-bottom pb-3 mb-4">Validations</h5>
+          <div class="row g-3 mb-4">
+            <div class="col-md-6" *ngFor="let key of ['requireDriverValidation', 'requireOwnerValidation', 'requireCompanyValidation', 'requireVehicleValidation', 'requireDocumentValidation']">
+               <div class="form-check form-switch p-3 border rounded-4">
+                <input class="form-check-input ms-0 me-3" type="checkbox" [(ngModel)]="settings.validations[key]">
+                <label class="form-check-label small fw-bold">{{ key | titlecase }} obligatoire</label>
+              </div>
+            </div>
+          </div>
+          <h6 class="fw-bold text-dark mb-3 mt-4">Délais cibles (heures)</h6>
+          <div class="row g-3">
+             <div class="col-md-4">
+                <label class="form-label small fw-bold">Professionnels</label>
+                <input type="number" class="form-control rounded-pill" [(ngModel)]="settings.validations.targetProfessional">
+             </div>
+             <div class="col-md-4">
+                <label class="form-label small fw-bold">Véhicules</label>
+                <input type="number" class="form-control rounded-pill" [(ngModel)]="settings.validations.targetVehicle">
+             </div>
+          </div>
+          <button class="btn btn-primary rounded-pill px-4 fw-bold mt-4" (click)="saveSection('validations')">Enregistrer validations</button>
+        </div>
+
+        <!-- Payments Settings -->
+        <div *ngIf="activeTab === 'payments'" class="animate__animated animate__fadeIn">
+          <h5 class="fw-bold text-dark border-bottom pb-3 mb-4">Paiements</h5>
+          <h6 class="fw-bold text-dark mb-3">Méthodes de paiement activées</h6>
+          <div class="row g-3 mb-4">
+            <div class="col-md-4" *ngFor="let m of ['card', 'cash', 'transfer', 'wallet', 'invoice']">
+               <div class="form-check form-switch p-3 border rounded-4">
+                <input class="form-check-input ms-0 me-3" type="checkbox" [(ngModel)]="settings.payments.methods[m]">
+                <label class="form-check-label small fw-bold text-uppercase">{{ m }}</label>
+              </div>
+            </div>
+          </div>
+          <h6 class="fw-bold text-dark mb-3 mt-4">Règles financières</h6>
+          <div class="row g-3">
+             <div class="col-md-6">
+                <div class="form-check form-switch p-3 border rounded-4">
+                  <input class="form-check-input ms-0 me-3" type="checkbox" [(ngModel)]="settings.payments.requirePrepayCompany">
+                  <label class="form-check-label small fw-bold">Prépaiement entreprise obligatoire</label>
+                </div>
+             </div>
+             <div class="col-md-6">
+                <div class="form-check form-switch p-3 border rounded-4">
+                  <input class="form-check-input ms-0 me-3" type="checkbox" [(ngModel)]="settings.payments.autoInvoice">
+                  <label class="form-check-label small fw-bold">Facture automatique</label>
+                </div>
+             </div>
+          </div>
+          <button class="btn btn-primary rounded-pill px-4 fw-bold mt-4" (click)="saveSection('payments')">Enregistrer paiements</button>
+        </div>
+
+        <!-- Maintenance Settings -->
+        <div *ngIf="activeTab === 'maintenance'" class="animate__animated animate__fadeIn">
+          <h5 class="fw-bold text-dark border-bottom pb-3 mb-4">Maintenance</h5>
+          <div class="p-4 rounded-4" [ngClass]="settings.maintenance.enabled ? 'bg-danger-soft border border-danger' : 'bg-light border'">
+             <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                   <h6 class="fw-bold text-dark mb-1">Mode Maintenance</h6>
+                   <p class="small text-muted mb-0">Le mode maintenance bloque l'accès public à la plateforme.</p>
+                </div>
+                <div class="form-check form-switch">
+                   <input class="form-check-input scale-1-5" type="checkbox" [(ngModel)]="settings.maintenance.enabled" (change)="toggleMaintenance()">
+                </div>
+             </div>
+             <div class="mb-3">
+                <label class="form-label small fw-bold">Message pour les utilisateurs</label>
+                <textarea class="form-control rounded-4 shadow-none" rows="3" [(ngModel)]="settings.maintenance.message"></textarea>
+             </div>
+             <div class="row g-3">
+                <div class="col-md-6">
+                   <div class="form-check">
+                      <input class="form-check-input" type="checkbox" [(ngModel)]="settings.maintenance.blockReservations">
+                      <label class="form-check-label small">Bloquer nouvelles réservations</label>
+                   </div>
+                </div>
+                <div class="col-md-6">
+                   <div class="form-check">
+                      <input class="form-check-input" type="checkbox" [(ngModel)]="settings.maintenance.blockPayments">
+                      <label class="form-check-label small">Bloquer paiements</label>
+                   </div>
+                </div>
+             </div>
+          </div>
+          <button class="btn btn-primary rounded-pill px-4 fw-bold mt-4" (click)="saveSection('maintenance')">Enregistrer maintenance</button>
+        </div>
+
+        <!-- Default message for other tabs -->
+        <div *ngIf="['notifications', 'security'].includes(activeTab)" class="text-center py-5">
+           <span class="ion-ios-construct fs-1 text-muted opacity-25 d-block mb-3"></span>
+           <h5 class="fw-bold text-muted">Configuration {{ activeTab | titlecase }}</h5>
+           <p class="text-muted small">Les paramètres de cette section sont déjà configurés par défaut.</p>
+           <button class="btn btn-primary rounded-pill px-4 fw-bold" (click)="saveSection(activeTab)">Enregistrer {{ activeTab }}</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Export Modal -->
+<div class="modal-overlay animate__animated animate__fadeIn" *ngIf="showExportModal" (click)="closeExport()">
+  <div class="modal-content-wrapper shadow-lg bg-white p-4" style="max-width: 600px; z-index: 10000;" (click)="$event.stopPropagation()">
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+      <h5 class="fw-bold text-dark mb-0">Export Configuration JSON</h5>
+      <button class="btn btn-light rounded-circle" (click)="closeExport()">
+        <span class="ion-ios-close fs-4"></span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p class="small text-muted mb-3">Copiez ce JSON pour sauvegarder ou restaurer votre configuration.</p>
+      <div class="bg-dark text-white p-3 rounded-4 mb-4" style="max-height: 400px; overflow-y: auto;">
+        <pre class="small mb-0"><code>{{ exportData }}</code></pre>
+      </div>
+      <div class="d-flex gap-2">
+         <button class="btn btn-primary rounded-pill flex-grow-1 fw-bold" (click)="copyExport()">Copier dans le presse-papier</button>
+         <button class="btn btn-light rounded-pill px-4" (click)="closeExport()">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>

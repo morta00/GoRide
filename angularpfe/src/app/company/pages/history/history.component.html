@@ -1,0 +1,227 @@
+<div class="company-history p-4 animate__animated animate__fadeIn">
+  <!-- Header -->
+  <header class="mb-5">
+    <h1 class="fw-bold text-dark mb-1">Historique</h1>
+    <p class="text-muted mb-0">Consultez vos anciens services, demandes, paiements, factures et avis envoyés.</p>
+  </header>
+
+  <!-- Statistics Cards -->
+  <div class="stats-grid mb-5">
+    <div class="stat-card">
+      <div class="stat-icon bg-soft-success text-success"><i class="ion-md-checkmark-circle"></i></div>
+      <div class="stat-info">
+        <span class="label">Services terminés</span>
+        <h3 class="value">{{ stats.completedServices }}</h3>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon bg-soft-danger text-danger"><i class="ion-md-close-circle"></i></div>
+      <div class="stat-info">
+        <span class="label">Demandes refusées/annulées</span>
+        <h3 class="value">{{ stats.rejectedCancelled }}</h3>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon bg-soft-primary text-primary"><i class="ion-md-cash"></i></div>
+      <div class="stat-info">
+        <span class="label">Montant dépensé</span>
+        <h3 class="value">{{ stats.totalSpent | number:'1.0-0' }} DT</h3>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon bg-soft-info text-info"><i class="ion-md-star"></i></div>
+      <div class="stat-info">
+        <span class="label">Avis envoyés</span>
+        <h3 class="value">{{ stats.reviewsSent }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters & Search -->
+  <div class="card border-0 shadow-sm rounded-4 mb-4 p-4 bg-white">
+    <div class="row g-3">
+      <!-- Search -->
+      <div class="col-lg-4">
+        <div class="search-wrapper position-relative">
+          <i class="ion-md-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+          <input type="text" class="form-control rounded-pill ps-5 bg-light border-0 py-2" 
+                 placeholder="Rechercher (Titre, service, ville...)" 
+                 [(ngModel)]="searchTerm" (input)="applyFilters()">
+        </div>
+      </div>
+      
+      <!-- Type Filter -->
+      <div class="col-lg-2">
+        <select class="form-select rounded-pill bg-light border-0 py-2" [(ngModel)]="typeFilter" (change)="applyFilters()">
+          <option value="ALL">Tous les types</option>
+          <option value="SERVICES">Services terminés</option>
+          <option value="REJECTED">Demandes refusées</option>
+          <option value="CANCELLED">Demandes annulées</option>
+          <option value="PAYMENTS">Paiements</option>
+          <option value="INVOICES">Factures</option>
+          <option value="REVIEWS">Avis</option>
+        </select>
+      </div>
+
+      <!-- Status Filter -->
+      <div class="col-lg-2">
+        <select class="form-select rounded-pill bg-light border-0 py-2" [(ngModel)]="statusFilter" (change)="applyFilters()">
+          <option value="ALL">Tous les statuts</option>
+          <option value="COMPLETED">Terminé</option>
+          <option value="REJECTED">Refusé</option>
+          <option value="CANCELLED">Annulé</option>
+          <option value="PAID">Payé</option>
+          <option value="SENT">Envoyé</option>
+        </select>
+      </div>
+
+      <!-- Sort -->
+      <div class="col-lg-2 ms-auto">
+        <select class="form-select rounded-pill bg-light border-0 py-2" [(ngModel)]="sortBy" (change)="applyFilters()">
+          <option value="NEWEST">Plus récents</option>
+          <option value="OLDEST">Plus anciens</option>
+          <option value="AMOUNT_DESC">Montant décroissant</option>
+          <option value="AMOUNT_ASC">Montant croissant</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- History List -->
+  <div class="history-list">
+    <div *ngFor="let item of filteredItems" class="history-item card border-0 shadow-sm rounded-4 mb-3 p-4 animate__animated animate__fadeInUp">
+      <div class="d-flex align-items-center gap-4">
+        <!-- Type Icon -->
+        <div class="type-icon-wrapper" [ngClass]="getTypeClass(item.type)">
+          <i [ngClass]="getTypeIcon(item.type)"></i>
+        </div>
+
+        <!-- Main Info -->
+        <div class="flex-grow-1">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <div>
+              <h5 class="fw-bold mb-1 text-dark">{{ item.title }}</h5>
+              <p class="text-muted mb-0">{{ item.description }}</p>
+            </div>
+            <div class="text-end">
+              <span class="badge rounded-pill mb-2 px-3 py-2" [ngClass]="getStatusBadgeClass(item.status)">
+                {{ getStatusLabel(item.status) }}
+              </span>
+              <p class="text-muted small mb-0">{{ item.date | date:'dd MMM yyyy' }}</p>
+            </div>
+          </div>
+          
+          <div class="d-flex align-items-center justify-content-between mt-3">
+            <div class="d-flex gap-4 text-muted small">
+              <span *ngIf="item.city"><i class="ion-md-pin me-1"></i> {{ item.city }}</span>
+              <span *ngIf="item.serviceType"><i class="ion-md-car me-1"></i> {{ item.serviceType }}</span>
+              <span *ngIf="item.amount"><i class="ion-md-cash me-1"></i> <strong>{{ item.amount }} DT</strong></span>
+              <span *ngIf="item.invoiceNumber"><i class="ion-md-paper me-1"></i> {{ item.invoiceNumber }}</span>
+            </div>
+            <button class="btn btn-soft-primary rounded-pill px-4 fw-bold" (click)="openDetails(item)">Détails</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white" *ngIf="filteredItems.length === 0">
+      <div class="mb-4">
+        <i class="ion-md-folder-open text-light" style="font-size: 80px;"></i>
+      </div>
+      <h4 class="fw-bold">Aucun élément dans l'historique</h4>
+      <p class="text-muted">Vos futurs services terminés et actions passées apparaîtront ici.</p>
+    </div>
+  </div>
+
+  <!-- Details Modal -->
+  <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+    <div class="modal-card-premium animate__animated animate__zoomIn" (click)="$event.stopPropagation()">
+      <div class="modal-header-p p-4 border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0">Détails de l'historique</h5>
+        <button class="btn-close-custom" (click)="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body p-4" *ngIf="selectedItem">
+        <div class="text-center mb-4">
+          <div class="type-icon-wrapper mx-auto mb-3" [ngClass]="getTypeClass(selectedItem.type)" style="width: 60px; height: 60px; font-size: 28px;">
+            <i [ngClass]="getTypeIcon(selectedItem.type)"></i>
+          </div>
+          <h4 class="fw-bold mb-1">{{ selectedItem.title }}</h4>
+          <span class="badge rounded-pill px-3 py-2" [ngClass]="getStatusBadgeClass(selectedItem.status)">
+            {{ getStatusLabel(selectedItem.status) }}
+          </span>
+        </div>
+
+        <div class="details-grid">
+          <div class="detail-row">
+            <span class="label">DESCRIPTION</span>
+            <span class="value">{{ selectedItem.description }}</span>
+          </div>
+          <div class="row g-3">
+            <div class="col-6" *ngIf="selectedItem.serviceType">
+              <span class="label">SERVICE</span>
+              <span class="value">{{ selectedItem.serviceType }}</span>
+            </div>
+            <div class="col-6" *ngIf="selectedItem.city">
+              <span class="label">VILLE</span>
+              <span class="value">{{ selectedItem.city }}</span>
+            </div>
+            <div class="col-6" *ngIf="selectedItem.vehicleName">
+              <span class="label">VÉHICULE</span>
+              <span class="value">{{ selectedItem.vehicleName }}</span>
+            </div>
+            <div class="col-6" *ngIf="selectedItem.ownerName">
+              <span class="label">PROPRIÉTAIRE</span>
+              <span class="value">{{ selectedItem.ownerName }}</span>
+            </div>
+            <div class="col-6" *ngIf="selectedItem.driverName">
+              <span class="label">CHAUFFEUR</span>
+              <span class="value">{{ selectedItem.driverName }}</span>
+            </div>
+            <div class="col-6" *ngIf="selectedItem.amount">
+              <span class="label">MONTANT</span>
+              <span class="value fw-bold text-primary">{{ selectedItem.amount }} DT</span>
+            </div>
+            <div class="col-6">
+              <span class="label">DATE</span>
+              <span class="value">{{ selectedItem.date | date:'dd MMMM yyyy' }}</span>
+            </div>
+            <div class="col-6" *ngIf="selectedItem.paymentMethod">
+              <span class="label">MÉTHODE PAIEMENT</span>
+              <span class="value">{{ selectedItem.paymentMethod }}</span>
+            </div>
+            <div class="col-6" *ngIf="selectedItem.invoiceNumber">
+              <span class="label">NUMÉRO FACTURE</span>
+              <span class="value">{{ selectedItem.invoiceNumber }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-actions mt-4 pt-4 border-top d-grid gap-2">
+          <!-- Contextual Buttons -->
+          <button *ngIf="selectedItem.type === 'INVOICE_PAID' || selectedItem.type === 'PAYMENT'" 
+                  class="btn btn-indigo rounded-pill py-3 fw-bold shadow-sm" (click)="viewInvoice()">
+            <i class="ion-md-paper me-2"></i> Voir facture
+          </button>
+          
+          <button *ngIf="selectedItem.type === 'PAYMENT' || selectedItem.type === 'REFUND'" 
+                  class="btn btn-primary rounded-pill py-3 fw-bold shadow-sm" (click)="viewPayment()">
+            <i class="ion-md-wallet me-2"></i> Voir paiement
+          </button>
+
+          <button *ngIf="selectedItem.type === 'REVIEW_SENT'" 
+                  class="btn btn-info rounded-pill py-3 fw-bold shadow-sm text-white" (click)="viewReview()">
+            <i class="ion-md-star me-2"></i> Voir l'avis
+          </button>
+
+          <button *ngIf="selectedItem.type === 'REQUEST_REJECTED' || selectedItem.type === 'REQUEST_CANCELLED'" 
+                  class="btn btn-warning rounded-pill py-3 fw-bold shadow-sm" (click)="requestAgain()">
+            <i class="ion-md-add me-2"></i> Demander à nouveau
+          </button>
+
+          <button class="btn btn-light rounded-pill py-3 fw-bold" (click)="closeModal()">Fermer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

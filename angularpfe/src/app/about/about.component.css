@@ -1,0 +1,193 @@
+/* HERO SECTION ABOUT */
+.about-hero {
+  position: relative;
+  background-image: url('/assets/images/about-team.avif');
+  background-size: cover;
+  background-position: center;
+  padding: 180px 0 120px 0;
+  display: flex;
+  align-items: center;
+}
+
+.about-hero-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.92) 0%,
+    rgba(255,255,255,0.7) 35%,
+    rgba(255,255,255,0.2) 70%,
+    transparent 100%
+  );
+  z-index: 1;
+}
+
+.about-hero h1 {
+  color: #1e293b !important;
+}
+
+.about-hero p {
+  color: #64748b !important;
+}
+
+.letter-spacing-2 {
+  letter-spacing: 2px;
+}
+
+.fw-900 {
+  font-weight: 900;
+}
+
+.z-index-2 {
+  z-index: 2;
+}
+
+/* STORY SECTION */
+.our-story-section p {
+  color: #475569 !important;
+  line-height: 1.9;
+  font-size: 18px;
+}
+
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  background: rgba(37, 99, 235, 0.1);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #2563eb;
+  font-size: 20px;
+}
+
+.experience-card {
+  position: absolute;
+  bottom: -30px;
+  right: -30px;
+  border: 1px solid rgba(0,0,0,0.05);
+  min-width: 200px;
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-15px); }
+  100% { transform: translateY(0px); }
+}
+
+@media (max-width: 991px) {
+  .experience-card {
+    right: 20px;
+    bottom: -20px;
+  }
+}
+
+/* VALUES SECTION */
+.core-values {
+  background: linear-gradient(180deg, #f8fafc 0%, #eff6ff 100%);
+  border-top: 1px solid rgba(37, 99, 235, 0.05);
+  border-bottom: 1px solid rgba(37, 99, 235, 0.05);
+}
+
+.value-card {
+  border-radius: 24px !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.06) !important;
+  padding: 40px !important;
+  transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  background: white;
+}
+
+.value-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.12) !important;
+  border-color: rgba(37, 99, 235, 0.2);
+}
+
+.value-icon {
+  width: 60px;
+  height: 60px;
+  background: #2563eb;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 28px;
+  font-family: "Ionicons" !important;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+}
+
+.value-card:hover .value-icon {
+  background: #2563eb;
+  color: white;
+  transform: scale(1.1);
+}
+
+/* DEVELOPER SECTION */
+.developer-card {
+  border: 1px solid rgba(37, 99, 235, 0.1);
+  transition: all 0.4s ease;
+}
+
+.developer-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 40px 80px rgba(0,0,0,0.12) !important;
+}
+
+.developer-img-wrapper {
+  position: relative;
+  width: 150px;
+  height: 150px;
+}
+
+.developer-img-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: 4px solid #f8fafc;
+}
+
+.dev-badge {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  background: #2563eb;
+  color: white;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  border: 3px solid white;
+}
+
+.social-icon {
+  width: 40px;
+  height: 40px;
+  background: #f1f5f9;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.social-icon:hover {
+  background: #2563eb;
+  color: white;
+  transform: rotate(360deg);
+}
+
+.letter-spacing-1 {
+  letter-spacing: 1px;
+}

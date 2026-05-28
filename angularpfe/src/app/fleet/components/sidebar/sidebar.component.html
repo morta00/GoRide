@@ -1,0 +1,30 @@
+<aside class="sidebar shadow-sm">
+  <div class="sidebar-brand">
+    <app-logo [roleBadge]="(activeRoleData?.labelKey || 'FLEET.MENU.ROLE') | translate" [badgeBgColor]="(activeRoleData?.color ? activeRoleData?.color + '14' : 'rgba(245, 158, 11, 0.08)')" [badgeTextColor]="activeRoleData?.color || '#f59e0b'"></app-logo>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div *ngFor="let section of menuSections" class="nav-section">
+      <p class="section-title">{{ section.titleKey | translate }}</p>
+      <a *ngFor="let item of section.items" 
+         [routerLink]="item.route" 
+         routerLinkActive="active" 
+         class="nav-item">
+        <span [class]="item.icon + ' icon'"></span>
+        <span>{{ item.labelKey | translate }}</span>
+        <span *ngIf="item.badge" class="badge ms-auto" [class]="item.badgeClass || 'badge-primary'">{{ item.badge }}</span>
+      </a>
+    </div>
+
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="nav-section mb-0">
+      <p class="section-title">{{ 'CLIENT.MENU.ACCOUNT_SECTION' | translate }}</p>
+      <button class="btn-logout" (click)="logout()">
+        <span class="ion-ios-log-out icon"></span>
+        <span>{{ 'CLIENT.MENU.LOGOUT' | translate }}</span>
+      </button>
+    </div>
+  </div>
+</aside>

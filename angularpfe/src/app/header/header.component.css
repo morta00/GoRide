@@ -1,0 +1,1100 @@
+:host {
+  display: block;
+}
+
+:host ::ng-deep .ftco-navbar-light .navbar-nav>.nav-item>.nav-link {
+  color: #1e293b;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+:host ::ng-deep .ftco-navbar-light .navbar-nav>.nav-item>.nav-link:hover,
+:host ::ng-deep .ftco-navbar-light .navbar-nav>.nav-item.active>.nav-link {
+  color: #2563eb !important;
+}
+
+.navbar-nav {
+  gap: 0.35rem;
+}
+
+/* Force l'alignement sur Desktop sur une seule ligne */
+@media (min-width: 992px) {
+  :host ::ng-deep #ftco-navbar .container-custom {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+  }
+
+  :host ::ng-deep #ftco-nav {
+    display: flex !important;
+    flex-basis: auto !important;
+    flex-grow: 1 !important;
+    align-items: center !important;
+  }
+
+  :host ::ng-deep #ftco-nav .navbar-nav.mx-auto {
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  :host ::ng-deep #ftco-nav .navbar-nav.ms-auto {
+    margin-left: auto !important;
+  }
+}
+
+/* Bouton langue (un clic = bascule FR/EN) */
+.lang-toggle {
+  display: inline-flex;
+  align-items: center;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  gap: 0.5rem;
+}
+
+.lang-toggle__icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff !important;
+  border: 1px solid #E5E7EB !important;
+  color: #4b5563 !important;
+  font-size: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+  transition: all 0.2s ease;
+  margin-right: 0.35rem;
+}
+
+.lang-toggle:hover .lang-toggle__icon {
+  background: #eff6ff !important;
+  border-color: #bfdbfe !important;
+  color: #2563eb !important;
+  transform: scale(1.05);
+}
+
+.lang-toggle__label {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+
+/* Force l'espacement même si les CSS du template écrasent les règles */
+:host ::ng-deep #ftco-navbar .lang-toggle {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+}
+
+:host ::ng-deep #ftco-navbar .lang-toggle__icon {
+  margin-right: 0.35rem !important;
+}
+
+.nav-item {
+  position: relative;
+}
+
+.service-toggle,
+.register-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.register-dropdown {
+  width: 100%;
+}
+
+.register-dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: auto;
+  right: 0;
+  min-width: 320px;
+  max-width: 320px;
+  margin-top: 0.75rem;
+  padding: 0.35rem 0;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  background: #ffffff !important;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.12) !important;
+}
+
+.register-dropdown-menu.show {
+  display: block;
+}
+
+.register-dropdown:not(.show) .register-dropdown-menu {
+  display: none !important;
+}
+
+.register-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  width: 100%;
+  padding: 0.85rem 1.05rem;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  white-space: normal;
+  transition: background-color 0.18s ease;
+}
+
+.register-item:hover,
+.register-item:focus {
+  background: rgba(2, 132, 199, 0.06);
+}
+
+.register-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  font-size: 1.25rem;
+  font-weight: 400;
+  flex-shrink: 0;
+  color: #16a34a;
+  background: transparent;
+  margin-top: 0.05rem;
+}
+
+.register-copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.register-title {
+  color: #0f172a;
+  font-size: 0.98rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.register-description {
+  color: #64748b;
+  font-size: 0.85rem;
+  line-height: 1.25;
+}
+
+.register-arrow {
+  color: #0f172a;
+  font-size: 1.25rem;
+  line-height: 1;
+  align-self: center;
+  margin-top: 0;
+  opacity: 0.75;
+}
+
+/*
+  IMPORTANT:
+  Le template charge plusieurs fichiers CSS via des <link> dans `headerfooter.component.html`.
+  Ces styles arrivent APRÈS les styles du composant et peuvent écraser le dropdown.
+  On force donc un style spécifique + !important pour garantir le rendu.
+*/
+:host ::ng-deep #ftco-navbar .register-dropdown-menu {
+  /* force le style contre les CSS du template */
+  min-width: 320px !important;
+  max-width: 320px !important;
+  padding: 0.35rem 0 !important;
+  border-radius: 14px !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  background: #ffffff !important;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.12) !important;
+}
+
+:host ::ng-deep #ftco-navbar .register-item {
+  padding: 0.85rem 1.05rem !important;
+  gap: 0.9rem !important;
+}
+
+:host ::ng-deep #ftco-navbar .register-item:hover,
+:host ::ng-deep #ftco-navbar .register-item:focus {
+  background: rgba(2, 132, 199, 0.06) !important;
+}
+
+:host ::ng-deep #ftco-navbar .register-title {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+:host ::ng-deep #ftco-navbar .register-description {
+  color: #64748b !important;
+}
+
+:host ::ng-deep #ftco-navbar .register-arrow {
+  color: #0f172a !important;
+  opacity: 0.85 !important;
+}
+
+/* Couleurs d'icônes (style comme la capture) */
+.icon-primary {
+  color: #2563eb !important;
+}
+
+.icon-success {
+  color: #16a34a !important;
+}
+
+.icon-warning {
+  color: #eab308 !important;
+  /* Tailwind yellow-500 */
+}
+
+.accent-driver {
+  background: rgba(59, 130, 246, 0.15);
+  color: #2563eb;
+}
+
+.accent-courier {
+  background: rgba(244, 63, 94, 0.15);
+  color: #ef4444;
+}
+
+.accent-restaurant {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+}
+
+.accent-fleet {
+  background: rgba(139, 92, 246, 0.15);
+  color: #8b5cf6;
+}
+
+.accent-business {
+  background: rgba(234, 88, 12, 0.15);
+  color: #ea580c;
+}
+
+.register-item:hover .register-title,
+.register-item:focus .register-title,
+.register-item:hover .register-arrow,
+.register-item:focus .register-arrow {
+  color: #0f172a !important;
+}
+
+.register-item:hover .register-description,
+.register-item:focus .register-description {
+  color: #64748b !important;
+}
+
+@media (max-width: 991.98px) {
+
+  /* Masquer le bouton langue sur petit écran (menu mobile) */
+  :host ::ng-deep #ftco-navbar .lang-toggle {
+    display: none !important;
+  }
+
+  :host ::ng-deep .ftco-navbar-light .navbar-nav>.nav-item>.nav-link {
+    color: #f8fafc;
+  }
+
+  :host ::ng-deep .ftco-navbar-light .navbar-nav>.nav-item>.nav-link:hover,
+  :host ::ng-deep .ftco-navbar-light .navbar-nav>.nav-item.active>.nav-link {
+    color: #01d28e;
+  }
+
+  .navbar-collapse {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(8, 8, 8, 0.96);
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.38);
+  }
+
+  .navbar-nav {
+    gap: 0.5rem;
+  }
+
+  .service-toggle,
+  .register-toggle {
+    width: 100%;
+    padding-left: 0;
+    padding-right: 0;
+    justify-content: space-between;
+    color: #f8fafc;
+  }
+
+  .service-toggle:hover,
+  .service-toggle:focus,
+  .register-toggle:hover,
+  .register-toggle:focus {
+    color: #01d28e;
+  }
+
+  .register-dropdown {
+    display: block;
+  }
+
+  .register-dropdown-menu {
+    position: static;
+    left: 0;
+    right: auto;
+    display: none;
+    min-width: 100%;
+    max-width: 100%;
+    margin-top: 0.75rem;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+  }
+
+  .register-dropdown-menu {
+    background: rgba(8, 8, 8, 0.98);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 18px 36px rgba(0, 0, 0, 0.32);
+  }
+
+  /* IMPORTANT: en mobile, on force le thème sombre même si les règles desktop utilisent !important */
+  :host ::ng-deep #ftco-navbar .register-dropdown-menu {
+    background: rgba(8, 8, 8, 0.98) !important;
+    border-color: rgba(255, 255, 255, 0.10) !important;
+    box-shadow: 0 18px 36px rgba(0, 0, 0, 0.32) !important;
+  }
+
+  :host ::ng-deep #ftco-navbar .register-item:not(:last-child) {
+    border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+  }
+
+  :host ::ng-deep #ftco-navbar .register-item:hover,
+  :host ::ng-deep #ftco-navbar .register-item:focus {
+    background: rgba(255, 255, 255, 0.06) !important;
+  }
+
+  :host ::ng-deep #ftco-navbar .register-title {
+    color: #f8fafc !important;
+  }
+
+  :host ::ng-deep #ftco-navbar .register-description {
+    color: rgba(226, 232, 240, 0.78) !important;
+  }
+
+  :host ::ng-deep #ftco-navbar .register-arrow {
+    color: #cbd5e1 !important;
+    opacity: 0.9 !important;
+  }
+
+  .register-dropdown.show .register-dropdown-menu {
+    display: block !important;
+  }
+
+  .register-item:hover,
+  .register-item:focus {
+    background: rgba(245, 248, 255, 0.9);
+  }
+
+  .register-item {
+    padding: 1.1rem 1.2rem;
+  }
+
+  .register-title {
+    color: #0f172a;
+    font-size: 0.98rem;
+  }
+
+  .register-description {
+    color: #64748b;
+  }
+
+  .register-arrow {
+    color: #cbd5e1 !important;
+  }
+
+  .accent-driver {
+    background: rgba(59, 130, 246, 0.15) !important;
+    color: #2563eb !important;
+  }
+
+  .accent-courier {
+    background: rgba(244, 63, 94, 0.15) !important;
+    color: #ef4444 !important;
+  }
+
+  .accent-restaurant {
+    background: rgba(34, 197, 94, 0.15) !important;
+    color: #22c55e !important;
+  }
+
+  .accent-fleet {
+    background: rgba(139, 92, 246, 0.15) !important;
+    color: #8b5cf6 !important;
+  }
+
+  .accent-business {
+    background: rgba(234, 88, 12, 0.15) !important;
+    color: #ea580c !important;
+  }
+
+  .services-title,
+  .register-title {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+
+  .services-dropdown-menu,
+  .register-dropdown-menu {
+    min-width: 100%;
+  }
+
+  .services-title,
+  .register-title {
+    font-size: 0.9rem;
+  }
+
+  .services-description,
+  .register-description {
+    font-size: 0.8rem;
+  }
+}
+
+/* Custom Header Styling for New Design */
+:host ::ng-deep .bg-transparent-header {
+  background: #ffffff !important;
+  position: relative;
+  z-index: 99999 !important;
+  /* On remonte tout le header */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+:host ::ng-deep .goride-logo {
+  padding: 0;
+  margin: 0;
+}
+
+.logo-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-icon {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-icon .ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 4px solid #2563eb;
+  border-radius: 50%;
+  border-top-color: transparent;
+  transform: rotate(-45deg);
+}
+
+.logo-icon .pin {
+  color: #2563eb;
+  font-size: 20px;
+  z-index: 2;
+  margin-top: 2px;
+}
+
+.logo-text {
+  font-weight: 800 !important;
+  font-size: 28px !important;
+  color: #2563eb !important;
+  letter-spacing: -1px !important;
+  text-transform: none !important;
+}
+
+.logo-part-dark {
+  color: #1e293b !important;
+}
+
+.logo-part-blue {
+  color: #2563eb !important;
+}
+
+:host ::ng-deep .auth-btn {
+  border-radius: 6px;
+  font-weight: 600;
+  padding: 10px 24px !important;
+  font-size: 0.95rem;
+}
+
+:host ::ng-deep .btn-outline-light {
+  border: 1px solid #cbd5e1;
+  color: #1e293b;
+  background: transparent;
+}
+
+:host ::ng-deep .btn-outline-light:hover,
+:host ::ng-deep .btn-outline-light:focus,
+:host ::ng-deep .btn-outline-light:active {
+  background: #f8fafc;
+  border-color: #2563eb;
+  color: #2563eb !important;
+}
+
+:host ::ng-deep .navbar-nav .nav-item .nav-link.btn-primary,
+:host ::ng-deep .navbar-nav .nav-item .nav-link.btn-primary:hover,
+:host ::ng-deep .navbar-nav .nav-item .nav-link.btn-primary:focus,
+:host ::ng-deep .navbar-nav .nav-item .nav-link.btn-primary:active {
+  background-color: #2563eb !important;
+  border-color: #2563eb !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+:host ::ng-deep .navbar-nav .nav-item .nav-link.btn-primary:active {
+  background-color: #1d4ed8 !important;
+  transform: scale(0.96) !important;
+  transition: transform 0.1s ease !important;
+}
+
+/* --- Notifications & User Dropdown --- */
+:host ::ng-deep .notification-btn {
+  position: relative;
+  background: #ffffff !important;
+  border: 1px solid #E5E7EB !important;
+  width: 42px;
+  height: 42px;
+  border-radius: 50% !important;
+  padding: 0;
+  margin-right: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+:host ::ng-deep .notification-icon {
+  font-size: 20px;
+  color: #4b5563;
+  transition: all 0.2s ease;
+}
+
+:host ::ng-deep .notification-btn:hover {
+  background: #eff6ff !important;
+  border-color: #bfdbfe !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15) !important;
+  transform: translateY(-1px) scale(1.02);
+}
+
+:host ::ng-deep .notification-btn:hover .notification-icon {
+  color: #2563eb;
+  transform: scale(1.05);
+}
+
+:host ::ng-deep .notification-btn:active {
+  transform: translateY(0) scale(1);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04) !important;
+}
+
+:host ::ng-deep .notification-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  background-color: #ef4444;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: 2px solid #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  line-height: 1;
+}
+
+:host ::ng-deep .notification-dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 320px;
+  margin-top: 0.75rem;
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 14px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+  z-index: 1000;
+  overflow: hidden;
+  animation: fadeInDown 0.2s ease-out;
+}
+
+:host ::ng-deep .notification-dropdown-menu.show {
+  display: block;
+}
+
+:host ::ng-deep .notif-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  background: #fcfcfc;
+}
+
+:host ::ng-deep .notif-body {
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+:host ::ng-deep .notif-item {
+  display: flex;
+  padding: 14px 16px;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-bottom: 1px solid #f8fafc;
+  position: relative;
+}
+
+:host ::ng-deep .notif-item:hover {
+  background: #f8fafc;
+}
+
+:host ::ng-deep .notif-item.unread {
+  background: rgba(37, 99, 235, 0.02);
+}
+
+:host ::ng-deep .notif-icon-wrapper {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1.1rem;
+}
+
+:host ::ng-deep .notif-content {
+  flex: 1;
+}
+
+:host ::ng-deep .notif-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.3;
+}
+
+:host ::ng-deep .notif-message {
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: #64748b;
+}
+
+:host ::ng-deep .notif-time {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+:host ::ng-deep .unread-dot {
+  width: 6px;
+  height: 6px;
+  background: #2563eb;
+  border-radius: 50%;
+  position: absolute;
+  top: 18px;
+  right: 12px;
+}
+
+:host ::ng-deep .notif-footer {
+  border-top: 1px solid #f1f5f9;
+}
+
+:host ::ng-deep .notif-footer .btn-link:hover {
+  color: #1e293b !important;
+  text-decoration: none;
+}
+
+@media (max-width: 991.98px) {
+  :host ::ng-deep .notification-dropdown-menu {
+    position: static;
+    width: 100%;
+    box-shadow: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.03);
+    margin-top: 1rem;
+  }
+
+  :host ::ng-deep .notif-header,
+  :host ::ng-deep .notif-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  :host ::ng-deep .notif-title,
+  :host ::ng-deep .notif-header h6 {
+    color: #f8fafc !important;
+  }
+}
+
+:host ::ng-deep .user-dropdown-toggle {
+  background: #ffffff !important;
+  border: 1px solid #E5E7EB !important;
+  outline: none !important;
+  padding: 0 14px 0 6px;
+  border-radius: 30px !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06) !important;
+  transition: all 0.2s ease;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  cursor: pointer;
+}
+
+:host ::ng-deep .user-dropdown-toggle:hover {
+  background: #fafafa !important;
+  border-color: #D1D5DB !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.09) !important;
+  transform: translateY(-1px);
+}
+
+:host ::ng-deep .user-dropdown-toggle:active {
+  transform: translateY(0px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06) !important;
+}
+
+:host ::ng-deep .user-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #4B5563;
+  text-transform: capitalize;
+  white-space: nowrap;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+:host ::ng-deep .user-avatar-small img {
+  border: 2px solid #e2e8f0;
+  object-fit: cover;
+}
+
+:host ::ng-deep .user-dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  min-width: 240px;
+  margin-top: 0.5rem;
+  padding: 0.5rem 0;
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.1);
+  z-index: 1050;
+  animation: fadeInDown 0.2s ease-out;
+}
+
+:host ::ng-deep .user-dropdown-menu.show {
+  display: block;
+}
+
+:host ::ng-deep .dropdown-header {
+  padding: 0.75rem 1.25rem;
+}
+
+:host ::ng-deep .dropdown-divider {
+  height: 1px;
+  background-color: #f1f5f9;
+  margin: 8px 0;
+}
+
+/* User Dropdown Premium Styling */
+:host ::ng-deep .user-dropdown-menu {
+  border: none;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+  border-radius: 20px;
+  padding: 12px 0;
+  /* Reduced from 18px */
+  min-width: 260px;
+  margin-top: 15px;
+  background-color: #ffffff;
+  animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+:host ::ng-deep .dropdown-header {
+  padding: 12px 20px;
+  border-bottom: 1px solid #f3f4f6;
+  margin-bottom: 8px;
+}
+
+:host ::ng-deep .dropdown-header p.text-muted {
+  color: #475569 !important;
+  /* Darker muted text */
+}
+
+:host ::ng-deep .dropdown-item {
+  padding: 8px 18px;
+  /* Further reduced padding */
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  /* Slightly reduced gap */
+  color: #1e293b;
+  font-size: 14px;
+  /* Slightly smaller text */
+  font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  border-radius: 10px;
+  margin: 2px 10px;
+  /* Further reduced margin */
+}
+
+:host ::ng-deep .dropdown-item:hover {
+  background-color: #F3F6FF;
+  color: #2563eb;
+  transform: translateX(6px);
+}
+
+:host ::ng-deep .dropdown-icon {
+  font-size: 14px;
+  /* Further reduced icon size */
+  width: 28px;
+  /* Further reduced icon size */
+  height: 28px;
+  /* Further reduced icon size */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 8px;
+  background-color: #f8fafc;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+:host ::ng-deep .dropdown-item:hover .dropdown-icon {
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(37, 99, 235, 0.1);
+}
+
+/* Icon Specific Colors & Backgrounds */
+:host ::ng-deep .icon-dashboard {
+  color: #2563eb;
+  background-color: #eff6ff;
+}
+
+:host ::ng-deep .icon-profile {
+  color: #6366f1;
+  background-color: #eef2ff;
+}
+
+:host ::ng-deep .icon-notif {
+  color: #f59e0b;
+  background-color: #fffbeb;
+}
+
+:host ::ng-deep .icon-sync {
+  color: #0d9488;
+  background-color: #f0fdfa;
+}
+
+:host ::ng-deep .icon-settings {
+  color: #64748b;
+  background-color: #f1f5f9;
+}
+
+:host ::ng-deep .icon-help {
+  color: #8b5cf6;
+  background-color: #f5f3ff;
+}
+
+:host ::ng-deep .icon-logout {
+  color: #ef4444;
+  background-color: #fef2f2;
+}
+
+:host ::ng-deep .dropdown-item.logout-item:hover .dropdown-icon {
+  background-color: #fee2e2 !important;
+}
+
+:host ::ng-deep .logout-item {
+  color: #ef4444 !important;
+  margin-top: 4px;
+  /* Reduced from 8px */
+}
+
+:host ::ng-deep .logout-item:hover {
+  background-color: #fef2f2 !important;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 991.98px) {
+  :host ::ng-deep .user-dropdown-menu {
+    position: static;
+    box-shadow: none;
+    border: none;
+    background: transparent;
+    padding: 10px;
+    margin-top: 1rem;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  :host ::ng-deep .dropdown-header {
+    grid-column: span 2;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    border: none;
+  }
+
+  :host ::ng-deep .dropdown-item {
+    color: #f8fafc;
+    padding: 10px;
+    margin: 0;
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    height: auto;
+  }
+
+  :host ::ng-deep .dropdown-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+
+  :host ::ng-deep .dropdown-divider {
+    display: none;
+    /* Hide dividers in grid layout */
+  }
+
+  :host ::ng-deep .logout-item {
+    grid-column: span 2;
+    flex-direction: row;
+    margin-top: 8px;
+    justify-content: center;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+  }
+
+  :host ::ng-deep .dropdown-header p.text-dark {
+    color: #f8fafc !important;
+  }
+
+  :host ::ng-deep .user-name.text-dark {
+    color: #f8fafc !important;
+  }
+}
+
+/* Role Switching inside Dropdown */
+:host ::ng-deep .role-btn {
+  border: 1px solid transparent;
+  padding: 8px 12px !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  font-size: 0.85rem !important;
+  color: #475569 !important;
+  background: #ffffff !important;
+  transition: all 0.2s ease !important;
+}
+
+:host ::ng-deep .role-btn:hover {
+  background: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+}
+
+:host ::ng-deep .active-role-btn {
+  background: #eff6ff !important;
+  border-color: #bfdbfe !important;
+  color: #1e40af !important;
+}
+
+:host ::ng-deep .role-selection-box {
+  background-color: #f8fafc !important;
+  border: 1px solid #f1f5f9;
+}
+
+@media (max-width: 991.98px) {
+  :host ::ng-deep .role-selection-box {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    margin: 0.5rem 0 !important;
+  }
+
+  :host ::ng-deep .role-btn {
+    background: transparent !important;
+    color: #f8fafc !important;
+  }
+
+  :host ::ng-deep .active-role-btn {
+    background: rgba(37, 99, 235, 0.2) !important;
+    border-color: rgba(37, 99, 235, 0.4) !important;
+  }
+}
+
+.dropdown-section-header {
+  padding: 8px 20px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: #f8fafc;
+}
+
+.role-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px !important;
+  transition: all 0.2s ease;
+}
+
+.role-item:hover {
+  background-color: #f1f5f9 !important;
+  padding-left: 24px !important;
+}
+
+.active-role {
+  background-color: #eff6ff !important;
+  font-weight: 600;
+  border-left: 3px solid #2563eb;
+}
+
+.active-indicator {
+  font-size: 1.1rem;
+  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popIn {
+  0% { transform: scale(0); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}

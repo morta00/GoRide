@@ -1,0 +1,456 @@
+<div class="dashboard-container">
+  
+  <!-- 1. Header -->
+  <header class="dashboard-header animate__animated animate__fadeIn">
+    <div class="welcome-text">
+      <h1>{{ 'CLIENT.DASHBOARD.HELLO' | translate }} {{ userName || ('CLIENT.DASHBOARD.PASSENGER' | translate) }} 👋</h1>
+      <p>{{ 'CLIENT.DASHBOARD.SUBTITLE' | translate }}</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-primary-glow" (click)="goToRequest()">
+        <span class="ion-md-navigate me-2"></span> {{ 'CLIENT.DASHBOARD.REQUEST_RIDE' | translate }}
+      </button>
+    </div>
+  </header>
+
+  <!-- Success Notification (Integrated) -->
+  <div class="alert alert-success animate__animated animate__fadeInDown mb-4" *ngIf="reviewSuccessMessage">
+    <div class="d-flex align-items-center">
+      <span class="ion-md-checkmark-circle fs-4 me-2"></span>
+      <span class="fw-bold">{{ reviewSuccessMessage }}</span>
+    </div>
+  </div>
+
+  <!-- 2. Cartes statistiques -->
+  <div class="stats-grid">
+    <div class="stat-card" [class.active]="stats.currentRide > 0">
+      <div class="stat-icon"><span class="ion-md-locate"></span></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ stats.currentRide }}</span>
+        <span class="stat-label">{{ 'CLIENT.DASHBOARD.STAT_CURRENT_RIDE' | translate }}</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon"><span class="ion-md-time"></span></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ stats.pendingRequests }}</span>
+        <span class="stat-label">{{ 'CLIENT.DASHBOARD.STAT_PENDING' | translate }}</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon"><span class="ion-md-people"></span></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ stats.sharedBookings }}</span>
+        <span class="stat-label">{{ 'CLIENT.DASHBOARD.STAT_SHARED' | translate }}</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon"><span class="ion-md-chatbubbles"></span></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ stats.activeConversations }}</span>
+        <span class="stat-label">{{ 'CLIENT.DASHBOARD.STAT_CONVERSATIONS' | translate }}</span>
+      </div>
+    </div>
+    <div class="stat-card" [class.warning]="stats.pendingReviews > 0">
+      <div class="stat-icon"><span class="ion-md-star"></span></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ stats.pendingReviews }}</span>
+        <span class="stat-label">{{ 'CLIENT.DASHBOARD.STAT_REVIEWS' | translate }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard-content-grid">
+    
+    <div class="main-column">
+      
+      <!-- 3. Section Course en cours -->
+      <section class="section-card">
+        <div class="section-header">
+          <h3><span class="ion-md-navigate"></span> {{ 'CLIENT.DASHBOARD.SECTION_CURRENT_RIDE' | translate }}</h3>
+          <span class="live-badge" *ngIf="currentRide">LIVE</span>
+        </div>
+        
+        <div class="current-ride-card" *ngIf="currentRide; else noActiveRide">
+          <div class="ride-main-info">
+            <div class="driver-profile">
+              <app-profile-avatar [name]="currentRide.driverName || ''" [photoUrl]="currentRide.driverPhoto" [size]="48" [showStatus]="false"></app-profile-avatar>
+              <div class="driver-details">
+                <h4>{{ currentRide.driverName }}</h4>
+                <div class="rating"><span class="ion-md-star text-warning"></span> {{ currentRide.driverRating }}</div>
+                <p class="vehicle-info">{{ currentRide.vehicle }}</p>
+              </div>
+            </div>
+            <div class="ride-status-box">
+              <span class="status-text">Chauffeur en route</span>
+              <span class="eta-text">{{ currentRide.eta }}</span>
+            </div>
+          </div>
+          
+          <div class="ride-path">
+            <div class="path-visual">
+              <div class="dot start"></div>
+              <div class="line"></div>
+              <div class="dot end"></div>
+            </div>
+            <div class="path-labels">
+              <span>{{ currentRide.route }}</span>
+            </div>
+          </div>
+          
+          <div class="ride-footer">
+            <div class="price-box">
+              <span class="label">Prix estimé</span>
+              <span class="value">{{ currentRide.price }} DT</span>
+            </div>
+            <div class="actions">
+              <button class="btn-sm-primary" (click)="goToCurrentRide()">Suivre chauffeur</button>
+              <button class="btn-sm-outline" (click)="goToConversations('DRV-001')">Contacter</button>
+              <button class="btn-sm-text" (click)="showDetailsModal = true">Voir détails</button>
+              <button class="btn-sm-danger" *ngIf="currentRide.status === 'PENDING'" (click)="cancelRide()">Annuler</button>
+            </div>
+          </div>
+        </div>
+        
+        <ng-template #noActiveRide>
+          <div class="empty-state">
+            <p>{{ 'CLIENT.DASHBOARD.NO_CURRENT_RIDE' | translate }}</p>
+            <button class="btn-outline-primary" (click)="goToRequest()">{{ 'CLIENT.DASHBOARD.REQUEST_RIDE' | translate }}</button>
+          </div>
+        </ng-template>
+      </section>
+
+      <!-- 4. Carte Commander un trajet rapide -->
+      <section class="section-card quick-request">
+        <div class="section-header">
+          <h3><span class="ion-md-car"></span> {{ 'CLIENT.DASHBOARD.QUICK_REQUEST' | translate }}</h3>
+        </div>
+        
+        <div class="request-form">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="form-field">
+                <label>Départ</label>
+                <div class="input-with-icon">
+                  <span class="ion-md-pin text-success"></span>
+                  <input type="text" [(ngModel)]="quickRequest.departure" placeholder="D'où partez-vous ?">
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-field">
+                <label>Destination</label>
+                <div class="input-with-icon">
+                  <span class="ion-md-pin text-danger"></span>
+                  <input type="text" [(ngModel)]="quickRequest.destination" placeholder="Où allez-vous ?">
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-field">
+                <label>Type de trajet</label>
+                <select [(ngModel)]="quickRequest.type">
+                  <option value="INDIVIDUAL">Individuel</option>
+                  <option value="COLLABORATIVE">Collaboratif</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-field">
+                <label>Date & Heure</label>
+                <div class="d-flex gap-2">
+                  <input type="date" [(ngModel)]="quickRequest.date" class="flex-grow-1">
+                  <input type="time" [(ngModel)]="quickRequest.time" style="width: 100px;">
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-field">
+                <label>Passagers</label>
+                <input type="number" [(ngModel)]="quickRequest.passengers" min="1" max="4">
+              </div>
+            </div>
+          </div>
+          
+          <div class="extras-section mt-3">
+            <label class="d-block mb-2 fw-bold small">Extras optionnels</label>
+            <div class="extras-grid">
+              <button class="extra-chip" [class.active]="quickRequest.extras?.includes('baggage')" (click)="toggleExtra('baggage')">
+                <span class="ion-md-briefcase"></span> Bagages (+3 DT)
+              </button>
+              <button class="extra-chip" [class.active]="quickRequest.extras?.includes('animal')" (click)="toggleExtra('animal')">
+                <span class="ion-md-paw"></span> Animal (+5 DT)
+              </button>
+              <button class="extra-chip" [class.active]="quickRequest.extras?.includes('child')" (click)="toggleExtra('child')">
+                <span class="ion-md-contacts"></span> Siège enfant (+4 DT)
+              </button>
+              <button class="extra-chip" [class.active]="quickRequest.extras?.includes('stop')" (click)="toggleExtra('stop')">
+                <span class="ion-md-git-branch"></span> Arrêt (+6 DT)
+              </button>
+              <button class="extra-chip" [class.active]="quickRequest.extras?.includes('wait')" (click)="toggleExtra('wait')">
+                <span class="ion-md-time"></span> Attente (+5 DT)
+              </button>
+            </div>
+          </div>
+          
+          <div class="form-footer mt-4">
+            <button class="btn-primary w-100 py-3 rounded-3 fw-bold" (click)="estimatePrice()" [disabled]="isEstimating">
+              <span *ngIf="!isEstimating">Estimer le prix</span>
+              <span *ngIf="isEstimating" class="spinner-border spinner-border-sm"></span>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Resultats Estimation -->
+        <div class="estimation-results mt-4 animate__animated animate__fadeIn" *ngIf="estimation">
+          <div class="results-grid">
+            <div class="res-item">
+              <span class="label">Distance</span>
+              <span class="val">{{ estimation.distance }} km</span>
+            </div>
+            <div class="res-item">
+              <span class="label">Durée</span>
+              <span class="val">{{ estimation.duration }} min</span>
+            </div>
+            <div class="res-item">
+              <span class="label">Base</span>
+              <span class="val">{{ estimation.base }} DT</span>
+            </div>
+            <div class="res-item">
+              <span class="label">Extras</span>
+              <span class="val">{{ estimation.extras }} DT</span>
+            </div>
+          </div>
+          <div class="total-estimated">
+            <span class="label">Total estimé</span>
+            <span class="val">{{ estimation.total }} DT</span>
+          </div>
+          <button class="btn-primary-glow w-100 mt-3" (click)="sendRequest()">Envoyer la demande</button>
+        </div>
+        
+        <div class="alert alert-success mt-3" *ngIf="requestSuccess">
+          <span class="ion-md-checkmark-circle me-2"></span>
+          Votre demande a été envoyée aux chauffeurs disponibles.
+        </div>
+      </section>
+
+      <!-- 5. Section Chauffeurs disponibles -->
+      <section class="section-card">
+        <div class="section-header">
+          <h3><span class="ion-md-people"></span> Chauffeurs disponibles</h3>
+        </div>
+        <div class="drivers-list">
+          <div class="driver-card" *ngFor="let d of availableDrivers">
+            <div class="d-flex align-items-center mb-3">
+              <app-profile-avatar [name]="d.name" [size]="40" [showStatus]="false"></app-profile-avatar>
+              <div class="ms-3">
+                <h5 class="mb-0 fw-bold">{{ d.name }}</h5>
+                <div class="small text-warning"><span class="ion-md-star"></span> {{ d.rating }} <span class="text-muted">({{ d.tripsCount }} courses)</span></div>
+              </div>
+              <div class="ms-auto text-end">
+                <div class="fw-bold text-primary">{{ d.eta }}</div>
+                <div class="x-small text-muted">{{ d.distance }}</div>
+              </div>
+            </div>
+            <p class="mb-3 small"><span class="ion-md-car me-1"></span> {{ d.vehicle }}</p>
+            <button class="btn-outline-primary btn-sm w-100" (click)="requestDriver(d)">Demander ce chauffeur</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. Section Trajets partagés -->
+      <section class="section-card">
+        <div class="section-header">
+          <h3><span class="ion-md-share"></span> Trajets partagés disponibles</h3>
+          <button class="btn-link" (click)="goToExplore()">Voir tout</button>
+        </div>
+        <div class="shared-rides-list">
+          <div class="shared-ride-item" *ngFor="let s of sharedRides">
+            <div class="ride-info">
+              <div class="route-title">{{ s.departure }} → {{ s.destination }}</div>
+              <div class="driver-meta small">Chauffeur: {{ s.driverName }} • <span class="ion-md-star text-warning"></span> {{ s.driverRating }}</div>
+              <div class="time-meta x-small text-muted">{{ s.date }} à {{ s.time }} • {{ s.vehicle }}</div>
+            </div>
+            <div class="ride-meta text-end">
+              <div class="price-tag">{{ s.price }} DT <small>/ place</small></div>
+              <div class="seats-tag">{{ s.seats }} places dispos</div>
+            </div>
+            <div class="ride-actions">
+              <button class="btn-sm-outline" (click)="showDetailsModal = true">Détails</button>
+              <button class="btn-sm-primary" (click)="bookSharedRide(s)">Réserver</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <aside class="side-column">
+      
+      <!-- 10. Avis après course -->
+      <section class="section-card review-promo" *ngIf="pendingReviewRide">
+        <div class="text-center">
+          <div class="icon-box mb-3"><span class="ion-md-star"></span></div>
+          <h4>Comment s’est passée votre course avec {{ pendingReviewRide.driverName }} ?</h4>
+          <p class="small text-muted mb-3">Votre avis aide les autres passagers.</p>
+          <button class="btn-primary w-100" (click)="openReviewModal()">Laisser un avis</button>
+        </div>
+      </section>
+
+      <!-- 7. Notifications récentes -->
+      <section class="section-card">
+        <div class="section-header">
+          <h3><span class="ion-md-notifications"></span> Notifications</h3>
+        </div>
+        <div class="notif-mini-list">
+          <div class="notif-mini-item" *ngFor="let n of notifications">
+            <div class="notif-icon" [style.background]="n.color + '20'" [style.color]="n.color">
+              <span [class]="n.icon"></span>
+            </div>
+            <div class="notif-body">
+              <div class="notif-title">{{ n.title }}</div>
+              <div class="notif-time">{{ n.time }}</div>
+            </div>
+          </div>
+        </div>
+        <button class="btn-text-full mt-2" (click)="goToNotifications()">Voir toutes les notifications</button>
+      </section>
+
+      <!-- 8. Paiements récents -->
+      <section class="section-card">
+        <div class="section-header">
+          <h3><span class="ion-md-wallet"></span> Paiements récents</h3>
+        </div>
+        <div class="payment-mini-list">
+          <div class="payment-mini-item" *ngFor="let p of payments">
+            <div class="payment-body">
+              <div class="payment-title">{{ p.title }}</div>
+              <div class="payment-status {{ p.statusClass }}">{{ p.status }}</div>
+            </div>
+            <div class="payment-amount">{{ p.amount }}</div>
+          </div>
+        </div>
+        <button class="btn-text-full mt-2" (click)="goToPayments()">Voir tous les paiements</button>
+      </section>
+
+      <!-- 9. Conversations récentes -->
+      <section class="section-card">
+        <div class="section-header">
+          <h3><span class="ion-md-chatbubbles"></span> Conversations</h3>
+        </div>
+        <div class="chat-mini-list">
+          <div class="chat-mini-item" *ngFor="let c of conversations" (click)="goToConversations()">
+            <app-profile-avatar [name]="c.name" [size]="36" [showStatus]="false"></app-profile-avatar>
+            <div class="chat-body">
+              <div class="chat-name">{{ c.name }}</div>
+              <div class="chat-msg text-truncate">{{ c.lastMsg }}</div>
+            </div>
+            <div class="chat-meta">
+              <div class="chat-time">{{ c.time }}</div>
+              <div class="unread-dot" *ngIf="c.unread"></div>
+            </div>
+          </div>
+        </div>
+        <button class="btn-text-full mt-2" (click)="goToConversations()">Ouvrir les messages</button>
+      </section>
+
+    </aside>
+  </div>
+</div>
+
+<!-- MODALS -->
+
+<!-- Details Modal -->
+<div class="modal-overlay" *ngIf="showDetailsModal" (click)="closeModal()">
+  <div class="modal-content animate__animated animate__zoomIn" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Détails du trajet</h3>
+      <button class="btn-close-modal" (click)="closeModal()"><span class="ion-md-close"></span></button>
+    </div>
+    <div class="modal-body py-4">
+      <div class="detail-group mb-4">
+        <label class="text-muted small fw-bold text-uppercase">Itinéraire</label>
+        <p class="fw-bold mb-0">Lac 2, Tunis → La Marsa</p>
+      </div>
+      <div class="row mb-4">
+        <div class="col-6">
+          <label class="text-muted small fw-bold text-uppercase">Distance</label>
+          <p class="fw-bold mb-0">12.4 km</p>
+        </div>
+        <div class="col-6">
+          <label class="text-muted small fw-bold text-uppercase">Temps estimé</label>
+          <p class="fw-bold mb-0">22 min</p>
+        </div>
+      </div>
+      <div class="detail-group mb-4">
+        <label class="text-muted small fw-bold text-uppercase">Chauffeur</label>
+        <div class="d-flex align-items-center mt-2">
+          <div class="avatar-sm">A</div>
+          <div class="ms-3">
+            <div class="fw-bold">Ahmed Ben Ali</div>
+            <div class="text-muted small">Peugeot 308 (Blanc) • AB-123-TN</div>
+          </div>
+        </div>
+      </div>
+      <div class="bg-light p-3 rounded-3">
+        <div class="d-flex justify-content-between mb-2">
+          <span>Prix de base</span>
+          <span>8.000 DT</span>
+        </div>
+        <div class="d-flex justify-content-between mb-2">
+          <span>Supplément distance</span>
+          <span>10.000 DT</span>
+        </div>
+        <div class="d-flex justify-content-between fw-bold border-top pt-2">
+          <span>Total</span>
+          <span class="text-primary">18.000 DT</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer border-0 p-0 mt-3">
+      <button class="btn-primary w-100 py-3 rounded-3" (click)="closeModal()">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Details Modal -->
+
+<!-- Request Modal (for specific driver) -->
+<div class="modal-overlay" *ngIf="showRequestModal" (click)="closeModal()">
+  <div class="modal-content animate__animated animate__zoomIn" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Demander {{ selectedDriverForRequest?.name }}</h3>
+      <button class="btn-close-modal" (click)="closeModal()"><span class="ion-md-close"></span></button>
+    </div>
+    <div class="modal-body py-4">
+      <div class="form-field mb-3">
+        <label>Départ</label>
+        <input type="text" class="form-control" [(ngModel)]="quickRequest.departure">
+      </div>
+      <div class="form-field mb-3">
+        <label>Destination</label>
+        <input type="text" class="form-control" [(ngModel)]="quickRequest.destination">
+      </div>
+      <div class="form-field mb-3">
+        <label>Type de trajet</label>
+        <select class="form-select" [(ngModel)]="quickRequest.type">
+          <option value="INDIVIDUAL">Individuel</option>
+          <option value="COLLABORATIVE">Collaboratif</option>
+        </select>
+      </div>
+      
+      <div class="estimation-summary p-3 bg-light rounded-3 mb-3" *ngIf="estimation">
+        <div class="d-flex justify-content-between small mb-1">
+          <span>Distance estimée</span>
+          <span>{{ estimation.distance }} km</span>
+        </div>
+        <div class="d-flex justify-content-between fw-bold">
+          <span>Prix total estimé</span>
+          <span class="text-primary">{{ estimation.total }} DT</span>
+        </div>
+      </div>
+      
+      <button class="btn-primary w-100 py-3 rounded-3" (click)="sendRequest()">Confirmer la demande</button>
+    </div>
+  </div>
+</div>

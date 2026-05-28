@@ -1,0 +1,256 @@
+<div class="request-container animate__animated animate__fadeIn">
+  
+  <header class="page-header mb-4">
+    <h1>Commander un trajet</h1>
+    <p class="text-muted">Demandez une course individuelle ou collaborative en quelques clics.</p>
+  </header>
+
+  <!-- SUCCESS VIEW -->
+  <div class="success-view animate__animated animate__zoomIn" *ngIf="submittedRequest">
+    <div class="success-card text-center p-5">
+      <div class="success-icon mb-4">
+        <span class="ion-md-checkmark-circle text-success"></span>
+      </div>
+      <h2 class="fw-bold mb-3">Demande envoyée !</h2>
+      <p class="text-muted mb-4" *ngIf="!submittedRequest.selectedDriver">
+        Votre demande a été envoyée aux chauffeurs disponibles.
+      </p>
+      <p class="text-muted mb-4" *ngIf="submittedRequest.selectedDriver">
+        Votre demande a été envoyée à <strong>{{ submittedRequest.selectedDriver.name }}</strong>.
+      </p>
+
+      <div class="request-summary-box mb-5">
+        <div class="summary-item">
+          <span class="label">Trajet</span>
+          <span class="value">{{ submittedRequest.departure }} → {{ submittedRequest.destination }}</span>
+        </div>
+        <div class="summary-grid">
+          <div class="summary-item">
+            <span class="label">Date & Heure</span>
+            <span class="value">{{ submittedRequest.date }} à {{ submittedRequest.time }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">Type</span>
+            <span class="value">{{ submittedRequest.rideType === 'INDIVIDUAL' ? 'Individuel' : 'Collaboratif' }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">Prix</span>
+            <span class="value text-primary fw-bold">{{ submittedRequest.estimatedPrice }} DT</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">Statut</span>
+            <span class="status-badge">En attente chauffeur</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="success-actions">
+        <button class="btn-primary w-100 mb-3 py-3" (click)="goToCurrentRide()">Suivre ma demande</button>
+        <div class="d-flex gap-3">
+          <button class="btn-outline-primary flex-grow-1 py-2" (click)="goToReservations()">Voir mes trajets</button>
+          <button class="btn-text flex-grow-1 py-2" (click)="resetForm()">Nouvelle commande</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN FORM VIEW -->
+  <div class="content-grid" *ngIf="!submittedRequest">
+    
+    <div class="form-column">
+      
+      <!-- Persistent Encart (Last Request) -->
+      <div class="last-request-alert mb-4" *ngIf="lastRequest && !estimation">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <span class="small fw-bold d-block text-primary">DERNIÈRE DEMANDE ENVOYÉE</span>
+            <span class="small">{{ lastRequest.departure }} → {{ lastRequest.destination }} ({{ lastRequest.estimatedPrice }} DT)</span>
+          </div>
+          <button class="btn-sm-primary" (click)="goToReservations()">Voir mes trajets</button>
+        </div>
+      </div>
+
+      <!-- 1. Formulaire Principal -->
+      <div class="card p-4 mb-4">
+        <h5 class="fw-bold mb-4"><span class="ion-md-create me-2 text-primary"></span> Informations du trajet</h5>
+        
+        <!-- Errors -->
+        <div class="alert alert-danger mb-3 py-2 small" *ngIf="errors.length > 0">
+          <ul class="mb-0 ps-3">
+            <li *ngFor="let error of errors">{{ error }}</li>
+          </ul>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="input-group-custom">
+              <label>Départ</label>
+              <div class="input-wrapper">
+                <span class="ion-md-pin text-success"></span>
+                <input type="text" [(ngModel)]="form.departure" placeholder="D'où partez-vous ?">
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="input-group-custom">
+              <label>Destination</label>
+              <div class="input-wrapper">
+                <span class="ion-md-pin text-danger"></span>
+                <input type="text" [(ngModel)]="form.destination" placeholder="Où allez-vous ?">
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="input-group-custom">
+              <label>Type de trajet</label>
+              <select [(ngModel)]="form.rideType" class="form-select-custom">
+                <option value="INDIVIDUAL">Individuel</option>
+                <option value="COLLABORATIVE">Collaboratif</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="input-group-custom">
+              <label>Date</label>
+              <input type="date" [(ngModel)]="form.date" class="form-control-custom">
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="input-group-custom">
+              <label>Heure</label>
+              <input type="time" [(ngModel)]="form.time" class="form-control-custom">
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="input-group-custom">
+              <label>Nombre de passagers</label>
+              <input type="number" [(ngModel)]="form.passengers" min="1" max="4" class="form-control-custom">
+            </div>
+          </div>
+          <div class="col-md-8">
+            <div class="input-group-custom">
+              <label>Méthode de paiement</label>
+              <select [(ngModel)]="form.paymentMethod" class="form-select-custom">
+                <option>Carte bancaire</option>
+                <option>Espèces</option>
+                <option>Carte GoRide</option>
+                <option>Solde GoRide</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="input-group-custom">
+              <label>Commentaire (Optionnel)</label>
+              <textarea [(ngModel)]="form.comment" placeholder="Précisez un détail pour le chauffeur..." class="form-control-custom" rows="2"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Extras -->
+      <div class="card p-4 mb-4">
+        <h5 class="fw-bold mb-4"><span class="ion-md-add-circle me-2 text-primary"></span> Options & Extras</h5>
+        <div class="extras-grid">
+          <div class="extra-item" 
+               *ngFor="let extra of extras" 
+               [class.active]="selectedExtras.includes(extra.id)"
+               (click)="toggleExtra(extra.id)">
+            <span [class]="extra.icon"></span>
+            <div class="ms-2">
+              <span class="label">{{ extra.label }}</span>
+              <span class="price">+{{ extra.price }} DT</span>
+            </div>
+            <span class="check-icon ion-md-checkmark-circle" *ngIf="selectedExtras.includes(extra.id)"></span>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-primary-glow w-100 py-3 rounded-4 fw-bold" (click)="estimatePrice()" [disabled]="isEstimating">
+        <span *ngIf="!isEstimating">Estimer le prix de la course</span>
+        <span *ngIf="isEstimating" class="spinner-border spinner-border-sm"></span>
+      </button>
+
+    </div>
+
+    <!-- ESTIMATION COLUMN -->
+    <div class="side-column">
+      
+      <!-- Prix Estimé -->
+      <div class="card estimation-card p-4 animate__animated animate__fadeInRight" *ngIf="estimation">
+        <h5 class="fw-bold mb-4 text-center">Récapitulatif de l'estimation</h5>
+        
+        <div class="estimation-details">
+          <div class="detail-row">
+            <span>Distance estimée</span>
+            <span class="val">{{ estimation.distance }} km</span>
+          </div>
+          <div class="detail-row">
+            <span>Durée estimée</span>
+            <span class="val">{{ estimation.duration }} min</span>
+          </div>
+          <hr>
+          <div class="detail-row">
+            <span>Prix de base</span>
+            <span>{{ estimation.base }} DT</span>
+          </div>
+          <div class="detail-row">
+            <span>Supplément distance</span>
+            <span>{{ estimation.distPrice }} DT</span>
+          </div>
+          <div class="detail-row" *ngIf="estimation.passengerExtra > 0">
+            <span>Supplément passagers</span>
+            <span>{{ estimation.passengerExtra }} DT</span>
+          </div>
+          <div class="detail-row" *ngIf="estimation.extrasSum > 0">
+            <span>Options & Extras</span>
+            <span>{{ estimation.extrasSum }} DT</span>
+          </div>
+          <div class="detail-row text-success fw-bold" *ngIf="estimation.reduction > 0">
+            <span>Réduction collaboratif (-20%)</span>
+            <span>-{{ estimation.reduction }} DT</span>
+          </div>
+        </div>
+
+        <div class="total-box mt-4">
+          <span class="total-label">TOTAL ESTIMÉ</span>
+          <span class="total-value">{{ estimation.total }} DT</span>
+        </div>
+
+        <button class="btn-primary w-100 mt-4 py-3 shadow-lg" (click)="sendRequest()">
+          Envoyer à tous les chauffeurs
+        </button>
+      </div>
+
+      <!-- Chauffeurs Disponibles -->
+      <div class="card p-4 mt-4 animate__animated animate__fadeInUp" *ngIf="estimation">
+        <h5 class="fw-bold mb-4">Chauffeurs à proximité</h5>
+        <div class="drivers-list">
+          <div class="driver-mini-card" *ngFor="let d of availableDrivers">
+            <div class="d-flex align-items-center">
+              <app-profile-avatar [name]="d.name" [size]="40" [showStatus]="false"></app-profile-avatar>
+              <div class="ms-3 flex-grow-1">
+                <div class="fw-bold">{{ d.name }}</div>
+                <div class="small text-warning"><span class="ion-md-star"></span> {{ d.rating }} <span class="text-muted">({{ d.tripsCount }} courses)</span></div>
+                <div class="x-small text-muted">{{ d.vehicle }}</div>
+              </div>
+              <div class="text-end">
+                <div class="fw-bold text-primary">{{ d.eta }}</div>
+                <div class="x-small text-muted">{{ d.distance }}</div>
+              </div>
+            </div>
+            <button class="btn-outline-primary btn-sm w-100 mt-3" (click)="sendRequest(d)">Demander ce chauffeur</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Placeholder if no estimation -->
+      <div class="placeholder-card card p-5 text-center" *ngIf="!estimation">
+        <span class="ion-md-calculator fs-1 text-muted mb-3 d-block"></span>
+        <p class="text-muted mb-0">Remplissez le formulaire et estimez le prix pour voir les chauffeurs disponibles.</p>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

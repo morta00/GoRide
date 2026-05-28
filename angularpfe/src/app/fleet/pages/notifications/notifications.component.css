@@ -1,0 +1,403 @@
+.notifications-container {
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* --- Toast Styles --- */
+.toast-container {
+    max-width: 400px;
+    width: 100%;
+}
+
+.toast-item {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toast-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+}
+
+.toast-item.type-new_booking::before { background: #0066ff; }
+.toast-item.type-payment_received::before { background: #ffc107; }
+.toast-item.type-message::before { background: #673ab7; }
+.toast-item.type-maintenance::before { background: #ff9800; }
+
+.toast-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.type-new_booking .toast-icon { background: rgba(0, 102, 255, 0.1); color: #0066ff; }
+.type-payment_received .toast-icon { background: rgba(255, 193, 7, 0.1); color: #ffc107; }
+.type-message .toast-icon { background: rgba(103, 58, 183, 0.1); color: #673ab7; }
+.type-maintenance .toast-icon { background: rgba(255, 152, 0, 0.1); color: #ff9800; }
+
+.toast-body {
+    flex-grow: 1;
+}
+
+.toast-title {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #333;
+    margin-bottom: 0.1rem;
+}
+
+.toast-desc {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.toast-close {
+    background: transparent;
+    border: none;
+    color: #ccc;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.toast-close:hover {
+    color: #999;
+}
+
+.notifications-header {
+    margin-bottom: 2rem;
+}
+
+.notifications-header h2 {
+    color: #1a1a1a;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+/* --- Filters Styles --- */
+.filters-bar {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;  /* IE and Edge */
+}
+
+.filters-bar::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+.filter-btn {
+    padding: 0.6rem 1.25rem;
+    border-radius: 50px;
+    border: 1px solid #eee;
+    background: #fff;
+    color: #666;
+    font-weight: 600;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+}
+
+.filter-btn:hover {
+    border-color: #0066ff;
+    color: #0066ff;
+    background: rgba(0, 102, 255, 0.02);
+}
+
+.filter-btn.active {
+    background: #0066ff;
+    color: #fff;
+    border-color: #0066ff;
+    box-shadow: 0 4px 12px rgba(0, 102, 255, 0.2);
+}
+
+.count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.05);
+    color: inherit;
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 20px;
+    min-width: 20px;
+    font-weight: 700;
+}
+
+.filter-btn.active .count-badge {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+/* --- Notification Cards --- */
+.notification-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.notification-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 102, 255, 0.2);
+}
+
+.notification-card.unread {
+    background: #f8fbff;
+    border-left: 4px solid #0066ff;
+}
+
+.notification-card.unread::after {
+    content: '';
+    position: absolute;
+    top: 1.25rem;
+    right: 1.25rem;
+    width: 8px;
+    height: 8px;
+    background: #0066ff;
+    border-radius: 50%;
+}
+
+.notification-card.read-animation {
+    animation: markRead 0.5s ease-out;
+}
+
+@keyframes markRead {
+    0% { background: #f8fbff; }
+    100% { background: #ffffff; }
+}
+
+.icon-wrapper {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+}
+
+.notification-card:hover .icon-wrapper {
+    transform: scale(1.1);
+}
+
+/* Types styles */
+.type-new_booking .icon-wrapper { background: rgba(0, 102, 255, 0.1); color: #0066ff; }
+.type-booking_accepted .icon-wrapper { background: rgba(40, 167, 69, 0.1); color: #28a745; }
+.type-booking_rejected .icon-wrapper { background: rgba(220, 53, 69, 0.1); color: #dc3545; }
+.type-payment_received .icon-wrapper { background: rgba(255, 193, 7, 0.1); color: #ffc107; }
+.type-maintenance .icon-wrapper { background: rgba(255, 152, 0, 0.1); color: #ff9800; }
+.type-message .icon-wrapper { background: rgba(103, 58, 183, 0.1); color: #673ab7; }
+
+.notification-content {
+    flex-grow: 1;
+}
+
+.notification-title {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.25rem;
+    font-size: 1rem;
+}
+
+.notification-desc {
+    color: #666;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    margin-bottom: 0.5rem;
+}
+
+.notification-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.notification-time {
+    font-size: 0.8rem;
+    color: #999;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.actions-dropdown {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.notification-card:hover .actions-dropdown {
+    opacity: 1;
+}
+
+.notification-actions {
+    opacity: 0;
+    transform: translateX(10px);
+    transition: all 0.3s ease;
+}
+
+.notification-card:hover .notification-actions {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.action-icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    font-size: 1.1rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.action-icon-btn:hover {
+    background: #f0f7ff;
+    color: #0066ff;
+    border-color: #0066ff;
+}
+
+.action-icon-btn.delete:hover {
+    background: #fff5f5;
+    color: #dc3545;
+    border-color: #dc3545;
+}
+
+/* --- Pagination Styles --- */
+.pagination-wrapper {
+    border-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+.pagination-list {
+    list-style: none;
+}
+
+.page-link-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: 1px solid #eee;
+    background: #fff;
+    color: #666;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.page-link-btn:hover:not([disabled]) {
+    border-color: #0066ff;
+    color: #0066ff;
+    background: rgba(0, 102, 255, 0.02);
+}
+
+.page-link-btn.active {
+    background: #0066ff;
+    color: #fff;
+    border-color: #0066ff;
+    box-shadow: 0 4px 10px rgba(0, 102, 255, 0.2);
+}
+
+.page-link-btn[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #f9f9f9;
+}
+
+.pagination-info {
+    font-size: 0.9rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: #fff;
+    border-radius: 24px;
+    border: 2px dashed #eee;
+}
+
+.empty-state-icon {
+    font-size: 4rem;
+    color: #ccc;
+    margin-bottom: 1.5rem;
+}
+
+.empty-state h3 {
+    color: #333;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+    color: #888;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .notification-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    
+    .icon-wrapper {
+        width: 44px;
+        height: 44px;
+        font-size: 1.25rem;
+    }
+    
+    .notification-card.unread::after {
+        top: 1rem;
+        right: 1rem;
+    }
+}

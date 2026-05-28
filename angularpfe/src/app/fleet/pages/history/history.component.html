@@ -1,0 +1,355 @@
+<div class="history-page animate-fade-in position-relative">
+    <!-- Export Loader Overlay -->
+    <div class="export-loader-overlay" *ngIf="isExporting">
+        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Exportation en cours...</span>
+        </div>
+        <p class="mt-3 fw-bold text-white fs-5">Génération du fichier en cours...</p>
+    </div>
+
+    <!-- Success Toast -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1050">
+        <div class="toast align-items-center text-white bg-success border-0" [class.show]="showToast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center gap-2">
+                    <span class="ion-md-checkmark-circle fs-5"></span>
+                    <span class="fw-bold">{{ toastMessage }}</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" (click)="showToast = false" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header & Search -->
+    <div class="row g-4 align-items-center mb-5">
+        <div class="col-xl-4 col-lg-4">
+            <h2 class="fw-bold text-dark mb-1">Historique d'Activité</h2>
+            <p class="text-muted mb-0">Analysez l'historique de votre flotte.</p>
+        </div>
+        <div class="col-xl-8 col-lg-8">
+            <div class="d-flex flex-wrap gap-3 justify-content-lg-end align-items-center">
+                <!-- Export Buttons -->
+                <button class="btn btn-outline-danger rounded-pill px-4 fw-bold d-flex align-items-center gap-2 transition-all shadow-sm premium-hover" 
+                        (click)="exportPDF()" [disabled]="isExporting || filteredActivities.length === 0">
+                    <span class="ion-md-document"></span> PDF
+                </button>
+                <button class="btn btn-outline-success rounded-pill px-4 fw-bold d-flex align-items-center gap-2 transition-all shadow-sm premium-hover" 
+                        (click)="exportExcel()" [disabled]="isExporting || filteredActivities.length === 0">
+                    <span class="ion-md-grid"></span> Excel
+                </button>
+                
+                <div class="search-container-premium">
+                    <span class="ion-md-search"></span>
+                    <input type="text" placeholder="Rechercher véhicule, client, activité..." [(ngModel)]="searchTerm" (ngModelChange)="currentPage = 1">
+                </div>
+                <select class="form-select-premium" [(ngModel)]="selectedPeriod" (ngModelChange)="currentPage = 1">
+                    <option value="ALL">Toute période</option>
+                    <option value="TODAY">Aujourd'hui</option>
+                    <option value="WEEK">Cette semaine</option>
+                    <option value="MONTH">Ce mois</option>
+                    <option value="YEAR">Cette année</option>
+                </select>
+                <button class="btn btn-reset-premium" (click)="resetFilters()" *ngIf="searchTerm || selectedType !== 'ALL' || selectedPeriod !== 'ALL'">
+                    <span class="ion-md-refresh"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Section -->
+    <div class="row g-4 mb-5">
+        <!-- KPI Cards -->
+        <div class="col-xl-4 col-lg-12">
+            <div class="row g-4 h-100">
+                <div class="col-md-6 col-xl-12">
+                    <div class="premium-card p-4 border-0 shadow-sm bg-white h-100 animate-fade-in">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <div class="stat-icon-sm bg-primary bg-opacity-10 text-primary">
+                                <span class="ion-md-pulse"></span>
+                            </div>
+                            <span class="badge bg-success bg-opacity-10 text-success rounded-pill">+12%</span>
+                        </div>
+                        <h3 class="fw-bold text-dark mb-1">{{ stats.total }}</h3>
+                        <p class="text-muted small mb-0 fw-bold">Activités Totales</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-12">
+                    <div class="premium-card p-4 border-0 shadow-sm bg-white h-100 animate-fade-in" style="animation-delay: 0.1s">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <div class="stat-icon-sm bg-info bg-opacity-10 text-info">
+                                <span class="ion-md-analytics"></span>
+                            </div>
+                        </div>
+                        <h5 class="fw-bold text-dark mb-1">{{ stats.mostFrequent }}</h5>
+                        <p class="text-muted small mb-0 fw-bold">Activité la plus fréquente</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity Chart -->
+        <div class="col-xl-8 col-lg-12">
+            <div class="premium-card p-4 border-0 shadow-sm bg-white h-100 animate-fade-in" style="animation-delay: 0.2s">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h5 class="fw-bold text-dark mb-1">Évolution des activités</h5>
+                        <p class="text-muted small mb-0">Volume d'actions enregistrées sur les 7 derniers jours.</p>
+                    </div>
+                    <div class="chart-legend-custom d-flex gap-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="dot bg-primary"></span>
+                            <span class="small text-muted fw-bold">Volume</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-container" style="height: 250px; position: relative;">
+                    <canvas baseChart
+                        [data]="lineChartData"
+                        [options]="lineChartOptions"
+                        [type]="lineChartType">
+                    </canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Filters -->
+    <div class="filters-scroll-container mb-5">
+        <div class="d-flex gap-2">
+            <button class="filter-pill" [class.active]="selectedType === 'ALL'" (click)="selectedType = 'ALL'">
+                Tous <span class="count-badge">{{ getCount('ALL') }}</span>
+            </button>
+            <button class="filter-pill" [class.active]="selectedType === 'BOOKING'" (click)="selectedType = 'BOOKING'">
+                Réservations <span class="count-badge">{{ getCount('BOOKING') }}</span>
+            </button>
+            <button class="filter-pill" [class.active]="selectedType === 'PAYMENT'" (click)="selectedType = 'PAYMENT'">
+                Paiements <span class="count-badge">{{ getCount('PAYMENT') }}</span>
+            </button>
+            <button class="filter-pill" [class.active]="selectedType === 'VEHICLE'" (click)="selectedType = 'VEHICLE'">
+                Véhicules <span class="count-badge">{{ getCount('VEHICLE') }}</span>
+            </button>
+            <button class="filter-pill" [class.active]="selectedType === 'MAINTENANCE'" (click)="selectedType = 'MAINTENANCE'">
+                Maintenance <span class="count-badge">{{ getCount('MAINTENANCE') }}</span>
+            </button>
+            <button class="filter-pill" [class.active]="selectedType === 'MESSAGE'" (click)="selectedType = 'MESSAGE'">
+                Messages <span class="count-badge">{{ getCount('MESSAGE') }}</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Results Counter -->
+    <div class="mb-4 d-flex align-items-center justify-content-between" *ngIf="filteredActivities.length > 0">
+        <span class="text-muted small fw-bold text-uppercase letter-spacing-1">
+            {{ filteredActivities.length }} résultat{{ filteredActivities.length > 1 ? 's' : '' }} trouvé{{ filteredActivities.length > 1 ? 's' : '' }}
+        </span>
+    </div>
+
+    <!-- Activity Timeline -->
+    <div class="timeline-container">
+        <div class="timeline-group" *ngFor="let group of groupedActivities">
+            <div class="timeline-date-header animate-fade-in">
+                <span class="badge rounded-pill bg-white shadow-sm text-primary px-3 py-2 fw-bold border">
+                    {{ group.title }}
+                </span>
+            </div>
+
+            <div class="timeline-track">
+                <div class="timeline-item animate-fade-in" 
+                     *ngFor="let activity of group.items; let i = index"
+                     [style.animation-delay]="i * 0.1 + 's'"
+                     [class.recent-node]="activity.isRecent">
+                    
+                    <!-- Timeline Line & Node -->
+                    <div class="timeline-line"></div>
+                    <div class="timeline-node" [class]="activity.type.toLowerCase()">
+                        <div [class]="getIconClass(activity.type)">
+                            <span [class]="activity.icon"></span>
+                        </div>
+                    </div>
+
+                    <!-- Activity Content Card -->
+                    <div class="timeline-content-card premium-card">
+                        <div class="p-4">
+                            <div class="d-flex justify-content-between align-items-start mb-2 flex-wrap gap-2">
+                                <div>
+                                    <h5 class="fw-bold text-dark mb-1">{{ activity.title }}</h5>
+                                    <p class="text-muted small mb-0">{{ activity.displayDate }}</p>
+                                </div>
+                                <span class="badge-status" [class]="activity.statusClass">
+                                    <span class="status-dot"></span>
+                                    {{ activity.statusLabel }}
+                                </span>
+                            </div>
+
+                            <p class="text-secondary mb-3 mt-2">{{ activity.description }}</p>
+
+                            <!-- Metadata Footer -->
+                            <div class="d-flex align-items-center gap-3 flex-wrap pt-3 border-top border-light-subtle">
+                                <div class="meta-item-pill" *ngIf="activity.vehicle">
+                                    <span class="ion-md-car"></span>
+                                    {{ activity.vehicle }}
+                                </div>
+                                <div class="meta-item-pill" *ngIf="activity.clientName">
+                                    <span class="ion-md-person"></span>
+                                    {{ activity.clientName }}
+                                </div>
+                                <div class="meta-item-pill highlight-success" *ngIf="activity.amount">
+                                    <span class="ion-md-wallet"></span>
+                                    {{ activity.amount | number:'1.2-2' }} DT
+                                </div>
+                                <div class="ms-auto">
+                                    <button class="btn btn-sm btn-link text-primary p-0 fw-bold text-decoration-none" (click)="openDetails(activity)">
+                                        Voir <span class="ion-md-arrow-forward ms-1"></span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Recent Pulse Indicator -->
+                        <div class="recent-indicator-dot" *ngIf="activity.isRecent"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        <!-- Empty State -->
+    <div class="text-center py-5" *ngIf="filteredActivities.length === 0">
+        <div class="empty-icon-wrapper mb-3">
+            <span class="ion-md-search fs-1 text-muted"></span>
+        </div>
+        <h5 class="fw-bold text-dark">Aucune activité trouvée</h5>
+        <p class="text-muted">Ajustez vos filtres ou votre recherche pour voir plus de résultats.</p>
+        <button class="btn btn-outline-primary rounded-pill px-4 mt-2" (click)="resetFilters()">
+            Réinitialiser les filtres
+        </button>
+    </div>
+
+    <!-- Pagination -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mt-5 pt-4 border-top" *ngIf="filteredActivities.length > 0">
+        <div class="text-muted small fw-bold mb-3 mb-md-0">
+            Affichage de <span class="text-dark">{{ (currentPage - 1) * itemsPerPage + 1 }}</span> à 
+            <span class="text-dark">{{ Math.min(currentPage * itemsPerPage, filteredActivities.length) }}</span> 
+            sur <span class="text-dark">{{ filteredActivities.length }}</span> activités
+        </div>
+        <nav aria-label="Pagination historique">
+            <ul class="pagination pagination-modern mb-0">
+                <li class="page-item" [class.disabled]="currentPage === 1">
+                    <button class="page-link" (click)="previousPage()" aria-label="Previous">
+                        <span class="ion-md-arrow-back"></span>
+                    </button>
+                </li>
+                <li class="page-item" *ngFor="let page of [].constructor(totalPages); let i = index" [class.active]="currentPage === (i + 1)">
+                    <button class="page-link" (click)="goToPage(i + 1)">{{ i + 1 }}</button>
+                </li>
+                <li class="page-item" [class.disabled]="currentPage === totalPages">
+                    <button class="page-link" (click)="nextPage()" aria-label="Next">
+                        <span class="ion-md-arrow-forward"></span>
+                    </button>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Activity Details Modal -->
+    <div class="modal-premium-overlay" *ngIf="showModal" (click)="closeModal()">
+        <div class="modal-premium-content animate-slide-up" (click)="$event.stopPropagation()">
+            <!-- Modal Header -->
+            <div class="modal-premium-header">
+                <div class="d-flex align-items-center gap-3">
+                    <div [class]="getIconClass(selectedActivity.type) + ' icon-lg'">
+                        <span [class]="selectedActivity.icon"></span>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold text-dark mb-0">{{ selectedActivity.title }}</h4>
+                        <p class="text-muted small mb-0">ID: {{ selectedActivity.refId }}</p>
+                    </div>
+                </div>
+                <button class="btn-close-premium" (click)="closeModal()">
+                    <span class="ion-md-close"></span>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="modal-premium-body">
+                <!-- Status & Timing -->
+                <div class="detail-row mb-4">
+                    <div class="detail-card bg-light border-0">
+                        <span class="text-muted small fw-bold text-uppercase d-block mb-1">Date & Heure</span>
+                        <p class="fw-bold text-dark mb-0">{{ selectedActivity.displayDate }}</p>
+                    </div>
+                    <div class="detail-card bg-light border-0">
+                        <span class="text-muted small fw-bold text-uppercase d-block mb-1">Statut Actuel</span>
+                        <span class="badge-status" [class]="selectedActivity.statusClass">
+                            <span class="status-dot"></span>
+                            {{ selectedActivity.statusLabel }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Main Info Section -->
+                <div class="detail-section mb-4">
+                    <h6 class="fw-bold text-dark mb-3">Description complète</h6>
+                    <p class="text-secondary">{{ selectedActivity.fullDescription }}</p>
+                </div>
+
+                <!-- Contextual Details -->
+                <div class="detail-section mb-4">
+                    <h6 class="fw-bold text-dark mb-3">Informations complémentaires</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6" *ngIf="selectedActivity.vehicle">
+                            <div class="info-pill-premium">
+                                <span class="ion-md-car icon"></span>
+                                <div>
+                                    <span class="label">Véhicule</span>
+                                    <span class="value">{{ selectedActivity.vehicle }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6" *ngIf="selectedActivity.clientName">
+                            <div class="info-pill-premium">
+                                <span class="ion-md-person icon"></span>
+                                <div>
+                                    <span class="label">Client</span>
+                                    <span class="value">{{ selectedActivity.clientName }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6" *ngIf="selectedActivity.amount">
+                            <div class="info-pill-premium">
+                                <span class="ion-md-wallet icon text-success"></span>
+                                <div>
+                                    <span class="label">Montant</span>
+                                    <span class="value text-success fw-bold">{{ selectedActivity.amount | number:'1.2-2' }} DT</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6" *ngIf="selectedActivity.location">
+                            <div class="info-pill-premium">
+                                <span class="ion-md-pin icon"></span>
+                                <div>
+                                    <span class="label">Lieu</span>
+                                    <span class="value">{{ selectedActivity.location }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Type Specific Footer Info -->
+                <div class="alert alert-info border-0 rounded-4 p-3 d-flex align-items-center gap-3" *ngIf="selectedActivity.type === 'BOOKING' && selectedActivity.period">
+                    <span class="ion-md-calendar fs-3"></span>
+                    <div>
+                        <span class="d-block fw-bold small">Période de location</span>
+                        <span class="small">{{ selectedActivity.period }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="modal-premium-footer">
+                <button class="btn btn-light rounded-pill px-4 fw-bold" (click)="closeModal()">Fermer</button>
+                <button class="btn btn-primary rounded-pill px-4 fw-bold">Voir l'élément lié</button>
+            </div>
+        </div>
+    </div>
+</div>

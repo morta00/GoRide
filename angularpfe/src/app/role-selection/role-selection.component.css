@@ -1,0 +1,344 @@
+/* ===== WRAPPER ===== */
+.role-selection-wrapper {
+  min-height: 100vh;
+  background: #f8fafc;
+  background-image: 
+    radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 100% 100%, rgba(99, 102, 241, 0.05) 0%, transparent 50%),
+    linear-gradient(135deg, #f8fafc 0%, #eef4ff 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+  font-family: 'Outfit', sans-serif;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Grille de précision ultra-légère (version claire) */
+.role-selection-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(rgba(15, 23, 42, 0.03) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(15, 23, 42, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+  mask-image: radial-gradient(circle at center, black, transparent 90%);
+  pointer-events: none;
+}
+
+/* Background decoration (version subtile) */
+.bg-decoration { position: absolute; inset: 0; pointer-events: none; }
+
+.bg-circle {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.1;
+}
+.bg-circle-1 {
+  width: 600px; height: 600px;
+  background: #2563eb;
+  top: -200px; left: -200px;
+}
+.bg-circle-2 {
+  width: 500px; height: 500px;
+  background: #8b5cf6;
+  bottom: -150px; right: -150px;
+}
+
+/* ===== CONTAINER ===== */
+.role-selection-container {
+  width: 100%;
+  max-width: 960px;
+  position: relative;
+  z-index: 2;
+}
+
+/* ===== HEADER ===== */
+.rs-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 64px;
+  padding: 20px 0;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.05);
+}
+
+.rs-header-left, .rs-header-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.rs-header-center {
+  flex: 2;
+  text-align: center;
+}
+
+.rs-header-right {
+  justify-content: flex-end;
+}
+
+.goride-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-text {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -1px;
+}
+
+.rs-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 4px;
+  line-height: 1.2;
+}
+.user-name {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 900;
+}
+
+.rs-subtitle {
+  color: #64748b;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.logout-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  background: white;
+  border: 1px solid #2563eb;
+  border-radius: 100px;
+  color: #2563eb;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  box-shadow: 0 4px 6px rgba(37, 99, 235, 0.06);
+}
+
+.logout-btn:hover {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #ef4444;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(239, 68, 68, 0.1);
+}
+
+/* ===== DIVIDER ===== */
+.rs-divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 36px;
+}
+.rs-divider::before, .rs-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #e2e8f0;
+}
+.rs-divider span {
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+/* ===== GRID ===== */
+.roles-grid {
+  display: grid;
+  gap: 24px;
+  margin-bottom: 40px;
+}
+.roles-grid.two-roles { grid-template-columns: repeat(2, 1fr); }
+
+/* ===== CARD ===== */
+.role-card {
+  background: white;
+  border: 1px solid #f1f5f9;
+  border-radius: 24px;
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+}
+
+.role-card:hover {
+  transform: translateY(-8px);
+  border-color: #2563eb;
+  box-shadow: 0 20px 40px rgba(37, 99, 235, 0.08);
+}
+
+.card-accent {
+  height: 4px;
+  width: 100%;
+  background: #2563eb !important;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.role-card:hover .card-accent { opacity: 1; }
+
+.card-body {
+  padding: 40px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 24px;
+}
+
+.card-icon-wrapper {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%; /* Image parfaitement ronde */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 3px solid white;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.06);
+  background: #f8fafc;
+}
+
+.card-role-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+
+.role-card:hover .card-role-image {
+  transform: scale(1.1);
+}
+
+.card-info { 
+  flex: 1; 
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.card-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.card-desc {
+  font-size: 1rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.6;
+  max-width: 280px;
+}
+
+.card-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 0 32px 32px;
+  padding: 14px 24px;
+  background: #2563eb;
+  border-radius: 14px; /* Coins 14px */
+  font-size: 0.95rem;
+  font-weight: 600; /* Texte plus fort */
+  color: white;
+  letter-spacing: 0.2px; /* Letter spacing */
+  transition: all 0.25s ease; /* Animation fluide */
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25); /* Ombre légère */
+  cursor: pointer;
+  border: none;
+}
+
+.role-card:hover .card-action { 
+  background: #1d4ed8; /* Hover premium */
+  transform: translateY(-2px); /* Hover premium */
+  box-shadow: 0 12px 25px rgba(37, 99, 235, 0.35);
+}
+
+.arrow-icon {
+  font-size: 1.1rem;
+  transition: transform 0.25s ease;
+}
+
+.role-card:hover .arrow-icon { 
+  transform: translateX(4px); 
+}
+
+/* ===== FOOTER HINT ===== */
+.rs-footer-hint {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .rs-header { 
+    flex-direction: column; 
+    text-align: center;
+    gap: 32px;
+  }
+  
+  .rs-greeting {
+    order: 1;
+  }
+  
+  .logout-btn {
+    order: 2;
+    width: 100%;
+    justify-content: center;
+    padding: 12px;
+  }
+
+  .rs-title { 
+    font-size: 1.8rem; 
+  }
+  
+  .rs-subtitle {
+    font-size: 1rem;
+    padding: 0 10px;
+  }
+
+  .roles-grid {
+    grid-template-columns: 1fr !important;
+    gap: 24px;
+    padding-bottom: 40px;
+  }
+
+  .role-card {
+    max-width: 100%;
+  }
+
+  .card-body {
+    text-align: center;
+    align-items: center;
+    padding: 32px 24px;
+  }
+
+  .card-action {
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+  }
+}

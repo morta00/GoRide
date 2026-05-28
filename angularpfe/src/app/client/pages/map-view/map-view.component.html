@@ -1,0 +1,127 @@
+<div class="map-page-container">
+  <!-- Header Section -->
+  <header class="page-header">
+    <div class="header-content">
+      <h1>Carte</h1>
+      <p>Trouvez les véhicules disponibles autour de vous ou dans la zone de votre choix.</p>
+    </div>
+  </header>
+
+  <!-- Search & Filters Bar -->
+  <section class="controls-bar">
+    <div class="search-box">
+      <div class="input-with-icon">
+        <span class="ion-md-search"></span>
+        <input type="text" placeholder="Rechercher une ville, une adresse ou une agence" [(ngModel)]="searchQuery" (input)="onSearch()">
+      </div>
+      <div class="date-inputs">
+        <input type="date" placeholder="Début">
+        <input type="date" placeholder="Retour">
+      </div>
+      <button class="btn-primary">Rechercher</button>
+      <button class="btn-location"><span class="ion-md-locate"></span></button>
+    </div>
+
+    <div class="quick-filters">
+      <div class="filter-item">
+        <label>Prix max</label>
+        <input type="range" min="50" max="500" [(ngModel)]="maxPrice">
+        <span class="val">{{ maxPrice }} DT</span>
+      </div>
+      <div class="filter-item">
+        <select [(ngModel)]="selectedCategory">
+          <option value="Toutes">Toutes catégories</option>
+          <option value="Économique">Économique</option>
+          <option value="Compacte">Compacte</option>
+          <option value="SUV">SUV</option>
+          <option value="Luxe">Luxe</option>
+          <option value="Utilitaire">Utilitaire</option>
+        </select>
+      </div>
+      <div class="filter-item mobile-hide">
+        <select>
+          <option>Toutes transmissions</option>
+          <option>Automatique</option>
+          <option>Manuelle</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content: Map + List -->
+  <div class="main-content-split">
+    <!-- Map Area -->
+    <div class="map-section">
+      <div class="map-placeholder">
+        <!-- Map Overlay Info -->
+        <div class="map-overlay-top">
+          <span class="badge-results">6 véhicules trouvés</span>
+          <span class="zone-label">Zone : Tunis et alentours</span>
+        </div>
+
+        <!-- Custom Markers (Simulated) -->
+        <div class="map-marker marker-1" (click)="selectVehicle(vehicles[0])">80 DT</div>
+        <div class="map-marker marker-2" (click)="selectVehicle(vehicles[1])">90 DT</div>
+        <div class="map-marker marker-3" (click)="selectVehicle(vehicles[2])">150 DT</div>
+        <div class="map-marker marker-4" (click)="selectVehicle(vehicles[3])">250 DT</div>
+        <div class="map-marker marker-5" (click)="selectVehicle(vehicles[4])">85 DT</div>
+
+        <!-- Map Controls -->
+        <div class="map-controls">
+          <button><span class="ion-md-add"></span></button>
+          <button><span class="ion-md-remove"></span></button>
+          <button><span class="ion-md-contract"></span></button>
+        </div>
+
+        <!-- Marker Popup -->
+        <div class="marker-popup" *ngIf="selectedVehicle">
+          <button class="close-popup" (click)="closePopup()"><span class="ion-md-close"></span></button>
+          <div class="popup-info">
+            <h4>{{ selectedVehicle?.name }}</h4>
+            <p>{{ selectedVehicle?.city }}</p>
+            <div class="popup-meta">
+              <span class="price">{{ selectedVehicle?.price }} DT</span>
+              <span class="rating"><span class="ion-md-star"></span> {{ selectedVehicle?.rating }}</span>
+            </div>
+            <div class="popup-actions">
+              <button class="btn-sm-outline">Détails</button>
+              <button class="btn-sm-primary">Louer</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vehicles Panel -->
+    <aside class="vehicles-panel">
+      <div class="panel-header">
+        <h3>Véhicules disponibles</h3>
+      </div>
+      <div class="panel-list">
+        <div class="compact-card" *ngFor="let v of filteredVehicles" (click)="selectVehicle(v)">
+          <div class="card-img">
+            <span class="ion-md-car"></span>
+            <div class="badge-card">Disponible</div>
+          </div>
+          <div class="card-info">
+            <div class="card-title-row">
+              <h4>{{ v.name }}</h4>
+              <span class="rating"><span class="ion-md-star"></span> {{ v.rating }}</span>
+            </div>
+            <p class="meta">{{ v.category }} • {{ v.city }}</p>
+            <div class="specs">
+              <span>{{ v.transmission }}</span> • <span>{{ v.fuel }}</span>
+            </div>
+            <div class="card-footer">
+              <span class="price"><strong>{{ v.price }} DT</strong> / jour</span>
+              <div class="btns">
+                <button class="btn-mini">Détails</button>
+                <button class="btn-mini-primary">Louer</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
