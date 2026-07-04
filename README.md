@@ -1,15 +1,15 @@
-# GoRide — Plateforme de mobilité 
+# GoRide — Mobility Platform
 
-Application web de **location de véhicules**, **covoiturage**, **courses à la demande** et **messagerie** entre clients, chauffeurs et propriétaires de flotte.
+Web application for **vehicle rentals**, **carpooling**, **on-demand rides**, and **messaging** between customers, drivers, and fleet owners.
 
 ## Structure
 
-| Dossier | Technologie |
-|---------|-------------|
-| `GoRide/` | Backend Spring Boot (API REST, JWT, WebSocket) |
-| `angularpfe/` | Frontend Angular 16 |
+| Folder | Technology |
+|--------|------------|
+| `GoRide/` | Spring Boot backend (REST API, JWT, WebSocket) |
+| `angularpfe/` | Angular 16 frontend |
 
-## Démarrage rapide (démo sans MySQL)
+## Quick Start (demo without MySQL)
 
 ### Backend
 
@@ -18,7 +18,7 @@ cd GoRide
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=h2
 ```
 
-API : http://localhost:8081/api
+API: http://localhost:8081/api
 
 ### Frontend
 
@@ -28,45 +28,45 @@ npm install --legacy-peer-deps
 ng serve
 ```
 
-Application : http://localhost:4200
+App: http://localhost:4200
 
-## Compte administrateur
+## Admin Account
 
-| Champ | Valeur |
-|-------|--------|
-| **E-mail (identifiant)** | `admin@goride.tn` |
-| **Mot de passe** | `admin123` |
+| Field | Value |
+|-------|-------|
+| **Email (username)** | `admin@goride.tn` |
+| **Password** | `admin123` |
 
-Connexion : http://localhost:4200/login — espace admin après authentification.
+Login: http://localhost:4200/login — admin area available after authentication.
 
-## Comptes démo
+## Demo Accounts
 
-| Rôle | Email | Mot de passe |
-|------|--------|--------------|
-| **Administrateur** | `admin@goride.tn` | `admin123` |
-| Client / passager (Riadh Landolsi) | `client@goride.demo` | `Demo1234!` |
-| Chauffeur (Imed Kilani) | `driver@goride.demo` | `Demo1234!` |
-| Propriétaire flotte (Ahmed Abidi) | `owner@goride.demo` | `Demo1234!` |
-| Entreprise | `company@goride.demo` | `Demo1234!` |
+| Role | Email | Password |
+|------|-------|----------|
+| **Administrator** | `admin@goride.tn` | `admin123` |
+| Customer / passenger (Riadh Landolsi) | `client@goride.demo` | `Demo1234!` |
+| Driver (Imed Kilani) | `driver@goride.demo` | `Demo1234!` |
+| Fleet owner (Ahmed Abidi) | `owner@goride.demo` | `Demo1234!` |
+| Company | `company@goride.demo` | `Demo1234!` |
 
-## Clés API (collaborateur — dépôt privé)
+## API Keys (collaborator — private repo)
 
-Voir **`API-KEYS.md`** et **`GoRide/src/main/resources/application-local.properties`** (Resend + Gemini).
+See **`API-KEYS.md`** and **`GoRide/src/main/resources/application-local.properties`** (Resend + Gemini).
 
 ## Documentation
 
-- `DIRECT-LINKS.md` — liens directs vers les écrans
-- `API-KEYS.md` — détail des clés et services
-- `GoRide/README-EMAIL.md` — configuration e-mail
+- `DIRECT-LINKS.md` — direct links to screens
+- `API-KEYS.md` — API key and service details
+- `GoRide/README-EMAIL.md` — email configuration
 
-## Fonctionnalités principales
+## Main Features
 
-- Exploration et réservation de véhicules (carte Leaflet)
-- Trajets partagés : recherche, réservation, annulation
-- Commande de course individuelle et suivi chauffeur
-- Messagerie propriétaire ↔ client / chauffeur ↔ passager
-- Assistant et recommandations IA (Gemini optionnel côté serveur)
-- Rôles : client, chauffeur, propriétaire, entreprise, admin
+- Vehicle search and booking (Leaflet map)
+- Shared ride booking: search, reserve, cancel
+- Individual ride ordering and driver tracking
+- Messaging between owners ↔ customers and drivers ↔ passengers
+- AI assistant and recommendations (Gemini optional on the backend)
+- Roles: customer, driver, owner, company, admin
 
 ---
 GoRide.
