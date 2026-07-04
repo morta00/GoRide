@@ -69,4 +69,4 @@ Voir **`API-KEYS.md`** et **`GoRide/src/main/resources/application-local.propert
 - Rôles : client, chauffeur, propriétaire, entreprise, admin
 
 ---
-Projet de fin d'études — GoRide.
+GoRide.
