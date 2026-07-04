@@ -1,4 +1,4 @@
-# GoRide — Plateforme de mobilité (PFE)
+# GoRide — Plateforme de mobilité 
 
 Application web de **location de véhicules**, **covoiturage**, **courses à la demande** et **messagerie** entre clients, chauffeurs et propriétaires de flotte.
 
